@@ -1,6 +1,9 @@
 #ifndef _IDT_H
 #define _IDT_H
 
+#include "x86_desc.h"
+#include "lib.h"
+
 
 #define GATE_INTERRUPT 0
 #define GATE_TRAP 1
@@ -36,23 +39,24 @@ void set_system_gate(unsigned int n, void* addr);
 void set_trap_gate(unsigned int n, void* addr);
 // void set_task_gate(unsigned int n, void* addr);
 
-void (* exception_handler[NUM_EXCEPTION]) = {
-	Divide_Error_Exception,
-	Debug_Exception, 
- 	NMI_Interupt,
- 	Breakpoint_Exception,
- 	Overflow_Exception,
- 	BOUND,
-	Invalid_Opcode,
-	Device_Not_Available,
-	Double_Fault,
-	Coprocessor_Segment,
-	Invalid_TSS,
-	Segment_Not_Present,
-	Stack_Fault,
-	General_Protection,
-	Page_Fault
-};
+void (* exception_handler[NUM_EXCEPTION]);
+//  = {
+// 	Divide_Error_Exception,
+// 	Debug_Exception, 
+//  	NMI_Interupt,
+//  	Breakpoint_Exception,
+//  	Overflow_Exception,
+//  	BOUND,
+// 	Invalid_Opcode,
+// 	Device_Not_Available,
+// 	Double_Fault,
+// 	Coprocessor_Segment,
+// 	Invalid_TSS,
+// 	Segment_Not_Present,
+// 	Stack_Fault,
+// 	General_Protection,
+// 	Page_Fault
+// };
 
 
 #endif

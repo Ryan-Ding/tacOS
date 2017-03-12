@@ -7,6 +7,8 @@
 #include "lib.h"
 #include "i8259.h"
 #include "debug.h"
+#include "keyboard.h"
+#include "rtc.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -144,11 +146,22 @@ entry (unsigned long magic, unsigned long addr)
 		ltr(KERNEL_TSS);
 	}
 
+
 	/* Init the PIC */
 	idt_init();
+
 	i8259_init();
-	//sti();
-	int a = 50 / 0;
+
+	clear();
+
+	//rtc_init();
+
+	//test_interrupts();
+	
+	keyboard_init();
+
+
+
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 

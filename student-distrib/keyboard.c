@@ -4,30 +4,40 @@
 
 
 #include "keyboard.h"
-#include "i8259.h"
-#include "lib.h"
+
 
 void
 keyboard_init(void){
+    set_intr_gate(KEYBOARD_IRQ + MASTER_IDT_OFFSET, keyboard_interrupt_handler);
     enable_irq(KEYBOARD_IRQ);
+    printf("keyboard init");
 }
 
 void
 keyboard_interrupt_handler(void){
+    printf(" inside keyboard handler");
+
+    /*int32_t i;
+    for (i=0; i < 80; i++) {
+        ((char *)(0xB8000))[i<<1]++;
+    }*/
+
     //disable interrupt from this device
     cli();
     
-    unsigned char input;
+    unsigned char scancode;
     while (1) {
-        input = inb(KEYBOARD_SCANCODE_PORT);
-        if (input>0)
-            break;
+        scancode = inb(KEYBOARD_SCANCODE_PORT);
+        if (scancode > 0) { break; }
     }
-    printk("Scan Code %x %s.\n",
-           (int) *((char *) scancode) & 0x7F,
-           *((char *) scancode) & 0x80 ? "Released" : "Pressed");
+
+    if( scancode == 0x24) { printf("J pressed"); }
+    // printk("Scan Code %x %s.\n",
+    //        (int) *((char *) scancode) & 0x7F,
+    //        *((char *) scancode) & 0x80 ? "Released" : "Pressed");
     
     send_eoi(KEYBOARD_IRQ);
+    
     //enable interrupt from this device
     sti();
     

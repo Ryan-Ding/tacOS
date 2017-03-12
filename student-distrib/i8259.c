@@ -16,20 +16,23 @@ uint8_t master_mask = 0xFF; /* IRQs 0-7 */
 uint8_t slave_mask = 0xFF; /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
+/*
+    Reference: http://wiki.osdev.org/8259_PIC
+ */
 void
 i8259_init(void)
 {
-    outb(ICW1,MASTER_8259_PORT);
-    outb(ICW1,SLAVE_8259_PORT);
+    outb(ICW1,MASTER_CMD);
+    outb(ICW1,SLAVE_CMD);
     
-    outb(ICW2_MASTER,MASTER_8259_PORT+1);
-    outb(ICW2_SLAVE, SLAVE_8259_PORT+1);
+    outb(ICW2_MASTER,MASTER_DATA);
+    outb(ICW2_SLAVE, SLAVE_DATA);
 
-    outb(ICW3_MASTER,MASTER_8259_PORT+1);
-    outb(ICW3_SLAVE ,SLAVE_8259_PORT+1);
+    outb(ICW3_MASTER,MASTER_DATA);
+    outb(ICW3_SLAVE ,SLAVE_DATA);
 
-    outb(ICW4,MASTER_8259_PORT+1);
-    outb(ICW4,SLAVE_8259_PORT+1);
+    outb(ICW4,MASTER_DATA);
+    outb(ICW4,SLAVE_DATA);
     
     enable_irq(2);// initialize with an used irq #2
 
@@ -37,52 +40,49 @@ i8259_init(void)
 }
 
 /* Enable (unmask) the specified IRQ */
+/*
+    Reference: http://wiki.osdev.org/8259_PIC
+ */
 void
-enable_irq(uint32_t irq_num)
-{
-    // 1111 1110 for irq
-    uint8_t mask = 0x01;
-    int i;
+disable_irq(uint32_t irq_num)
+{   
+    uint16_t port;
+    uint8_t value;
     
-    if (irq_num>=0 && irq_num<=7) {
-        //0000 0010 xor 1111 1111 -> 1111 1101
-        mask= mask<<irq_num;
-        master_mask ^ = mask;
-        
-        outb(master_mask, MASTER_8259_PORT+1);
+    if (irq_num >= 0 && irq_num <= 7) {
+        //0000 0001 -> 0000 0010
+        value = inb(MASTER_DATA) & (~(1 << irq_num));
+        port = MASTER_DATA;
+        // master_mask |= mask; 
     }
-    else if (irq_num>=8 && irq_num<=15){
-        mask = mask<<(irq_num-8);
-        slave_mask ^ =mask;
-        
-        outb(slave_mask, SLAVE_8259_PORT+1);
+    else if (irq_num>=8 && irq_num <= 15){
+        value = inb(SLAVE_DATA) & (~(1 << (irq_num - 8)));
+        port = SLAVE_DATA;
     }
-        
-    
+    outb(value, port);   
 }
 
 /* Disable (mask) the specified IRQ */
+/*
+    Reference: http://wiki.osdev.org/8259_PIC
+ */
 void
-disable_irq(uint32_t irq_num)
+enable_irq(uint32_t irq_num)
 {
-    // 0000 0001 for irq
-    uint8_t mask = 0x01;
-    int i;
+    uint16_t port;
+    uint8_t value;
     
-    if (irq_num>=0 && irq_num<=7) {
+    if (irq_num >= 0 && irq_num <= 7) {
         //0000 0001 -> 0000 0010
-        mask= mask<<irq_num;
-        master_mask |= mask;
-        
-        outb(master_mask, MASTER_8259_PORT+1);
+        value = inb(MASTER_DATA) | (1 << irq_num);
+        port = MASTER_DATA;
+        // master_mask |= mask; 
     }
-    else if (irq_num>=8 && irq_num <=15){
-        mask = mask<<(irq_num-8);
-        slave_mask| = mask;
-        
-        outb(slave_mask, SLAVE_8259_PORT+1);
+    else if (irq_num>=8 && irq_num <= 15){
+        value = inb(SLAVE_DATA) | (1 << (irq_num - 8));
+        port = SLAVE_DATA;
     }
-
+    outb(value, port);
 }
 
 
@@ -94,13 +94,11 @@ disable_irq(uint32_t irq_num)
 void
 send_eoi(uint32_t irq_num)
 {
-    if (irq_num>=0 && irq_num<=7) {
-        outb(EOI|irq_num,MASTER_8259_PORT);
-    }
-    
-    else if (irq_num >=8 && <=15){
-        outb (EOI|irq_num-8,SLAVE_8259_PORT);
-        outb(EOI+2,MASTER_8259_PORT);
-    }
+    if (irq_num >= 8) {
+        outb(EOI | (irq_num - 8), MASTER_CMD );
+        outb(EOI | SLAVE_INTERRUPT_NUM, SLAVE_CMD);
+    } else {
+        outb(EOI | irq_num, MASTER_CMD);        
+    }    
 }
 
