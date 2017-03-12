@@ -1,11 +1,16 @@
 /* filename: isr_wrapper.s */
+
+#define ASM     1
+#include "x86_desc.h"
+
 .globl   keyboard_interrupt_handler
 .align   4
+
  
 keyboard_interrupt_handler:
-    pushad
+    pushal
     cld /* C code following the sysV ABI requires DF to be clear on function entry */
-    call interrupt_handler
-    popad
+    call keyboard_interrupt
+    popal
     iret
 
