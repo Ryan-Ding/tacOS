@@ -34,8 +34,8 @@ i8259_init(void)
     outb(ICW4,MASTER_DATA);
     outb(ICW4,SLAVE_DATA);
 
-    outb(0xFF,MASTER_DATA);
-    outb(0xFF,SLAVE_DATA);
+    outb(master_mask,MASTER_DATA);
+    outb(slave_mask,SLAVE_DATA);
 
     enable_irq(SLAVE_INTERRUPT_NUM);// slave start at irq2
 
@@ -72,19 +72,17 @@ enable_irq(uint32_t irq_num)
 void
 disable_irq(uint32_t irq_num)
 {
-    uint16_t port;
+     uint16_t port;
     uint8_t value;
-
+    
     if (irq_num >= 0 && irq_num <= 7) {
         //0000 0001 -> 0000 0010
-        master_mask = master_mask | (1 << irq_num);
-        value = master_mask;
+        value = inb(MASTER_DATA) | (1 << irq_num);
         port = MASTER_DATA;
-        // master_mask |= mask;
+        // master_mask |= mask; 
     }
     else if (irq_num>=8 && irq_num <= 15){
-        slave_mask = slave_mask | (1 << (irq_num - 8));
-        value = slave_mask;
+        value = inb(SLAVE_DATA) | (1 << (irq_num - 8));
         port = SLAVE_DATA;
     }
     outb(value, port);

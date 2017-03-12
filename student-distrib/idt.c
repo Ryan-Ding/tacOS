@@ -136,7 +136,6 @@ void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg){
 	idt[gate].seg_selector = seg;
 	switch (type) {
 		case GATE_INTERRUPT:
-			printf("12345\n");
 			idt[gate].reserved0 = 0;
 			idt[gate].reserved1 = 1;
 			idt[gate].reserved2 = 1;

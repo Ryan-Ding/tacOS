@@ -9,12 +9,16 @@
 # include "lib.h"
 # include "rtc.h"
 # include "i8259.h"
+# include "isr_wrappers.h"
+# include "idt.h"
 
 void
 rtc_init(void){
     unsigned char prev;
     
     cli();
+
+    set_intr_gate(RTC_IRQ + SLAVE_IDT_OFFSET - MASTER_SIZE, rtc_interrupt_handler);
     
     // select register b and disable NMI
     outb(STATUS_REGISTER_B, NMI_PORT);
@@ -32,11 +36,13 @@ rtc_init(void){
 }
 
 void
-rtc_interrupt_handler(void){
+rtc_interrupt(void){
     cli();
     
     outb(STATUS_REGISTER_C,NMI_PORT);
     inb(CMOS_PORT);
+
+    printf("b");
     
     // test rtc interrupts ???? call lib.c
     //test_interrupts();

@@ -3,7 +3,7 @@
 
 #define STATUS_REGISTER_A 0x8A
 #define STATUS_REGISTER_B 0x8B
-#define STATUS_REGISTER_C 0x8C
+#define STATUS_REGISTER_C 0x0C
 
 #define NMI_PORT 0x70
 #define CMOS_PORT 0x71
@@ -11,6 +11,6 @@
 
 void rtc_init(void);
 
-void rtc_interrupt_handler(void);
+void rtc_interrupt(void);
 
 #endif

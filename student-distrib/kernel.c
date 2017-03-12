@@ -154,11 +154,11 @@ entry (unsigned long magic, unsigned long addr)
 
 	clear();
 
-	//rtc_init();
+	rtc_init();
 
 	//test_interrupts();
 
-	keyboard_init();
+	//keyboard_init();
 
 
 
