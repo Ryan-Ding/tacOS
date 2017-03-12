@@ -11,7 +11,7 @@
 
 /* Interrupt masks to determine which interrupts
  * are enabled and disabled */
-// a bit redundant but whatever
+
 uint8_t master_mask = 0xFF; /* IRQs 0-7 */
 uint8_t slave_mask = 0xFF; /* IRQs 8-15 */
 
@@ -34,7 +34,7 @@ i8259_init(void)
     outb(ICW4,MASTER_DATA);
     outb(ICW4,SLAVE_DATA);
     
-    enable_irq(2);// initialize with an used irq #2
+    enable_irq(SLAVE_INTERRUPT_NUM);// slave start at irq2
 
     
 }
