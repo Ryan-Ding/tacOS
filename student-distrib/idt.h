@@ -12,7 +12,7 @@ extern void idt_init();
 
 
 
-extern void Divde_Error_EXCEPTION();
+extern void Divide_Error_Exception();
 extern void Debug_Exception ();
 extern void NMI_Interupt();
 extern void Breakpoint_Exception();
@@ -37,7 +37,7 @@ void set_trap_gate(unsigned int n, void* addr);
 // void set_task_gate(unsigned int n, void* addr);
 
 void (* exception_handler[NUM_EXCEPTION]) = {
-	Divde_Error_EXCEPTION,
+	Divide_Error_Exception,
 	Debug_Exception, 
  	NMI_Interupt,
  	Breakpoint_Exception,

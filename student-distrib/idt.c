@@ -4,81 +4,109 @@
 
 
 //0
-void Divde_Error_EXCEPTION()
+void Divide_Error_Exception()
 {
 	printf("Divide Error\n");
-	// while (1)
-	// {}
+	 while (1)
+	 {}
 }
 //1
 void Debug_Exception ()
 {
 	printf("Debug\n");
+	while (1)
+	 {}
 }
 //2
 void NMI_Interupt()
 {
 	printf("NMI interrupt\n");
+	while (1)
+	 {}
 }
 //3
 void Breakpoint_Exception()
 {
 	printf("Breakpoint exception\n");
+	while (1)
+	 {}
 }
 //4
 void Overflow_Exception()
 {
 	printf("Overflow Exception\n");
+	while (1)
+	 {}
 }
 //5
 void BOUND()
 {
 	printf("BOUND\n");
+	while (1)
+	 {}
 }
 //6
 void Invalid_Opcode()
 {
 	printf("Invalid Opcode\n");
+	while (1)
+	 {}
 }
 //7
 void Device_Not_Available()
 {
 	printf("Device Not Avaliable\n");
+	while (1)
+	 {}
 }
 //8
 void Double_Fault()
 {
 	printf("Double Fault\n");
+	while (1)
+	 {}
 }
 //9
 void Coprocessor_Segment()
 {
 	printf("Coprocessor Segment\n");
+	while (1)
+	 {}
 }
 //10
 void Invalid_TSS()
 {
 	printf("Invalid TSS\n");
+	while (1)
+	 {}
 }
 //11
 void Segment_Not_Present()
 {
 	printf("Segment_Not_Present\n");
+	while (1)
+	 {}
 }
 //12
 void Stack_Fault()
 {
 	printf("Stack Fault\n");
+	while (1)
+	 {}
 }
 //13
 void General_Protection()
 {
 	printf("General Protection\n");
+	while (1)
+	 {}
 }
 //14
 void Page_Fault()
 {
 	printf("Page Fault\n");
+	while (1)
+	 {}
 }
 //15
 
