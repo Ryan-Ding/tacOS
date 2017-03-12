@@ -97,11 +97,13 @@ void idt_init() {
 		str[i].reserved0 = 0;	
 		str[i].size = 1;	
 		str[i].reserved1 = 1;	
-		str[i].reserved2 = 1;	
-		str[i].reserved3 = 0;
+		str[i].reserved2 = 1;
+		str[i].reserved3 = 1;
 		str[i].reserved4 = 0;
 		str[i].seg_selector = KERNEL_CS;
 		SET_IDT_ENTRY(str[i],exception_handler[i]);
+
+		idt[i] = str[i];
 	}
 
 }

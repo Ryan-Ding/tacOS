@@ -144,9 +144,13 @@ entry (unsigned long magic, unsigned long addr)
 		ltr(KERNEL_TSS);
 	}
 
+
+	idt_init();
+	int testing = 5/0;
+
 	/* Init the PIC */
 	i8259_init();
-	idt_init();
+
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 
