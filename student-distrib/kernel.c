@@ -145,8 +145,10 @@ entry (unsigned long magic, unsigned long addr)
 	}
 
 	/* Init the PIC */
-	i8259_init();
 	idt_init();
+	i8259_init();
+	sti();
+	int a = 50 / 0;
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 

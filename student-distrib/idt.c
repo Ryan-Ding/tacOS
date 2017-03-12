@@ -3,13 +3,12 @@
 #include "lib.h"
 
 
-
 //0
 void Divde_Error_EXCEPTION()
 {
 	printf("Divide Error\n");
-	while (1)
-	{}
+	// while (1)
+	// {}
 }
 //1
 void Debug_Exception ()
@@ -84,25 +83,71 @@ void Page_Fault()
 //15
 
 
+void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg){
+	idt[gate].present = 1;
+	idt[gate].dpl = dpl;
+	idt[gate].seg_selector = seg;
+	switch (type) {
+		case GATE_INTERRUPT:
+			idt[gate].reserved0 = 0;
+			idt[gate].reserved1 = 1;
+			idt[gate].reserved2 = 1;
+			idt[gate].reserved3 = 0;
+			idt[gate].reserved4 = 0;
+			break;
+		case GATE_SYSTEM:
+			idt[gate].reserved0 = 0;
+			idt[gate].reserved1 = 1;
+			idt[gate].reserved2 = 1;
+			idt[gate].reserved3 = 1;
+			idt[gate].reserved4 = 0;
+			break;
+		case GATE_TRAP:
+			idt[gate].reserved0 = 0;
+			idt[gate].reserved1 = 1;
+			idt[gate].reserved2 = 1;
+			idt[gate].reserved3 = 1;
+			idt[gate].reserved4 = 0;			
+			break;
+	}
+	SET_IDT_ENTRY(idt[gate], addr);
+}
 
 
+void set_intr_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_INTERRUPT, addr, 0, KERNEL_CS);
+}
+
+void set_system_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_SYSTEM, addr, 3, KERNEL_CS);
+}
+void set_system_intr_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_SYSTEM, addr, 3, KERNEL_CS);	
+}
+void set_trap_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_TRAP, addr, 0, KERNEL_CS);		
+}
 
 
 void idt_init() {
-	idt_desc_t str[num_vec];	
-	int i;
-	for (i=0;i<num_vec;i++) {
-		str[i].present = 1; 
-		str[i].dpl = 0;	
-		str[i].reserved0 = 0;	
-		str[i].size = 1;	
-		str[i].reserved1 = 1;	
-		str[i].reserved2 = 1;	
-		str[i].reserved3 = 0;
-		str[i].reserved4 = 0;
-		str[i].seg_selector = KERNEL_CS;
-		SET_IDT_ENTRY(str[i],exception_handler[i]);
+	int i; 
+	for (i = 0; i < NUM_EXCEPTION; ++i ) {
+		set_system_gate(i, exception_handler[i]);
 	}
+	// // idt_desc_t str[num_vec];	
+	// int i;
+	// for (i=0;i<num_vec;i++) {
+	// 	idt[i].present = 1; 
+	// 	idt[i].dpl = 0;	
+	// 	idt[i].reserved0 = 0;	
+	// 	idt[i].size = 1;	
+	// 	idt[i].reserved1 = 1;	
+	// 	idt[i].reserved2 = 1;	
+	// 	idt[i].reserved3 = 1;
+	// 	idt[i].reserved4 = 0;
+	// 	idt[i].seg_selector = KERNEL_CS;
+	// 	SET_IDT_ENTRY(idt[i],exception_handler[i]);
+	// }
 
 }
 
