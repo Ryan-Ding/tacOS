@@ -24,7 +24,7 @@ i8259_init(void)
 {
     outb(ICW1,MASTER_CMD);
     outb(ICW1,SLAVE_CMD);
-    
+
     outb(ICW2_MASTER,MASTER_DATA);
     outb(ICW2_SLAVE, SLAVE_DATA);
 
@@ -33,10 +33,10 @@ i8259_init(void)
 
     outb(ICW4,MASTER_DATA);
     outb(ICW4,SLAVE_DATA);
-    
+
     enable_irq(SLAVE_INTERRUPT_NUM);// slave start at irq2
 
-    
+
 }
 
 /* Enable (unmask) the specified IRQ */
@@ -45,21 +45,23 @@ i8259_init(void)
  */
 void
 enable_irq(uint32_t irq_num)
-{   
+{
     uint16_t port;
     uint8_t value;
-    
+
     if (irq_num >= 0 && irq_num <= 7) {
         //0000 0001 -> 0000 0010
-        value = inb(MASTER_DATA) & (~(1 << irq_num));
+        master_mask = master_mask & (~(1 << irq_num));
+        value = master_mask;
         port = MASTER_DATA;
-        // master_mask |= mask; 
+        // master_mask |= mask;
     }
     else if (irq_num>=8 && irq_num <= 15){
-        value = inb(SLAVE_DATA) & (~(1 << (irq_num - 8)));
+        slave_mask = slave_mask & (~(1 << (irq_num - 8)));
+        value = slave_mask;
         port = SLAVE_DATA;
     }
-    outb(value, port);   
+    outb(value, port);
 }
 
 /* Disable (mask) the specified IRQ */
@@ -71,22 +73,24 @@ disable_irq(uint32_t irq_num)
 {
     uint16_t port;
     uint8_t value;
-    
+
     if (irq_num >= 0 && irq_num <= 7) {
         //0000 0001 -> 0000 0010
-        value = inb(MASTER_DATA) | (1 << irq_num);
+        master_mask = master_mask | (1 << irq_num);
+        value = master_mask;
         port = MASTER_DATA;
-        // master_mask |= mask; 
+        // master_mask |= mask;
     }
     else if (irq_num>=8 && irq_num <= 15){
-        value = inb(SLAVE_DATA) | (1 << (irq_num - 8));
+        slave_mask = slave_mask | (1 << (irq_num - 8));
+        value = slave_mask;
         port = SLAVE_DATA;
     }
     outb(value, port);
 }
 
 
-/* Send end-of-interrupt signal for the specified IRQ 
+/* Send end-of-interrupt signal for the specified IRQ
  * EOI OR'd with
  * the interrupt number and sent out to the PIC
  * to declare the interrupt finished
@@ -98,7 +102,6 @@ send_eoi(uint32_t irq_num)
         outb(EOI | (irq_num - 8), MASTER_CMD );
         outb(EOI | SLAVE_INTERRUPT_NUM, SLAVE_CMD);
     } else {
-        outb(EOI | irq_num, MASTER_CMD);        
-    }    
+        outb(EOI | irq_num, MASTER_CMD);
+    }
 }
-
