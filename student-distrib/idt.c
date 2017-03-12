@@ -3,108 +3,179 @@
 #include "lib.h"
 
 
-
 //0
-void Divde_Error_EXCEPTION()
+void Divide_Error_Exception()
 {
 	printf("Divide Error\n");
-	while (1)
-	{}
+	 while (1)
+	 {}
 }
 //1
 void Debug_Exception ()
 {
 	printf("Debug\n");
+	while (1)
+	 {}
 }
 //2
 void NMI_Interupt()
 {
 	printf("NMI interrupt\n");
+	while (1)
+	 {}
 }
 //3
 void Breakpoint_Exception()
 {
 	printf("Breakpoint exception\n");
+	while (1)
+	 {}
 }
 //4
 void Overflow_Exception()
 {
 	printf("Overflow Exception\n");
+	while (1)
+	 {}
 }
 //5
 void BOUND()
 {
 	printf("BOUND\n");
+	while (1)
+	 {}
 }
 //6
 void Invalid_Opcode()
 {
 	printf("Invalid Opcode\n");
+	while (1)
+	 {}
 }
 //7
 void Device_Not_Available()
 {
 	printf("Device Not Avaliable\n");
+	while (1)
+	 {}
 }
 //8
 void Double_Fault()
 {
 	printf("Double Fault\n");
+	while (1)
+	 {}
 }
 //9
 void Coprocessor_Segment()
 {
 	printf("Coprocessor Segment\n");
+	while (1)
+	 {}
 }
 //10
 void Invalid_TSS()
 {
 	printf("Invalid TSS\n");
+	while (1)
+	 {}
 }
 //11
 void Segment_Not_Present()
 {
 	printf("Segment_Not_Present\n");
+	while (1)
+	 {}
 }
 //12
 void Stack_Fault()
 {
 	printf("Stack Fault\n");
+	while (1)
+	 {}
 }
 //13
 void General_Protection()
 {
 	printf("General Protection\n");
+	while (1)
+	 {}
 }
 //14
 void Page_Fault()
 {
 	printf("Page Fault\n");
+	while (1)
+	 {}
 }
 //15
 
 
+void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg){
+	idt[gate].present = 1;
+	idt[gate].dpl = dpl;
+	idt[gate].seg_selector = seg;
+	switch (type) {
+		case GATE_INTERRUPT:
+			idt[gate].reserved0 = 0;
+			idt[gate].reserved1 = 1;
+			idt[gate].reserved2 = 1;
+			idt[gate].reserved3 = 0;
+			idt[gate].reserved4 = 0;
+			break;
+		case GATE_SYSTEM:
+			idt[gate].reserved0 = 0;
+			idt[gate].reserved1 = 1;
+			idt[gate].reserved2 = 1;
+			idt[gate].reserved3 = 1;
+			idt[gate].reserved4 = 0;
+			break;
+		case GATE_TRAP:
+			idt[gate].reserved0 = 0;
+			idt[gate].reserved1 = 1;
+			idt[gate].reserved2 = 1;
+			idt[gate].reserved3 = 1;
+			idt[gate].reserved4 = 0;			
+			break;
+	}
+	SET_IDT_ENTRY(idt[gate], addr);
+}
 
 
+void set_intr_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_INTERRUPT, addr, 0, KERNEL_CS);
+}
+
+void set_system_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_SYSTEM, addr, 3, KERNEL_CS);
+}
+void set_system_intr_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_SYSTEM, addr, 3, KERNEL_CS);	
+}
+void set_trap_gate(unsigned int n, void* addr) {
+	set_gate(n, GATE_TRAP, addr, 0, KERNEL_CS);		
+}
 
 
 void idt_init() {
-	idt_desc_t str[num_vec];	
-	int i;
-	for (i=0;i<num_vec;i++) {
-		str[i].present = 1; 
-		str[i].dpl = 0;	
-		str[i].reserved0 = 0;	
-		str[i].size = 1;	
-		str[i].reserved1 = 1;	
-		str[i].reserved2 = 1;
-		str[i].reserved3 = 1;
-		str[i].reserved4 = 0;
-		str[i].seg_selector = KERNEL_CS;
-		SET_IDT_ENTRY(str[i],exception_handler[i]);
-
-		idt[i] = str[i];
+	int i; 
+	for (i = 0; i < NUM_EXCEPTION; ++i ) {
+		set_trap_gate(i, exception_handler[i]);
 	}
+	// // idt_desc_t str[num_vec];	
+	// int i;
+	// for (i=0;i<num_vec;i++) {
+	// 	idt[i].present = 1; 
+	// 	idt[i].dpl = 0;	
+	// 	idt[i].reserved0 = 0;	
+	// 	idt[i].size = 1;	
+	// 	idt[i].reserved1 = 1;	
+	// 	idt[i].reserved2 = 1;	
+	// 	idt[i].reserved3 = 1;
+	// 	idt[i].reserved4 = 0;
+	// 	idt[i].seg_selector = KERNEL_CS;
+	// 	SET_IDT_ENTRY(idt[i],exception_handler[i]);
+	// }
 
 }
 

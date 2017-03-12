@@ -1,13 +1,18 @@
 #ifndef _IDT_H
 #define _IDT_H
 
-#define num_vec 16
+
+#define GATE_INTERRUPT 0
+#define GATE_TRAP 1
+#define GATE_SYSTEM 2
+
+#define NUM_EXCEPTION 16
 
 extern void idt_init();
 
 
 
-extern void Divde_Error_EXCEPTION();
+extern void Divide_Error_Exception();
 extern void Debug_Exception ();
 extern void NMI_Interupt();
 extern void Breakpoint_Exception();
@@ -24,10 +29,15 @@ extern void General_Protection();
 extern void Page_Fault();
 //15
 
+void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg);
+void set_intr_gate(unsigned int n, void* addr);
+void set_system_gate(unsigned int n, void* addr);
+// void set_system_intr_gate(unsigned int n, void* addr);
+void set_trap_gate(unsigned int n, void* addr);
+// void set_task_gate(unsigned int n, void* addr);
 
-
-void (* exception_handler[num_vec]) = {
-	Divde_Error_EXCEPTION,
+void (* exception_handler[NUM_EXCEPTION]) = {
+	Divide_Error_Exception,
 	Debug_Exception, 
  	NMI_Interupt,
  	Breakpoint_Exception,
