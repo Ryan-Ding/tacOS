@@ -132,7 +132,7 @@ void set_trap_gate(unsigned int n, void* addr) {
 void idt_init() {
 	int i; 
 	for (i = 0; i < NUM_EXCEPTION; ++i ) {
-		set_system_gate(i, exception_handler[i]);
+		set_trap_gate(i, exception_handler[i]);
 	}
 	// // idt_desc_t str[num_vec];	
 	// int i;
