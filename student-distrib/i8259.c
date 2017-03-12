@@ -44,7 +44,7 @@ i8259_init(void)
     Reference: http://wiki.osdev.org/8259_PIC
  */
 void
-disable_irq(uint32_t irq_num)
+enable_irq(uint32_t irq_num)
 {   
     uint16_t port;
     uint8_t value;
@@ -67,7 +67,7 @@ disable_irq(uint32_t irq_num)
     Reference: http://wiki.osdev.org/8259_PIC
  */
 void
-enable_irq(uint32_t irq_num)
+disable_irq(uint32_t irq_num)
 {
     uint16_t port;
     uint8_t value;

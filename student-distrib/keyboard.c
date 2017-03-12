@@ -14,7 +14,7 @@ keyboard_init(void){
 }
 
 void
-keyboard_interrupt_handler(void){
+keyboard_interrupt(void){
     printf(" inside keyboard handler");
 
     /*int32_t i;
