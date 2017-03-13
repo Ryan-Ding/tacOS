@@ -1,6 +1,31 @@
 #include "idt.h"
-#include "x86_desc.h"
-#include "lib.h"
+
+
+
+void (* exception_handler[NUM_EXCEPTION]) = {
+	Divide_Error_Exception,
+	Debug_Exception, 
+ 	NMI_Interupt,
+ 	Breakpoint_Exception,
+ 	Overflow_Exception,
+ 	BOUND,
+	Invalid_Opcode,
+	Device_Not_Available,
+	Double_Fault,
+	Coprocessor_Segment,
+	Invalid_TSS,
+	Segment_Not_Present,
+	Stack_Fault,
+	General_Protection,
+	Page_Fault
+};
+
+void System_Call_Interrupt()
+{
+	printf("System call\n");
+	while (1)
+	{}
+}
 
 
 //0
@@ -115,6 +140,7 @@ void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg){
 	idt[gate].present = 1;
 	idt[gate].dpl = dpl;
 	idt[gate].seg_selector = seg;
+	idt[gate].size = 1;
 	switch (type) {
 		case GATE_INTERRUPT:
 			idt[gate].reserved0 = 0;
@@ -162,21 +188,7 @@ void idt_init() {
 	for (i = 0; i < NUM_EXCEPTION; ++i ) {
 		set_trap_gate(i, exception_handler[i]);
 	}
-	// // idt_desc_t str[num_vec];	
-	// int i;
-	// for (i=0;i<num_vec;i++) {
-	// 	idt[i].present = 1; 
-	// 	idt[i].dpl = 0;	
-	// 	idt[i].reserved0 = 0;	
-	// 	idt[i].size = 1;	
-	// 	idt[i].reserved1 = 1;	
-	// 	idt[i].reserved2 = 1;	
-	// 	idt[i].reserved3 = 1;
-	// 	idt[i].reserved4 = 0;
-	// 	idt[i].seg_selector = KERNEL_CS;
-	// 	SET_IDT_ENTRY(idt[i],exception_handler[i]);
-	// }
-
+	set_system_intr_gate(0x80,System_Call_Interrupt);
 }
 
 

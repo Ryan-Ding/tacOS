@@ -12,6 +12,18 @@
 #define MASTER_8259_PORT 0x20
 #define SLAVE_8259_PORT  0xA0
 
+
+#define MASTER_CMD MASTER_8259_PORT
+#define MASTER_DATA (MASTER_8259_PORT + 1)
+#define SLAVE_CMD SLAVE_8259_PORT
+#define SLAVE_DATA (SLAVE_8259_PORT + 1)
+
+#define SLAVE_INTERRUPT_NUM 2
+#define MASTER_IDT_OFFSET 0x20
+#define SLAVE_IDT_OFFSET 0x28
+#define MASTER_SIZE 8
+
+
 /* Initialization control words to init each PIC.
  * See the Intel manuals for details on the meaning
  * of each word */
