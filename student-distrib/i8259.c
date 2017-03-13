@@ -98,8 +98,8 @@ void
 send_eoi(uint32_t irq_num)
 {
     if (irq_num >= 8) {
-        outb(EOI | (irq_num - 8), MASTER_CMD );
-        outb(EOI | SLAVE_INTERRUPT_NUM, SLAVE_CMD);
+        outb(EOI | (irq_num - 8), SLAVE_CMD );
+        outb(EOI | SLAVE_INTERRUPT_NUM, MASTER_CMD);
     } else {
         outb(EOI | irq_num, MASTER_CMD);
     }

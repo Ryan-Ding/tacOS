@@ -19,6 +19,7 @@ rtc_init(void){
     cli();
 
     set_intr_gate(RTC_IRQ + SLAVE_IDT_OFFSET - MASTER_SIZE, rtc_interrupt_handler);
+    enable_irq(RTC_IRQ);
     
     // select register b and disable NMI
     outb(STATUS_REGISTER_B, NMI_PORT);
@@ -42,7 +43,7 @@ rtc_interrupt(void){
     outb(STATUS_REGISTER_C,NMI_PORT);
     inb(CMOS_PORT);
 
-    printf("b");
+    printf("b\n");
     
     // test rtc interrupts ???? call lib.c
     //test_interrupts();
