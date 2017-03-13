@@ -158,7 +158,7 @@ entry (unsigned long magic, unsigned long addr)
 
 	//test_interrupts();
 
-	//keyboard_init();
+	keyboard_init();
 
 
 
