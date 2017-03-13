@@ -12,6 +12,12 @@
 # include "isr_wrappers.h"
 # include "idt.h"
 
+/*
+ * rtc_init
+ * input: NONE
+ * description: This function initialize interrupt handler for rtc
+ */
+
 void
 rtc_init(void){
     unsigned char prev;
@@ -19,7 +25,6 @@ rtc_init(void){
     cli();
 
     set_intr_gate(RTC_IRQ + SLAVE_IDT_OFFSET - MASTER_SIZE, rtc_interrupt_handler);
-    enable_irq(RTC_IRQ);
     
     // select register b and disable NMI
     outb(STATUS_REGISTER_B, NMI_PORT);
@@ -36,18 +41,20 @@ rtc_init(void){
     sti();
 }
 
+
+/*
+ * rtc_interrupt
+ * input: NONE
+ * description: This function handles interrupt from the rtc
+ */
+
 void
 rtc_interrupt(void){
     cli();
     
-    outb(STATUS_REGISTER_C,NMI_PORT);
-    inb(CMOS_PORT);
+    outb(STATUS_REGISTER_C,NMI_PORT); // select register c
+    inb(CMOS_PORT); // throw away contents
 
-    printf("b\n");
-    
-    // test rtc interrupts ???? call lib.c
-    //test_interrupts();
-    
     send_eoi(RTC_IRQ);
     
     sti();

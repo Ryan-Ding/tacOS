@@ -9,7 +9,9 @@
 #define GATE_TRAP 1
 #define GATE_SYSTEM 2
 
-#define NUM_EXCEPTION 16
+#define NUM_EXCEPTION 20
+#define SYSTEM_INT 0x80
+#define RESERVE_EXC 15
 
 extern void idt_init();
 
@@ -30,6 +32,13 @@ extern void Segment_Not_Present();
 extern void Stack_Fault();
 extern void General_Protection();
 extern void Page_Fault();
+extern void Floating_Point();
+extern void Alignment_Check();
+extern void Machine_Check_Exception();
+extern void SIMD_Floating();
+
+extern void Reserved_Int();
+
 //15
 
 void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg);
@@ -40,23 +49,6 @@ void set_trap_gate(unsigned int n, void* addr);
 // void set_task_gate(unsigned int n, void* addr);
 
 void (* exception_handler[NUM_EXCEPTION]);
-//  = {
-// 	Divide_Error_Exception,
-// 	Debug_Exception, 
-//  	NMI_Interupt,
-//  	Breakpoint_Exception,
-//  	Overflow_Exception,
-//  	BOUND,
-// 	Invalid_Opcode,
-// 	Device_Not_Available,
-// 	Double_Fault,
-// 	Coprocessor_Segment,
-// 	Invalid_TSS,
-// 	Segment_Not_Present,
-// 	Stack_Fault,
-// 	General_Protection,
-// 	Page_Fault
-// };
 
 
 #endif

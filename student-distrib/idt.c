@@ -17,8 +17,48 @@ void (* exception_handler[NUM_EXCEPTION]) = {
 	Segment_Not_Present,
 	Stack_Fault,
 	General_Protection,
-	Page_Fault
+	Page_Fault,
+	Reserved_Int,
+	Floating_Point,
+	Alignment_Check,
+	Machine_Check_Exception,
+	SIMD_Floating
 };
+
+void SIMD_Floating()
+{
+	printf("SIMD Floating Point Exception\n");
+	while (1)
+	{}
+}
+
+
+void Machine_Check_Exception()
+{
+	printf("Machine Check Exception\n");
+	while (1)
+	{}
+}
+
+void Alignment_Check()
+{
+	printf("Alignment Check Exception\n");
+	while (1)
+	{}
+}
+
+void Floating_Point()
+{
+	printf("Floating Point Error\n");
+	while(1)
+	{}
+}
+
+
+void Reserved_Int()
+{
+
+}
 
 void System_Call_Interrupt()
 {
@@ -26,7 +66,6 @@ void System_Call_Interrupt()
 	while (1)
 	{}
 }
-
 
 //0
 void Divide_Error_Exception()
@@ -140,7 +179,7 @@ void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg){
 	idt[gate].present = 1;
 	idt[gate].dpl = dpl;
 	idt[gate].seg_selector = seg;
-	idt[gate].size = 1;
+    idt[gate].size = 1;
 	switch (type) {
 		case GATE_INTERRUPT:
 			idt[gate].reserved0 = 0;
@@ -186,13 +225,8 @@ void set_trap_gate(unsigned int n, void* addr) {
 void idt_init() {
 	int i; 
 	for (i = 0; i < NUM_EXCEPTION; ++i ) {
-		set_trap_gate(i, exception_handler[i]);
+		if (i != RESERVE_EXC) //Ignore the reserved exception
+			set_trap_gate(i, exception_handler[i]);
 	}
-	set_system_intr_gate(0x80,System_Call_Interrupt);
+	set_system_intr_gate(SYSTEM_INT,System_Call_Interrupt);
 }
-
-
-
-
-
-
