@@ -5,14 +5,14 @@
 void create_empty_page_directory() {
 	int i;
 	for (i = 0; i < PAGE_DIRECTORY_NUM; ++i) {
-		page_directory[i] = 0x00000002; // set present bit to be 10 (meaning not present)
+		page_directory[i] = NOT_PRESENT_MASK; // set present bit to be 10 (meaning not present)
 	}
 }
 
 void create_empty_page_table() {
 	int i;
 	for (i = 0; i < PAGE_TABLE_NUM; ++i) {
-		page_table[i] = (i * 0x1000) |03; // leaving trailing 12 bits for starting addresses to be 0
+		page_table[i] = (i * 0x1000) | NOT_PRESENT_MASK; // leaving trailing 12 bits for starting addresses to be 0
 	}
 }
 
@@ -25,7 +25,7 @@ void init_kernel_page() {
 }
 
 void add_video_memory(uint32_t page_table_idx) {
-	page_table[page_table_idx] = ((unsigned int) (page_table + page_table_idx) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present 	
+	page_table[page_table_idx] = ((unsigned int) (page_table[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present 	
 }
 
 void load_page_directory(unsigned int* page_dir) {
@@ -63,10 +63,12 @@ void paging_init() {
 	create_empty_page_table();
 	init_first_page_directory_entry();
 	init_kernel_page();
-	load_page_directory(page_directory);
-	enable_paging();
-	enable_mix_paging_size();
 	add_video_memory(VIDEO_PAGE_TABLE_IDX);	
+	
+	load_page_directory(page_directory);
+	enable_mix_paging_size();
+	enable_paging();
+	
 }
 
 

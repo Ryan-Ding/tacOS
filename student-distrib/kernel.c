@@ -173,6 +173,9 @@ entry (unsigned long magic, unsigned long addr)
 	printf("Enabling Interrupts\n");
 	sti();
 
+	//int a = 50 / 0;
+	 int* a = (NULL);
+	 int b = *a;
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */
