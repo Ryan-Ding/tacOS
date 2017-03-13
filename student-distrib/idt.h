@@ -9,6 +9,9 @@
 #define GATE_TRAP 1
 #define GATE_SYSTEM 2
 
+#define IDL0 0
+#define IDL3 3
+
 #define NUM_EXCEPTION 20
 #define SYSTEM_INT 0x80
 #define RESERVE_EXC 15
