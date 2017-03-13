@@ -9,8 +9,10 @@
 #define CMOS_PORT 0x71
 #define RTC_IRQ 8
 
+// initialize rtc
 void rtc_init(void);
 
+// real interrupt handler for rtc
 void rtc_interrupt(void);
 
 #endif

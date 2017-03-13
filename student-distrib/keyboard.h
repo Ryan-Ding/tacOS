@@ -11,9 +11,10 @@
 #define KEYBOARD_IRQ 1
 
 
-
+// initialize keyboard interrupt handler
 extern void keyboard_init(void);
 
+// real keyboard interrupt handler
 extern void keyboard_interrupt(void);
 
 

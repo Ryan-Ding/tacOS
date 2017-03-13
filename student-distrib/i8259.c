@@ -5,9 +5,6 @@
 #include "i8259.h"
 #include "lib.h"
 
-/* * Reference
- *:ftp://ftp.csc.fi/pub/Linux/kernel/v2.4/patch-html/patch-2.4.6/linux_arch_mips_kernel_i8259.c.html
- */
 
 /* Interrupt masks to determine which interrupts
  * are enabled and disabled */
@@ -19,9 +16,18 @@ uint8_t slave_mask = 0xFF; /* IRQs 8-15 */
 /*
     Reference: http://wiki.osdev.org/8259_PIC
  */
+
+/*
+ * i8259_init
+ * input: NONE
+ * description: This function initialize the master and slave 8259 chips
+ */
+
 void
 i8259_init(void)
 {
+    // send different ICWs to corresponding place for slave and master
+    
     outb(ICW1,MASTER_CMD);
     outb(ICW1,SLAVE_CMD);
 
@@ -34,18 +40,20 @@ i8259_init(void)
     outb(ICW4,MASTER_DATA);
     outb(ICW4,SLAVE_DATA);
 
-    outb(master_mask,MASTER_DATA);
+    outb(master_mask,MASTER_DATA); // initialize the mask for master and slave
     outb(slave_mask,SLAVE_DATA);
 
-    enable_irq(SLAVE_INTERRUPT_NUM);// slave start at irq2
+    enable_irq(SLAVE_INTERRUPT_NUM);// slave is designed to start at line 2
 
 
 }
 
-/* Enable (unmask) the specified IRQ */
 /*
-    Reference: http://wiki.osdev.org/8259_PIC
+ * enable_irq
+ * input: number of the interrupt location on 8259
+ * description: Enable (unmask) the specified IRQ
  */
+
 void
 enable_irq(uint32_t irq_num)
 {
@@ -53,10 +61,8 @@ enable_irq(uint32_t irq_num)
     uint8_t value;
     
     if (irq_num >= 0 && irq_num <= 7) {
-        //0000 0001 -> 0000 0010
         value = inb(MASTER_DATA) & (~(1 << irq_num));
         port = MASTER_DATA;
-        // master_mask |= mask; 
     }
     else if (irq_num>=8 && irq_num <= 15){
         value = inb(SLAVE_DATA) & (~(1 << (irq_num - 8)));
@@ -65,10 +71,12 @@ enable_irq(uint32_t irq_num)
     outb(value, port);
 }
 
-/* Disable (mask) the specified IRQ */
 /*
-    Reference: http://wiki.osdev.org/8259_PIC
+ * disable_irq
+ * input: number of the interrupt location on 8259
+ * description: disable (mask) the specified IRQ
  */
+
 void
 disable_irq(uint32_t irq_num)
 {
@@ -76,10 +84,8 @@ disable_irq(uint32_t irq_num)
     uint8_t value;
     
     if (irq_num >= 0 && irq_num <= 7) {
-        //0000 0001 -> 0000 0010
         value = inb(MASTER_DATA) | (1 << irq_num);
         port = MASTER_DATA;
-        // master_mask |= mask; 
     }
     else if (irq_num>=8 && irq_num <= 15){
         value = inb(SLAVE_DATA) | (1 << (irq_num - 8));
@@ -89,16 +95,19 @@ disable_irq(uint32_t irq_num)
 }
 
 
-/* Send end-of-interrupt signal for the specified IRQ
- * EOI OR'd with
- * the interrupt number and sent out to the PIC
+/* 
+ * send_eoi 
+ * Input: number of the interrupt location on 8259
+ * Description: Send end-of-interrupt signal for the specified IRQ
+ * EOI OR'd with the interrupt number and sent out to the PIC
  * to declare the interrupt finished
  */
+
 void
 send_eoi(uint32_t irq_num)
 {
     if (irq_num >= 8) {
-        outb(EOI | (irq_num - 8), SLAVE_CMD );
+        outb(EOI | (irq_num - 8), SLAVE_CMD);
         outb(EOI | SLAVE_INTERRUPT_NUM, MASTER_CMD);
     } else {
         outb(EOI | irq_num, MASTER_CMD);
