@@ -18,7 +18,7 @@
 
 extern void idt_init();
 
-
+//list of exception handlers
 
 extern void Divide_Error_Exception();
 extern void Debug_Exception ();

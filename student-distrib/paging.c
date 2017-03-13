@@ -125,15 +125,14 @@ void enable_mix_paging_size() {
  */
 
 void paging_init() {
-	create_empty_page_directory();
+	create_empty_page_directory(); //set up PDE/PTE
 	create_empty_page_table();
-	init_first_page_directory_entry();
-	init_kernel_page();
-	add_video_memory(VIDEO_PAGE_TABLE_IDX);	
-	
-	load_page_directory(page_directory);
-	enable_mix_paging_size();
-	enable_paging();
+	init_first_page_directory_entry();	//initialize first page directory entry
+	init_kernel_page();	//initialize second PDE
+	add_video_memory(VIDEO_PAGE_TABLE_IDX);	//set up video memory
+	load_page_directory(page_directory);	//load page directory
+	enable_mix_paging_size();	//enable page directory to be varied sized
+	enable_paging();	//enable paging finally
 	
 }
 
