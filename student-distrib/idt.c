@@ -1,6 +1,6 @@
 #include "idt.h"
 
-
+// listing the exception
 
 void (* exception_handler[NUM_EXCEPTION]) = {
 	Divide_Error_Exception,

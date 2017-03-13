@@ -27,6 +27,7 @@ uint32_t page_directory[PAGE_DIRECTORY_NUM] __attribute__((aligned(PAGE_DIRECTOR
 uint32_t page_table[PAGE_TABLE_NUM] __attribute__((aligned(PAGE_TABLE_SIZE)));
 //uint32_t first_page_table[1024] __attribute__((aligned(4096)));
 
+// functions to initialize page directory and page table
 extern void create_empty_page_directory();
 extern void create_empty_page_table();
 extern void init_first_page_directory_entry();

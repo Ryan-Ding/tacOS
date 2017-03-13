@@ -148,19 +148,22 @@ entry (unsigned long magic, unsigned long addr)
 	}
 
 
-	/* Init the PIC */
+	/* Init the PIC, 8259*/
 	idt_init();
 
 	i8259_init();
 
 	clear();
-
+    
+    /* init the rtc */
 	rtc_init();
 
 	//test_interrupts();
 
+    /* init the keyboard */
 	keyboard_init();
 
+    /* init paging */
 	paging_init();
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
