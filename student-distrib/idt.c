@@ -20,7 +20,12 @@ void (* exception_handler[NUM_EXCEPTION]) = {
 	Page_Fault
 };
 
-
+void System_Call_Interrupt()
+{
+    printf("System call\n");
+    while (1)
+    {}
+}
 
 //0
 void Divide_Error_Exception()
@@ -182,6 +187,7 @@ void idt_init() {
 	for (i = 0; i < NUM_EXCEPTION; ++i ) {
 		set_trap_gate(i, exception_handler[i]);
 	}
+    set_system_intr_gate(0x80,System_Call_Interrupt);
 
 }
 
