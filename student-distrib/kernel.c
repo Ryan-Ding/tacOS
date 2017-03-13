@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "paging.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -160,7 +161,7 @@ entry (unsigned long magic, unsigned long addr)
 
 	keyboard_init();
 
-
+	paging_init();
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
