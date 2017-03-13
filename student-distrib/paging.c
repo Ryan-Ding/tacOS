@@ -101,7 +101,7 @@ void enable_paging() {
 /*
  * enable_mix_paging
  * input: NONE
- * description: ???
+ * description: enable  mixed paging for 4mb and 4kb at the same time
  * side effect: none
  */
 
