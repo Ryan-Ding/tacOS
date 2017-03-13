@@ -10,17 +10,12 @@ void
 keyboard_init(void){
     set_intr_gate(KEYBOARD_IRQ + MASTER_IDT_OFFSET, keyboard_interrupt_handler);
     enable_irq(KEYBOARD_IRQ);
-    printf("keyboard init \n");
+    // printf("keyboard init \n");
 }
 
 void
 keyboard_interrupt(void){
-    printf(" inside keyboard handler \n");
-
-    /*int32_t i;
-    for (i=0; i < 80; i++) {
-        ((char *)(0xB8000))[i<<1]++;
-    }*/
+    // printf(" inside keyboard handler \n");
 
     //disable interrupt from this device
     cli();

@@ -43,7 +43,7 @@ rtc_interrupt(void){
     outb(STATUS_REGISTER_C,NMI_PORT);
     inb(CMOS_PORT);
 
-    printf("b\n");
+    // printf("b\n");
     
     // test rtc interrupts ???? call lib.c
     //test_interrupts();
