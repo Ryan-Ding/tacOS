@@ -180,6 +180,12 @@ entry (unsigned long magic, unsigned long addr)
 
 	//test_interrupts();
 
+
+	//printf("Stop\n");
+	//rtc_close();
+	//printf("Open\n");
+	rtc_write(0x0E);
+
 	//int a = 50 / 0;
 	 //int* a = (NULL);
 	 //int b = *a;
