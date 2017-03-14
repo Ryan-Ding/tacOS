@@ -24,6 +24,8 @@ rtc_init(void){
     
     cli();
 
+    enable_irq(RTC_IRQ);
+
     set_intr_gate(RTC_IRQ + SLAVE_IDT_OFFSET - MASTER_SIZE, rtc_interrupt_handler);
     
     // select register b and disable NMI
@@ -54,6 +56,8 @@ rtc_interrupt(void){
     
     outb(STATUS_REGISTER_C,NMI_PORT); // select register c
     inb(CMOS_PORT); // throw away contents
+
+    //printf("b");
 
     send_eoi(RTC_IRQ);
     
