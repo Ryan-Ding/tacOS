@@ -5,37 +5,98 @@
 
 #include "keyboard.h"
 
+
+int curr_case = 0;
+int ctrl_on = 0;
 // scancode lookup table used for screen ecoing
-unsigned char scancode_set[128] =
+static unsigned char scancode_set[CASE_NUM][KEY_NUM] =
+// regular
 {
-    '\0',  0x1B, '1', '2', '3', '4', '5', '6', '7', '8',
+    '\0','\0', '1', '2', '3', '4', '5', '6', '7', '8',
     '9', '0', '-', '=',
-    0x08, /* backspace */
-    0x09, /* tab */
-    'q', 'w', 'e', 'r','t', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',/* enter */
-    0xA2,	/* left Control */
+    '\0', /* backspace */
+    '\0', /* tab */
+    'q', 'w', 'e', 'r','t', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0',/* enter */
+    '\0',	/* left Control */
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
     ';','\'', '`',
-    0xA0,/* left shift */
+    '\0',/* left shift */
     '\\', 'z', 'x', 'c', 'v', 'b', 'n',
     'm', ',', '.', '/',
-    0xA1,/* right shift */
+    '\0',/* right shift */
     '*',
-    0x12,	/* alt */
+    '\0',	/* alt */
     ' ',	/* space */
-    0x14,	/* caps lock */
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',/* F1 ... F10 */
-    '\0',	/* num lock */
-    '\0',	/* scroll Lock */
-    '\0', '\0', '\0',	/* keypad 7 8 9 */
-    '-',
-    '\0', '\0', '\0',	/* keypad 4 5 9 */
-    '+',
-    '\0', '\0', '\0', '\0', '\0', /* keypad 1 2 3 0 . */
-    '\0', '\0', '\0',	/* not used keys */
-    '\0', '\0',	/* F11 F12 Key */
-    '\0',	/* undefined keys*/
+    '\0',	/* caps lock */
+},
+// Caps only
+{
+    '\0','\0', '1', '2', '3', '4', '5', '6', '7', '8',
+    '9', '0', '-', '=',
+    '\0', /* backspace */
+    '\0', /* tab */
+    'Q', 'W', 'E', 'R','T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\0',/* enter */
+    '\0',	/* left Control */
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
+    ';','\'', '`',
+    '\0',/* left shift */
+    '\\', 'Z', 'X', 'C', 'V', 'B', 'N',
+    'M', ',', '.', '/',
+    '\0',/* right shift */
+    '*',
+    '\0',	/* alt */
+    ' ',	/* space */
+    '\0',	/* caps lock */
+},
+// SHIFT ONLY
+{
+    '\0','\0', '!', '@', '#', '$', '%', '^', '&', '*',
+    '(', ')', '_', '+',
+    '\0', /* backspace */
+    '\0', /* tab */
+    'Q', 'W', 'E', 'R','T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\0',/* enter */
+    '\0',	/* left Control */
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
+    ':','\"', '~',
+    '\0',/* left shift */
+    '|', 'Z', 'X', 'C', 'V', 'B', 'N',
+    'M', '<', '>', '?',
+    '\0',/* right shift */
+    '*',
+    '\0',	/* alt */
+    ' ',	/* space */
+    '\0',	/* caps lock */
+},
+// SHIFT AND CAPS, the effect is design choice, differs on different OS
+{
+    '\0','\0', '!', '@', '#', '$', '%', '^', '&', '*',
+    '(', ')', '_', '+', '\0', '\0',
+    'q', 'w', 'e', 'r','t', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', \0',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':','\"', '~','\0',
+    '|', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', '\0','*','\0',
+    ' ', '\0',
 };
+
+
+
+void
+handle_press(unsigned char scancode){
+    // only handle keys that we've defined
+    if (scancode >=KEY_NUM)
+        return;
+    unsigned char key_pressed = scancode_set[curr_case][scancode];
+    
+    if (ctrl_on && key_pressed == 'l' ) {
+        clear(); // clear video memory
+        set_cursor(0,0);
+    }
+    else if (buffer_idx<BUFFER_SIZE) {
+        buffer_key[buffer_idx]=key_pressed;
+        putc(key_pressed);
+    }
+}
+
+
 
 /* 
  * keyboard_init
@@ -50,8 +111,6 @@ keyboard_init(void){
     
     // enable keyboard irq line
     enable_irq(KEYBOARD_IRQ);
-    
-    //printf("keyboard init \n");
 }
 
 /*
@@ -62,9 +121,6 @@ keyboard_init(void){
 
 void
 keyboard_interrupt(void){
-    //printf(" inside keyboard handler \n");
-
-
     //disable interrupt from this device
     cli();
 
@@ -76,10 +132,52 @@ keyboard_interrupt(void){
         if (scancode > 0) { break; }
     }
 
+    // case 0 : regurlar 1: caps only 2: shift only 3: caps and shift
+    switch (scancode) {
+        
+        case CAPS:
+            if (curr_case == CASE_CAPS)
+                curr_case = CASE_REG;
+            else if (curr_case == CASE_BOTH)
+                curr_case = CASE_SHIFT;
+            else if (curr_case == CASE_SHIFT)
+                curr_case = CASE_BOTH;
+            else
+                curr_case = CASE_CAPS;
+            break;
+        case BACKSPACE:
+            if (buffer_idx>=0) {
+                delete_content(); // function to be written in lib.c
+                buffer_key[buffer_idx]= KEY_EMPTY;
+                buffer_idx--;
+            }
+            
+            break;
+        case LEFT_SHIFT_PRESSED:
+            curr_case = (curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
+            break;
+        case RIGHT_SHIFT_PRESSED:
+            curr_case = (curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
+            break;
+        case CTRL_PRESSED:
+            ctrl_on = 1;
+            break;
+        case LEFT_SHIFT_RELEASED:
+            curr_case = (curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
+            break;
+        case RIGHT_SHIFT_RELEASED:
+            curr_case = (curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
+            break;
+        case CTRL_RELEASED:
+            ctrl_on = 0;
+            break;
+        default:
+            handle_press(scancode);
+            break;
+    }
     // only print when it is pressed instead of released
-    if( scancode < 0x80) { printf("%c pressed \n",scancode_set[scancode]); }
+    //if( scancode < 0x80) { printf("%c pressed \n",scancode_set[scancode]); }
     
-
     send_eoi(KEYBOARD_IRQ);
 
     //enable interrupt from this device

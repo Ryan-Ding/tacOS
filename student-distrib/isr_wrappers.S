@@ -15,12 +15,22 @@
 
 // assembly wrapper to call c function to deal with the interrupt
 
+/*  keyboard_interrupt_handler
+    description: assembly wrapper to call c function to deal with the interrupt
+    side effect: save all the registers before calling interrupt 
+ */
+
 keyboard_interrupt_handler:
     pushal
     cld /* C code following the sysV ABI requires DF to be clear on function entry */
     call keyboard_interrupt
     popal
     iret
+
+/*  rtc_interrupt_handler
+    description: assembly wrapper to call c function to deal with the interrupt
+    side effect: save all the registers before calling rtc interrupt handler
+ */
 
 rtc_interrupt_handler:
     pushal

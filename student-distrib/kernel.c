@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "paging.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -147,20 +148,25 @@ entry (unsigned long magic, unsigned long addr)
 	}
 
 
-	/* Init the PIC */
+	/* Init the PIC, 8259*/
 	idt_init();
+	lidt(idt_desc_ptr);
 
 	i8259_init();
 
 	clear();
-
+    
+    /* init the rtc */
 	rtc_init();
 
-	//test_interrupts();
+	
+	
 
+    /* init the keyboard */
 	keyboard_init();
 
-
+    /* init paging */
+	paging_init();
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
@@ -172,6 +178,17 @@ entry (unsigned long magic, unsigned long addr)
 	printf("Enabling Interrupts\n");
 	sti();
 
+	//test_interrupts();
+
+
+	//printf("Stop\n");
+	//rtc_close();
+	//printf("Open\n");
+	rtc_write(7);
+
+	//int a = 50 / 0;
+	 //int* a = (NULL);
+	 //int b = *a;
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */
