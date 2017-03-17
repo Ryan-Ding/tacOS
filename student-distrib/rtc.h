@@ -23,10 +23,10 @@ void rtc_init(void);
 
 // real interrupt handler for rtc
 void rtc_interrupt(void);
-int rtc_read();
 
-void rtc_close();
+int rtc_read();
+int rtc_close();
 int rtc_write(unsigned int frequency);
-void rtc_open();
+int rtc_open();
 
 #endif

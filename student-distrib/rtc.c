@@ -49,7 +49,7 @@ rtc_init(void){
 }
 
 
-void 
+int
 rtc_open(void)
 {
 
@@ -60,27 +60,23 @@ rtc_open(void)
     outb(STATUS_REGISTER_A,NMI_PORT);
     outb((prev & INB_MASK)|rate, CMOS_PORT);
     sti();
+    return 0;
 }
-/*
-void
+
+int
 rtc_close(void)
 {
-    unsigned char rate = OFF_FLAG;
-    cli();
-    outb(STATUS_REGISTER_A,NMI_PORT);
-    char prev = inb(CMOS_PORT);
-    outb(STATUS_REGISTER_A,NMI_PORT);
-    outb((prev & INB_MASK)|rate, CMOS_PORT);
-    sti();
+
+return 0;
+
 }
-*/
+
 
 int rtc_read()
 {
+    rtc_service = 1;
     while (rtc_service)
     {}
-
-    rtc_service = 0;
     return 0;
 }
 
