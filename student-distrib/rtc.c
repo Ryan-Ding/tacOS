@@ -41,7 +41,7 @@ rtc_init(void){
     outb(STATUS_REGISTER_B,NMI_PORT);
     
     // turn on bit 6 of register b
-    outb(prev|0x40,CMOS_PORT);
+    outb(prev|BIT_SIX_MASK,CMOS_PORT);
     
     enable_irq(RTC_IRQ);
     rtc_service = 0;
@@ -75,13 +75,13 @@ rtc_close(void)
 }
 */
 
-void rtc_read()
+int rtc_read()
 {
     while (rtc_service)
     {}
 
-    
-
+    rtc_service = 0;
+    return 0;
 }
 
 
@@ -91,20 +91,26 @@ rtc_write(unsigned int frequency)
 {
     unsigned char rate = 0;
     if (frequency > HIGHEST_BIT_MASK)
+    {
+        //printf("Invalid frequency\n");
         return -1;
+    }
 
     if (frequency == 0)
         rate = 0;
     else
     {
-        if (frequency & (frequency - 1) != 0)
+        if ((frequency & (frequency - 1)) != 0)
+        {
+                //printf("Invalid frequency\n");
                 return -1;
+        }
 
         rate = MIN_FREQUENCY;
-        while (frequency & HIGHEST_BIT_MASK == 0)
+        while ((frequency & HIGHEST_BIT_MASK) == 0)
             {
                 rate++;
-                frequency<<1;
+               frequency = frequency<<1;
             }
 
     }

@@ -12,6 +12,7 @@
 #define OFF_FLAG 0
 #define INB_MASK 0xF0
 #define RATE_MASK 0x0F
+#define BIT_SIX_MASK 0x40
 
 #define HIGHEST_BIT_MASK 8192
 #define MIN_FREQUENCY 3
@@ -22,7 +23,7 @@ void rtc_init(void);
 
 // real interrupt handler for rtc
 void rtc_interrupt(void);
-void rtc_read();
+int rtc_read();
 
 void rtc_close();
 int rtc_write(unsigned int frequency);
