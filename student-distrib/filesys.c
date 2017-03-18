@@ -34,7 +34,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
     // (1) fname is null, 
     // (2) filename not found 
     // (3) dentry is null
-    if (fname == NULL || dentry == NULL) { return -1;}
+    if (fname == NULL || dentry == NULL) { return -1; }
     for (i = 0; i < MAX_DIR_ENTRY_SIZE; ++i) {
         if ( strncmp( (int8_t*) fname, (int8_t*)boot_block_ptr->dir_entries[i].filename, FILENAME_SIZE) == 0 ) {
             // that's when we find that entry with the appropriate name
@@ -87,10 +87,46 @@ Side Effect: None
 */
 
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length) {
-    // TODO 
-    // uint32_t 
+    uint32_t bytes_to_be_copied = 0;
+    uint32_t count = 0; // number of bytes successfully stored in the buffer
+    uint32_t index = offset / FILE_SYS_BLOCK_SIZE; // the data block index to be started with
+    uint32_t start_block_offset =  offset % FILE_SYS_BLOCK_SIZE; // the starting position within the first data block
+    uint32_t offset_temp = start_block_offset;
+    uint32_t* data_ptr = NULL ; // pointer to the current data block to be copied
+    inode_block_t* inode_ptr = NULL; // inode pointer
+    uint32_t num_data = boot_block_ptr->num_data_blocks;
+    uint32_t num_inodes = boot_block_ptr->num_inodes; // total number of inode blocks, defined for convenience
 
+    if (inode >= num_inodes) { return -1; }
 
+    inode_ptr = (inode_block_t*) LOCATE_INODE_BLOCK(boot_block_ptr, inode); 
+    
+    if (offset >= inode_ptr->length) { return 0; } // if offset is not valid, we copy nothing
 
-    return -1;
+    // if the length is larger than what is actually remained, we clip it 
+    if ((length + offset) > (inode_ptr->length))
+    {
+        length = inode_ptr->length - offset;
+    }
+
+    while (length > 0) {
+        // if the data block value is not valid, return what we have copied so far
+        if (index > num_data) { return count; } 
+
+        data_ptr = (uint32_t*) LOCATE_DATA_BLOCK(boot_block_ptr, num_inodes, (inode_ptr->data_blocks)[index] );
+        bytes_to_be_copied =  min(length, FILE_SYS_BLOCK_SIZE - offset_temp);
+        memcpy(buf, data_ptr + offset_temp, bytes_to_be_copied);
+        // prepare for further copies
+        length -= bytes_to_be_copied;
+        count += bytes_to_be_copied;
+        buf += bytes_to_be_copied;  // update buf ptr position to always point to the first empty space 
+        if (bytes_to_be_copied == (FILE_SYS_BLOCK_SIZE - offset_temp)) {
+            ++index; // the current data block has all been copied, start a new block next time
+            offset_temp = 0;
+        }  else {
+            offset_temp += bytes_to_be_copied; // there are still leftovers in the same data block
+        }
+    }
+
+    return count;
 }

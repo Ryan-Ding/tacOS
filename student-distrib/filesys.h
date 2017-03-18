@@ -19,6 +19,8 @@
 
 #define MAX_DIR_ENTRY_SIZE 63
 
+#define LOCATE_INODE_BLOCK(base,inode) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode )
+#define LOCATE_DATA_BLOCK(base,inode_all,data_blk) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode_all + FILE_SYS_BLOCK_SIZE * data_blk )
 typedef struct {
     uint8_t filename[FILENAME_SIZE]; // null terminator
     uint32_t filetype;
@@ -33,6 +35,15 @@ typedef struct {
     uint8_t reserved[52];
     dentry_t dir_entries[MAX_DIR_ENTRY_SIZE];
 } boot_block_t;
+
+
+typedef struct 
+{
+	uint32_t length;
+	uint32_t data_blocks[(FILE_SYS_BLOCK_SIZE - sizeof(uint32_t)) / sizeof(uint32_t)];	
+} inode_block_t;
+
+
 
 
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
