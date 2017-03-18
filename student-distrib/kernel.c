@@ -172,6 +172,9 @@ entry (unsigned long magic, unsigned long addr)
     /* init paging */
 	paging_init();
 
+	clear();
+	testing_open_func();
+
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 

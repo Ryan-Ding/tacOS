@@ -5,6 +5,7 @@
 #include "multiboot.h"
 #include "rtc.h"
 #include "sys_call.h"
+#include "lib.h"
 
 #define DENTRY_BYTE_SIZE 64
 #define FILENAME_SIZE 32
@@ -18,8 +19,10 @@
 #define FILE_TYPE_DIRECTORY 1
 #define FILE_TYPE_RTC 0 
 
+#define MAX_DIR_ENTRY_SIZE 63
+
 typedef struct {
-    uint8_t filename[31 + 1]; // null terminator
+    uint8_t filename[FILENAME_SIZE]; // null terminator
     uint32_t filetype;
     uint32_t inode_num;
     uint8_t reserved[DENTRY_BYTE_SIZE - FILENAME_SIZE - sizeof(uint32_t) - sizeof(uint32_t)];
@@ -30,14 +33,15 @@ typedef struct {
     uint32_t num_inodes;
     uint32_t num_data_blocks;
     uint8_t reserved[52];
-    dentry_t dir_entries[63];
+    dentry_t dir_entries[MAX_DIR_ENTRY_SIZE];
 } boot_block_t;
 
 
-int32_t read_dentry_by_name (const uint8_t fname, dentry_t* dentry);
+int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
-int32_t open(char* file_name);
+int32_t open(uint8_t* file_name);
+void testing_open_func();
 
 // global variable that keeps track of the boot block information
 static boot_block_t* boot_block_ptr = NULL;

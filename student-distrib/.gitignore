@@ -2,3 +2,4 @@ bootimg
 mp3.imgI
 *.o
 Makefile.dep
+ **/.vscode/
