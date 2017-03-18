@@ -17,4 +17,8 @@ typedef struct {
   int32_t flags; 
 } file_desc_entry_t;
 
+file_ops_table_t rtc_ops_table;
+file_ops_table_t dir_ops_table;
+file_ops_table_t reg_ops_table;
+
 #endif

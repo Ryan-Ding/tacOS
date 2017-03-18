@@ -18,6 +18,7 @@ void fetch_boot_block_info (module_t* module_ptr) {
     printf("matched? %d, \n", (boot_block_ptr->num_inodes + boot_block_ptr->num_data_blocks + 1 ) == (filesys_end_addr - filesys_start_addr) / FILE_SYS_BLOCK_SIZE );    
 }
 
+
 /*
 read_dentry_by_name
     Description: read the directory entry given its name
@@ -129,4 +130,70 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     }
 
     return count;
+}
+
+/*
+open
+Description:find the diretory entry corresponding to the named le, allo
+ate an unused le desriptor, and set up any data neessary to handle the given type of file;
+Input: pointer to file name
+Output: N/A
+Return value: unused file descriptor; -1 for failure
+Side Effect: corresponding file is open
+
+*/
+
+
+int32_t open(uint8_t* file_name){
+
+    int32_t fd;
+
+    if(!file_name) 
+        return -1;
+
+    dentry_t search_for_dir_entry;
+
+    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1){
+        return -1;
+    }
+    printf("%s ",search_for_dir_entry.filename );
+
+    if(search_for_dir_entry.filetype == FILE_TYPE_RTC)
+    {
+        rtc_ops_table.open = rtc_open_syscall;
+        rtc_ops_table.read = rtc_read;
+        rtc_ops_table.write = rtc_write_syscall;
+        rtc_ops_table.close = rtc_close;
+    }
+    else if(search_for_dir_entry.filetype ==FILE_TYPE_DIRECTORY)
+    {
+        // dir_ops_table.open = dir_open;
+        // dir_ops_table.read = dir_read;
+        // dir_ops_table.write = dir_write;
+        // dir_ops_table.close = dir_close;
+
+    }
+    else if(search_for_dir_entry.filetype ==FILE_TYPE_REGULAR)
+    {
+        // reg_ops_table.open = reg_open;
+        // reg_ops_table.read = reg_read;
+        // reg_ops_table.write = reg_write;
+        // reg_ops_table.close = reg_close;
+
+    }
+
+    return fd;
+
+
+}
+
+void testing_open_func(){
+    int i;
+    for (i = 0; i < MAX_DIR_ENTRY_SIZE; ++i) {
+        // if(boot_block_ptr->dir_entries[i].filetype != 1 | 2 | 0)
+        //     return;
+
+        open((int8_t*)boot_block_ptr->dir_entries[i].filename);
+        printf("%s\n", (int8_t*)boot_block_ptr->dir_entries[i].filename);
+    }
 }
