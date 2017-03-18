@@ -127,6 +127,9 @@ rtc_write(unsigned int frequency)
         //printf("Invalid frequency\n");
         return -1;
     }
+    
+    if (frequency == 1)
+        return -1;
 
     if (frequency == 0)                 //if f = 0, rate = 0
         rate = 0;
