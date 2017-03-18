@@ -2,9 +2,7 @@
 #define FILESYS_H
 
 #include "types.h"
-#include "multiboot.h"
 #include "rtc.h"
-#include "sys_call.h"
 
 #define DENTRY_BYTE_SIZE 64
 #define FILENAME_SIZE 32
@@ -22,28 +20,12 @@ typedef struct {
     uint8_t filename[31 + 1]; // null terminator
     uint32_t filetype;
     uint32_t inode_num;
-    uint8_t reserved[DENTRY_BYTE_SIZE - FILENAME_SIZE - sizeof(uint32_t) - sizeof(uint32_t)];
+    uint8_t reserved[DENTRY_BYTE_SIZE - FILENAME_SIZE - sizeof(filetype) - sizeof(inode_num)];
 } dentry_t;
-
-typedef struct {
-    uint32_t num_dir_entries;
-    uint32_t num_inodes;
-    uint32_t num_data_blocks;
-    uint8_t reserved[52];
-    dentry_t dir_entries[63];
-} boot_block_t;
-
 
 int32_t read_dentry_by_name (const uint8_t fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 int32_t open(char* file_name);
-
-// global variable that keeps track of the boot block information
-static boot_block_t* boot_block_ptr = NULL;
-
-extern void fetch_boot_block_info (module_t* module_ptr);
-
-
 
 #endif 

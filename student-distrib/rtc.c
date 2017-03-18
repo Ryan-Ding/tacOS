@@ -70,6 +70,21 @@ rtc_open(void)
 }
 
 /*
+rtc_open_syscall
+Description: Open the rtc driver and set the frequency to default value
+Input: None
+Output: None
+Return value: 0 - success
+Side Effect: The rtc is open
+
+*/
+int
+rtc_open_syscall(const uint8_t* filename)
+{
+    return rtc_open();
+}
+
+/*
 rtc_close
 Description: Close the rtc driver
 Input: None
@@ -80,7 +95,7 @@ Side Effect: The rtc is closed
 */
 
 int
-rtc_close(void)
+rtc_close(int32_t fd)
 {
 
 return 0;
@@ -157,6 +172,11 @@ rtc_write(unsigned int frequency)
     sti();
     return 0;
 
+}
+
+int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes)
+{
+    return rtc_write((unsigned int)*(int32_t*)buf);
 }
 
 

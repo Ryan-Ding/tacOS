@@ -35,42 +35,44 @@ Side Effect: corresponding file is open
 
 int32_t open(char* file_name){
 
-    int32_t fd;
+	int32_t fd;
 
-    if(!file_name) 
-        return -1;
+	if(!file_name) 
+		return -1;
 
-    dentry_t search_for_dir_entry;
+	dentry_t search_for_dir_entry;
 
-    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1){
-        return -1;
-    }
+	if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1){
+		return -1;
+	}
+	if(!search_for_dir_entry)
+		return -1;
 
-    if(search_for_dir_entry.filetype == FILE_TYPE_RTC)
-    {
-        rtc_ops_table.open = rtc_open_syscall;
-        rtc_ops_table.read = rtc_read;
-        rtc_ops_table.write = rtc_write_syscall;
-        rtc_ops_table.close = rtc_close;
-    }
-    else if(search_for_dir_entry.filetype ==FILE_TYPE_DIRECTORY)
-    {
-        // dir_ops_table.open = dir_open;
-        // dir_ops_table.read = dir_read;
-        // dir_ops_table.write = dir_write;
-        // dir_ops_table.close = dir_close;
+	if(search_for_dir_entry.filetype == FILE_TYPE_RTC)
+	{
+		rtc_ops_table.open = rtc_open_syscall;
+		rtc_ops_table.read = rtc_read;
+		rtc_ops_table.write = rtc_write_syscall;
+		rtc_ops_table.close = rtc_close;
+	}
+	else if(search_for_dir_entry.filetype ==FILE_TYPE_DIRECTORY)
+	{
+		// dir_ops_table.open = dir_open;
+		// dir_ops_table.read = dir_read;
+		// dir_ops_table.write = dir_write;
+		// dir_ops_table.close = dir_close;
 
-    }
-    else if(search_for_dir_entry.filetype ==FILE_TYPE_REGULAR)
-    {
-        // reg_ops_table.open = reg_open;
-        // reg_ops_table.read = reg_read;
-        // reg_ops_table.write = reg_write;
-        // reg_ops_table.close = reg_close;
+	}
+	else if(search_for_dir_entry.filetype ==FILE_TYPE_REGULAR)
+	{
+		// reg_ops_table.open = reg_open;
+		// reg_ops_table.read = reg_read;
+		// reg_ops_table.write = reg_write;
+		// reg_ops_table.close = reg_close;
 
-    }
+	}
 
-    return fd;
+	return fd;
 
 
 }
