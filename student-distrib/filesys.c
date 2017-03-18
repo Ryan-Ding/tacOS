@@ -36,10 +36,10 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
     // (3) dentry is null
     if (fname == NULL || dentry == NULL) { return -1;}
     for (i = 0; i < MAX_DIR_ENTRY_SIZE; ++i) {
-        if ( strncmp(fname, boot_block_ptr->dir_entries[i].filename ) == 0 ) {
+        if ( strncmp( (int8_t*) fname, (int8_t*)boot_block_ptr->dir_entries[i].filename, FILENAME_SIZE) == 0 ) {
             // that's when we find that entry with the appropriate name
             // do memberwise copy
-            strncpy(dentry->filename, fname, FILENAME_SIZE);
+            strncpy((int8_t*)dentry->filename, (int8_t*)fname, FILENAME_SIZE);
             dentry->filetype = boot_block_ptr->dir_entries[i].filetype;
             dentry->inode_num = boot_block_ptr->dir_entries[i].inode_num;
             return 0;
@@ -67,7 +67,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
 
     dentry_t* current = boot_block_ptr->dir_entries;
 
-    strncpy(dentry->filename,current[index].filename,FILENAME_SIZE);
+    strncpy((int8_t*) dentry->filename,(int8_t*) current[index].filename,FILENAME_SIZE);
     dentry->filetype = current[index].filetype;
     dentry->inode_num = current[index].inode_num;
     return 0;

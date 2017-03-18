@@ -40,7 +40,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
 // global variable that keeps track of the boot block information
-static boot_block_t* boot_block_ptr;
+static boot_block_t* boot_block_ptr = NULL;
 
 extern void fetch_boot_block_info (module_t* module_ptr);
 
