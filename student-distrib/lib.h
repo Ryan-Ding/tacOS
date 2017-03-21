@@ -16,6 +16,8 @@ uint32_t strlen(const int8_t* s);
 
 void clear(void);
 void delete_content(void);
+void change_line(void);
+void scroll_line(void);
 void set_cursor(int32_t x, int32_t y);
 
 void* memset(void* s, int32_t c, uint32_t n);

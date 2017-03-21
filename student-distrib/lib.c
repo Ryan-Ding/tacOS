@@ -29,6 +29,83 @@ clear(void)
     }
 }
 
+/* void delete_content
+ * input: void
+ * return value: none 
+ * function: clear one character in the video memory
+ */
+
+void delete_content(void){
+    int32_t i = NUM_COLS*screen_y+screen_x;
+    *(uint8_t *)(video_mem + (i<<1)) = ' ';
+    *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+    if (screen_x == 0)
+        set_cursor(NUM_COLS-1,screen_y-1);
+    else
+        set_cursor(screen_x-1,screen_y);
+    
+}
+
+/* void change_line
+ * input: void
+ * return value: none
+ * function: change line for the terminal display
+ */
+
+void change_line(void){
+    if (screen_y+1 >= NUM_ROWS) {
+        scroll_line();
+        set_cursor(0,screen_y);
+    }else
+        set_cursor(0,screen_y+1);
+}
+
+/* void scroll_line
+ * input: void
+ * return value: none
+ * function: scroll up so the content fit in the screen
+ * this will effectively remove the first line and clear the bottom line
+ */
+
+void scroll_line(void){
+    int i,j;
+    int prev_line, curr_line;
+    for (i = 0; i<NUM_COLS; i++) {
+        for (j = 1; i<NUM_ROWS; i++) {
+            curr_line = NUM_ROWS*(j-1) + i;
+            prev_line = NUM_ROWS*j + i;
+            *(uint8_t *)(video_mem +(curr_line<<1)) = *(uint8_t *)(video_mem +(prev_line<<1));
+        }
+    }
+    for (i =0; i<NUM_COLS; i++) {
+        j = NUM_COLS*(NUM_ROWS-1)+i;
+        *(uint8_t *)(video_mem + (j << 1)) = ' ';
+    }
+}
+
+
+/* void set_cursor
+ * input: position x and y to set the cursor
+ * return value: none
+ * function: set the cursor at the desired position
+ * the function handles edge cases where x.y positions are illegal
+ */
+
+void set_cursor(int32_t x, int32_t y){
+    // the following is just sanity check, edge cases should be taken care of when calling
+    if (x< NUM_COLS && y< NUM_ROWS) {
+        screen_x = x;
+        screen_y = y;
+    }
+    unsigned short position = NUM_COLS*screen_y+screen_x;
+    // cursor LOW port to vga INDEX register
+    outb(0x0F,0x3D4);
+    outb((unsigned char)(position&0xFF),0x3D5);
+    // cursor HIGH port to vga INDEX register
+    outb(0x0E,0x3D4);
+    outb((unsigned char )((position>>8)&0xFF),0x3D5);
+}
+
 /* Standard printf().
  * Only supports the following format strings:
  * %%  - print a literal '%' character

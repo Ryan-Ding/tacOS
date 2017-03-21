@@ -151,8 +151,13 @@ keyboard_interrupt(void){
                 buffer_key[buffer_idx]= KEY_EMPTY;
                 buffer_idx--;
             }
-            
             break;
+            
+        case ENTER:
+            buffer_key[buffer_idx++] = '\n'; // edge cases?
+            change_line();
+            break;
+            
         case LEFT_SHIFT_PRESSED:
             curr_case = (curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
             break;

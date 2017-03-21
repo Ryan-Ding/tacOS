@@ -20,6 +20,7 @@
 #define KEY_EMPTY '\0'
 #define CAPS 0x3A
 #define BACKSPACE 0x0E
+#define ENTER 0x1C
 
 #define LEFT_SHIFT_PRESSED 0x2A
 #define RIGHT_SHIFT_PRESSED 0x36
