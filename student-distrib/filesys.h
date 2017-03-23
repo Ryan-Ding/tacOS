@@ -53,7 +53,8 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 int32_t open(uint8_t* file_name);
 void testing_open_func();
-
+void test_read_file();
+void test_read_file_by_name();
 // global variable that keeps track of the boot block information
 static boot_block_t* boot_block_ptr = NULL;
 

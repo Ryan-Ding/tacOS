@@ -173,8 +173,9 @@ entry (unsigned long magic, unsigned long addr)
 	paging_init();
 
 	clear();
-	testing_open_func();
-
+	//testing_open_func();
+	//test_read_file();
+	//test_read_file_by_name();
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 

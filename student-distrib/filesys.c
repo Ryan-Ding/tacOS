@@ -100,9 +100,8 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 
     if (inode >= num_inodes) { return -1; }
 
-    inode_ptr = (inode_block_t*) LOCATE_INODE_BLOCK(boot_block_ptr, inode); 
+    inode_ptr = (inode_block_t*) LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode); 
     
-    if (offset >= inode_ptr->length) { return 0; } // if offset is not valid, we copy nothing
 
     // if the length is larger than what is actually remained, we clip it 
     if ((length + offset) > (inode_ptr->length))
@@ -110,11 +109,13 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
         length = inode_ptr->length - offset;
     }
 
+    if (offset >= inode_ptr->length) { return 0; } // if offset is not valid, we copy nothing
+
     while (length > 0) {
         // if the data block value is not valid, return what we have copied so far
         if (index > num_data) { return count; } 
 
-        data_ptr = (uint32_t*) LOCATE_DATA_BLOCK(boot_block_ptr, num_inodes, (inode_ptr->data_blocks)[index] );
+        data_ptr = (uint32_t*) LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr, num_inodes, (inode_ptr->data_blocks)[index] );
         bytes_to_be_copied =  min(length, FILE_SYS_BLOCK_SIZE - offset_temp);
         memcpy(buf, data_ptr + offset_temp, bytes_to_be_copied);
         // prepare for further copies
@@ -152,34 +153,38 @@ int32_t open(uint8_t* file_name){
         return -1;
 
     dentry_t search_for_dir_entry;
-
+    //printf("The size of inode is: %d\n",sizeof(dentry_t));
     if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1){
         return -1;
     }
-    printf("%s ",search_for_dir_entry.filename );
 
-    if(search_for_dir_entry.filetype == FILE_TYPE_RTC)
-    {
-        rtc_ops_table.open = rtc_open_syscall;
-        rtc_ops_table.read = rtc_read;
-        rtc_ops_table.write = rtc_write_syscall;
-        rtc_ops_table.close = rtc_close;
-    }
-    else if(search_for_dir_entry.filetype ==FILE_TYPE_DIRECTORY)
-    {
-        // dir_ops_table.open = dir_open;
-        // dir_ops_table.read = dir_read;
-        // dir_ops_table.write = dir_write;
-        // dir_ops_table.close = dir_close;
+    printf("File type: %d ",search_for_dir_entry.filetype );
+    uint32_t inode = search_for_dir_entry.inode_num;
+    inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+    uint32_t length = inode_ptr->length;
 
-    }
-    else if(search_for_dir_entry.filetype ==FILE_TYPE_REGULAR)
-    {
-        // reg_ops_table.open = reg_open;
-        // reg_ops_table.read = reg_read;
-        // reg_ops_table.write = reg_write;
-        // reg_ops_table.close = reg_close;
+    printf("File size: %d      ",length );
+    printf("File name: %s\n", search_for_dir_entry.filename);
 
+    switch (search_for_dir_entry.filetype) {
+        case FILE_TYPE_RTC:
+            rtc_ops_table.open = rtc_open_syscall;
+            rtc_ops_table.read = rtc_read;
+            rtc_ops_table.write = rtc_write_syscall;
+            rtc_ops_table.close = rtc_close;
+            break;
+        case FILE_TYPE_DIRECTORY:
+            // dir_ops_table.open = dir_open;
+            // dir_ops_table.read = dir_read;
+            // dir_ops_table.write = dir_write;
+            // dir_ops_table.close = dir_close;
+            break;
+        case FILE_TYPE_REGULAR:
+            // reg_ops_table.open = reg_open;
+            // reg_ops_table.read = reg_read;
+            // reg_ops_table.write = reg_write;
+            // reg_ops_table.close = reg_close;
+            break;
     }
 
     return fd;
@@ -187,13 +192,56 @@ int32_t open(uint8_t* file_name){
 
 }
 
+
+
+void test_read_file(){
+int index = 10;
+uint32_t inode = boot_block_ptr->dir_entries[index].inode_num;
+inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+uint32_t length = inode_ptr->length;
+
+//printf("Length %d \n", length);
+uint8_t buf[length];
+
+int nbytes = read_data(inode,0,buf,length);
+int i ;
+for (i = 0; i< nbytes; i++)
+    {
+        printf("%c",buf[i]);
+    }
+printf("filename: %s", boot_block_ptr->dir_entries[index].filename);
+
+}
+
+
+void test_read_file_by_name()
+{
+    dentry_t search_for_dir_entry;
+    uint8_t file_name[32] = "frame1.txt"; 
+    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
+    uint32_t inode = search_for_dir_entry.inode_num;
+    inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+    uint32_t length = inode_ptr->length;
+    uint8_t buf[length];
+    int nbytes = read_data(inode,0,buf,length);
+    int i ;
+    for (i = 0; i< nbytes; i++)
+    {
+        printf("%c",buf[i]);
+    }
+    printf("filename: %s", search_for_dir_entry.filename);
+
+}
+
+
+
+
 void testing_open_func(){
     int i;
     for (i = 0; i < MAX_DIR_ENTRY_SIZE; ++i) {
-        // if(boot_block_ptr->dir_entries[i].filetype != 1 | 2 | 0)
-        //     return;
+        if(boot_block_ptr->dir_entries[i].filename[0] == 0)
+            continue;
 
-        open((int8_t*)boot_block_ptr->dir_entries[i].filename);
-        printf("%s\n", (int8_t*)boot_block_ptr->dir_entries[i].filename);
+        open((uint8_t*)boot_block_ptr->dir_entries[i].filename);
     }
 }
