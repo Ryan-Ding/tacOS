@@ -1,5 +1,5 @@
 #include "filesys.h"
-
+static boot_block_t* boot_block_ptr = NULL;
 /*
 fetch_boot_block_info
     Description: read the filesys information and stores a copy of ptr
@@ -63,14 +63,13 @@ Side Effect: None
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
 
-    if (index >= MAX_DIR_ENTRY_SIZE)
+     if (index >= MAX_DIR_ENTRY_SIZE)
+         return -1;
+     if (dentry == NULL)
         return -1;
+    dentry_t current = boot_block_ptr->dir_entries[index];
 
-    dentry_t* current = boot_block_ptr->dir_entries;
-
-    strncpy((int8_t*) dentry->filename,(int8_t*) current[index].filename,FILENAME_SIZE);
-    dentry->filetype = current[index].filetype;
-    dentry->inode_num = current[index].inode_num;
+    memcpy(dentry,&current,sizeof(dentry_t));
     return 0;
 }
 
@@ -192,27 +191,97 @@ int32_t open(uint8_t* file_name){
 
 }
 
+/*
+open
+Description:Read the directory
+Input: None
+Output: None
+Return value: number of bytes copied
+Side Effect: The info of file inside the directory is printed 
+
+*/
 
 
-void test_read_file(){
-int index = 10;
-uint32_t inode = boot_block_ptr->dir_entries[index].inode_num;
+int32_t dir_read()
+{
+
+    int i;
+    int32_t n = 0;
+    for (i = 0; i < MAX_DIR_ENTRY_SIZE; ++i) {
+        if(boot_block_ptr->dir_entries[i].filename[0] == 0)
+            continue;
+        //read all the file's name
+    dentry_t search_for_dir_entry;
+    //printf("The size of inode is: %d\n",sizeof(dentry_t));
+        if(read_dentry_by_index(i, &search_for_dir_entry) == -1){
+            return -1;
+        }
+
+
+        printf("File type: %d ",search_for_dir_entry.filetype );
+        //print the file type
+        uint32_t inode = search_for_dir_entry.inode_num;
+        inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+        uint32_t length = inode_ptr->length;
+        //print the file size
+        printf("File size: %d      ",length );
+        n += length;
+        //print the file name
+        printf("File name: %s\n", search_for_dir_entry.filename);
+
+        
+    }
+    
+
+    return n;
+}
+
+
+
+
+
+/*
+test_read_file_by_index
+Description:Test read_dentry_by_index and read_data
+Input: index - the index to be read
+Output: None
+Return value: None
+Side Effect: corresponding file is read
+*/
+void test_read_file_by_index(uint32_t index){
+
+    dentry_t search_for_dir_entry;
+    //printf("The size of inode is: %d\n",sizeof(dentry_t));
+
+    if(read_dentry_by_index(index, &search_for_dir_entry) == -1){
+        return;
+    }
+
+uint32_t inode = search_for_dir_entry.inode_num;
 inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
 uint32_t length = inode_ptr->length;
 
 //printf("Length %d \n", length);
 uint8_t buf[length];
 
-int nbytes = read_data(inode,0,buf,length);
+int n = read_data(inode,0,buf,length);
 int i ;
-for (i = 0; i< nbytes; i++)
+for (i = 0; i< n; i++)
     {
         printf("%c",buf[i]);
     }
-printf("filename: %s", boot_block_ptr->dir_entries[index].filename);
+printf("filename: %s", search_for_dir_entry.filename);
 
 }
 
+/*
+test_read_file_by_name
+Description:Test read_dentry_by_name and read_data
+Input: None
+Output: None
+Return value: None
+Side Effect: corresponding file is read
+*/
 
 void test_read_file_by_name()
 {
@@ -223,9 +292,9 @@ void test_read_file_by_name()
     inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
     uint32_t length = inode_ptr->length;
     uint8_t buf[length];
-    int nbytes = read_data(inode,0,buf,length);
+    int n = read_data(inode,0,buf,length);
     int i ;
-    for (i = 0; i< nbytes; i++)
+    for (i = 0; i< n; i++)
     {
         printf("%c",buf[i]);
     }
@@ -234,14 +303,49 @@ void test_read_file_by_name()
 }
 
 
+/*
+test_dir_read
+Description:Test dir_read
+Input: None
+Output: None
+Return value: None
+Side Effect: The dentry value is printed
+*/
 
+void test_dir_read(){
 
-void testing_open_func(){
-    int i;
-    for (i = 0; i < MAX_DIR_ENTRY_SIZE; ++i) {
-        if(boot_block_ptr->dir_entries[i].filename[0] == 0)
-            continue;
-
-        open((uint8_t*)boot_block_ptr->dir_entries[i].filename);
-    }
+    dir_read();
 }
+
+/*
+test_reg_read
+Description:Test reg_read
+Input: None
+Output: None
+Return value: None
+Side Effect: The file is read
+*/
+
+void test_reg_read()
+{
+    int i;
+    dentry_t search_for_dir_entry;
+    uint8_t file_name[32] = "frame0.txt"; 
+    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
+    uint32_t inode = search_for_dir_entry.inode_num;
+    inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+    uint32_t length = inode_ptr->length;
+    uint8_t buf[length];
+    file_desc_entry_t fd;
+    fd.inode = inode;
+    fd.file_position = 0; 
+    fd.flag = 1;
+    int n = reg_read((int32_t)&fd,buf,length);
+    for (i = 0; i< n; i++)
+    {
+        printf("%c",buf[i]);
+    }
+    printf("filename: %s", search_for_dir_entry.filename);
+
+}
+
