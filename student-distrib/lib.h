@@ -7,6 +7,11 @@
 
 #include "types.h"
 
+#define VIDEO 0xB8000
+#define NUM_COLS 80
+#define NUM_ROWS 25
+#define ATTRIB 0x7
+
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
 int32_t puts(int8_t *s);
@@ -25,7 +30,6 @@ void* memset_word(void* s, int32_t c, uint32_t n);
 void* memset_dword(void* s, int32_t c, uint32_t n);
 void* memcpy(void* dest, const void* src, uint32_t n);
 void* memmove(void* dest, const void* src, uint32_t n);
-
 int32_t strncmp(const int8_t* s1, const int8_t* s2, uint32_t n);
 int8_t* strcpy(int8_t* dest, const int8_t*src);
 int8_t* strncpy(int8_t* dest, const int8_t*src, uint32_t n);
@@ -35,6 +39,13 @@ int32_t bad_userspace_addr(const void* addr, int32_t len);
 int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);
 void test_interrupts(void);
 
+uint32_t max(uint32_t a, uint32_t b);
+
+
+uint32_t min(uint32_t a, uint32_t b);
+
+
+
 /* Port read functions */
 /* Inb reads a byte and returns its value as a zero-extended 32-bit
  * unsigned int */
@@ -42,12 +53,12 @@ static inline uint32_t inb(port)
 {
 	uint32_t val;
 	asm volatile("xorl %0, %0\n \
-			inb   (%w1), %b0" 
+			inb   (%w1), %b0"
 			: "=a"(val)
 			: "d"(port)
 			: "memory" );
 	return val;
-} 
+}
 
 /* Reads two bytes from two consecutive ports, starting at "port",
  * concatenates them little-endian style, and returns them zero-extended

@@ -5,11 +5,15 @@
 
 #include "keyboard.h"
 
+volatile unsigned char* buffer_key;
+volatile int* enter_flag;
+volatile int* buffer_idx;
+
 
 int curr_case = 0;
 int ctrl_on = 0;
 // scancode lookup table used for screen ecoing
-static unsigned char scancode_set[CASE_NUM][KEY_NUM] =
+static unsigned char scancode_set[CASE_NUM][KEY_NUM] = {
 // regular
 {
     '\0','\0', '1', '2', '3', '4', '5', '6', '7', '8',
@@ -71,10 +75,11 @@ static unsigned char scancode_set[CASE_NUM][KEY_NUM] =
 {
     '\0','\0', '!', '@', '#', '$', '%', '^', '&', '*',
     '(', ')', '_', '+', '\0', '\0',
-    'q', 'w', 'e', 'r','t', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', \0',
+    'q', 'w', 'e', 'r','t', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0',
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':','\"', '~','\0',
     '|', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', '\0','*','\0',
     ' ', '\0',
+  }
 };
 
 
@@ -85,20 +90,20 @@ handle_press(unsigned char scancode){
     if (scancode >=KEY_NUM)
         return;
     unsigned char key_pressed = scancode_set[curr_case][scancode];
-    
+
     if (ctrl_on && key_pressed == 'l' ) {
         clear(); // clear video memory
         set_cursor(0,0);
     }
-    else if (buffer_idx<BUFFER_SIZE) {
-        buffer_key[buffer_idx]=key_pressed;
+    else if (*buffer_idx<BUFFER_SIZE) {
+        buffer_key[*buffer_idx]=key_pressed;
         putc(key_pressed);
     }
 }
 
 
 
-/* 
+/*
  * keyboard_init
  * input: NONE
  * description: This function initialize interrupt handler for keyboard
@@ -108,7 +113,7 @@ void
 keyboard_init(void){
     // call wrapper function
     set_intr_gate(KEYBOARD_IRQ + MASTER_IDT_OFFSET, keyboard_interrupt_handler);
-    
+
     // enable keyboard irq line
     enable_irq(KEYBOARD_IRQ);
 }
@@ -125,7 +130,7 @@ keyboard_interrupt(void){
     cli();
 
     unsigned char scancode;
-    
+
     // get input from keyboard
     while (1) {
         scancode = inb(KEYBOARD_SCANCODE_PORT);
@@ -134,7 +139,7 @@ keyboard_interrupt(void){
 
     // case 0 : regurlar 1: caps only 2: shift only 3: caps and shift
     switch (scancode) {
-        
+
         case CAPS:
             if (curr_case == CASE_CAPS)
                 curr_case = CASE_REG;
@@ -146,18 +151,21 @@ keyboard_interrupt(void){
                 curr_case = CASE_CAPS;
             break;
         case BACKSPACE:
-            if (buffer_idx>=0) {
+            if (*buffer_idx>=0) {
                 delete_content(); // function to be written in lib.c
-                buffer_key[buffer_idx]= KEY_EMPTY;
+                buffer_key[*buffer_idx]= KEY_EMPTY;
                 buffer_idx--;
             }
             break;
-            
+
         case ENTER:
-            buffer_key[buffer_idx++] = '\n'; // edge cases?
-            change_line();
+            *enter_flag = 1;
+            if ((*buffer_idx)+1<BUFFER_SIZE) {
+                buffer_key[(*buffer_idx)++] = '\n'; // edge cases?
+                change_line();
+            }
             break;
-            
+
         case LEFT_SHIFT_PRESSED:
             curr_case = (curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
             break;
@@ -182,7 +190,7 @@ keyboard_interrupt(void){
     }
     // only print when it is pressed instead of released
     //if( scancode < 0x80) { printf("%c pressed \n",scancode_set[scancode]); }
-    
+
     send_eoi(KEYBOARD_IRQ);
 
     //enable interrupt from this device

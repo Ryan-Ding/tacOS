@@ -25,8 +25,10 @@ void rtc_init(void);
 void rtc_interrupt(void);
 
 int rtc_read();
-int rtc_close();
+int rtc_close(int32_t fd);
 int rtc_write(unsigned int frequency);
+int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes);
 int rtc_open();
+int rtc_open_syscall(const uint8_t* filename);
 
 #endif

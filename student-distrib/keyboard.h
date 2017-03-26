@@ -31,8 +31,8 @@
 #define CTRL_RELEASED 0x9D
 
 extern volatile unsigned char* buffer_key;
-extern volatile int buffer_idx;
-
+extern volatile int* enter_flag;
+extern volatile int* buffer_idx;
 
 // initialize keyboard interrupt handler
 extern void keyboard_init(void);

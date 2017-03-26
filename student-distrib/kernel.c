@@ -10,6 +10,8 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "paging.h"
+#include "filesys.h"
+#include "fsop.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -56,6 +58,9 @@ entry (unsigned long magic, unsigned long addr)
 		int i;
 		module_t* mod = (module_t*)mbi->mods_addr;
 		while(mod_count < mbi->mods_count) {
+			if (mod_count == 0) {
+				fetch_boot_block_info(mod);
+			}
 			printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
 			printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
 			printf("First few bytes of module:\n");
@@ -154,13 +159,13 @@ entry (unsigned long magic, unsigned long addr)
 
 	i8259_init();
 
-	clear();
-    
+	// clear();
+
     /* init the rtc */
 	rtc_init();
 
-	
-	
+
+
 
     /* init the keyboard */
 	keyboard_init();
@@ -168,6 +173,13 @@ entry (unsigned long magic, unsigned long addr)
     /* init paging */
 	paging_init();
 
+	// init the terminal
+	init_terminal();
+	clear();
+	
+	//testing_open_func();
+	//test_read_file_by_index(10);
+	//test_read_file_by_name();
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 
@@ -175,20 +187,26 @@ entry (unsigned long magic, unsigned long addr)
 	/* Do not enable the following until after you have set up your
 	 * IDT correctly otherwise QEMU will triple fault and simple close
 	 * without showing you any output */
-	printf("Enabling Interrupts\n");
-	sti();
-
-	//test_interrupts();
 
 
-	//printf("Stop\n");
-	//rtc_close();
-	//printf("Open\n");
-	rtc_write(7);
 
-	//int a = 50 / 0;
-	 //int* a = (NULL);
-	 //int b = *a;
+/* this is the place to be commented out for testing purposes */
+
+	// printf("Enabling Interrupts\n");
+	// sti();
+
+	// //test_interrupts();
+	// test_dir_read();
+	// test_read_file_by_index(10);
+	// test_read_file_by_name();
+	// test_reg_read();
+	// //printf("Stop\n");
+	// //rtc_close();
+	// //printf("Open\n");
+	// rtc_write(7);
+
+/* this is the place to be commented out for testing purposes */
+
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */

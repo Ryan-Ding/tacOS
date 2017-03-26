@@ -3,10 +3,7 @@
  */
 
 #include "lib.h"
-#define VIDEO 0xB8000
-#define NUM_COLS 80
-#define NUM_ROWS 25
-#define ATTRIB 0x7
+
 
 static int screen_x;
 static int screen_y;
@@ -31,7 +28,7 @@ clear(void)
 
 /* void delete_content
  * input: void
- * return value: none 
+ * return value: none
  * function: clear one character in the video memory
  */
 
@@ -43,7 +40,7 @@ void delete_content(void){
         set_cursor(NUM_COLS-1,screen_y-1);
     else
         set_cursor(screen_x-1,screen_y);
-    
+
 }
 
 /* void change_line
@@ -239,7 +236,7 @@ format_char_switch:
 * int32_t puts(int8_t* s);
 *   Inputs: int_8* s = pointer to a string of characters
 *   Return Value: Number of bytes written
-*	Function: Output a string to the console 
+*	Function: Output a string to the console
 */
 
 int32_t
@@ -258,7 +255,7 @@ puts(int8_t* s)
 * void putc(uint8_t c);
 *   Inputs: uint_8* c = character to print
 *   Return Value: void
-*	Function: Output a character to the console 
+*	Function: Output a character to the console
 */
 
 void
@@ -552,11 +549,11 @@ memmove(void* dest, const void* src, uint32_t n)
 *   Inputs: const int8_t* s1 = first string to compare
 *			const int8_t* s2 = second string to compare
 *			uint32_t n = number of bytes to compare
-*	Return Value: A zero value indicates that the characters compared 
+*	Return Value: A zero value indicates that the characters compared
 *					in both strings form the same string.
-*				A value greater than zero indicates that the first 
-*					character that does not match has a greater value 
-*					in str1 than in str2; And a value less than zero 
+*				A value greater than zero indicates that the first
+*					character that does not match has a greater value
+*					in str1 than in str2; And a value less than zero
 *					indicates the opposite.
 *	Function: compares string 1 and string 2 for equality
 */
@@ -643,3 +640,8 @@ test_interrupts(void)
 		video_mem[i<<1]++;
 	}
 }
+
+uint32_t max(uint32_t a, uint32_t b) { return a >= b ? a : b;}
+
+
+uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
