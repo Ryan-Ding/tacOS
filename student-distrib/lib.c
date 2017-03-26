@@ -31,15 +31,17 @@ clear(void)
  * return value: none
  * function: clear one character in the video memory
  */
-
+// TODO edge case for screen_y = 0
 void delete_content(void){
-    int32_t i = NUM_COLS*screen_y+screen_x;
-    *(uint8_t *)(video_mem + (i<<1)) = ' ';
+    int32_t i;
+    if(!(screen_y==0 && screen_x ==0)) { i = NUM_COLS * screen_y + screen_x - 1; }
+
+    *(uint8_t *)(video_mem + (i << 1)) = ' ';
     *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     if (screen_x == 0)
-        set_cursor(NUM_COLS-1,screen_y-1);
+        set_cursor(NUM_COLS - 1, --screen_y);
     else
-        set_cursor(screen_x-1,screen_y);
+        set_cursor(--screen_x, screen_y);
 
 }
 
@@ -54,7 +56,7 @@ void change_line(void){
         scroll_line();
         set_cursor(0,screen_y);
     }else
-        set_cursor(0,screen_y+1);
+        set_cursor(0,++screen_y);
 }
 
 /* void scroll_line
@@ -67,11 +69,12 @@ void change_line(void){
 void scroll_line(void){
     int i,j;
     int prev_line, curr_line;
-    for (i = 0; i<NUM_COLS; i++) {
-        for (j = 1; i<NUM_ROWS; i++) {
+    for (j = 1; j<NUM_ROWS; j++) {
+        for (i = 0; i<NUM_COLS; i++) {
             curr_line = NUM_ROWS*(j-1) + i;
             prev_line = NUM_ROWS*j + i;
             *(uint8_t *)(video_mem +(curr_line<<1)) = *(uint8_t *)(video_mem +(prev_line<<1));
+            *(uint8_t *)(video_mem +(curr_line<<1)+1) = *(uint8_t *)(video_mem +(prev_line<<1)+1);
         }
     }
     for (i =0; i<NUM_COLS; i++) {

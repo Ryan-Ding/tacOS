@@ -17,7 +17,7 @@ typedef struct {
     int read_flag;
     int curr_idx;
     unsigned char buffer_key[BUFFER_SIZE];
-    unsigned char * mem_video;
+    int * mem_video;
 
 }terminal_t;
 

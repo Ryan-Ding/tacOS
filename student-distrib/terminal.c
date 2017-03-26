@@ -14,15 +14,19 @@ void init_terminal(){
     terminal.curr_idx = 0;
     // may need a function to map the virtual address with physical addresses
 
-    terminal.mem_video = (unsigned char*)_128MB+_4KB;
+  //  terminal.mem_video = (int*)_128MB+_4KB;
     clear();
 
     set_cursor(0,0);
-    memcpy((int *) VIDEO, (int *)terminal.mem_video,2*NUM_COLS*NUM_ROWS);
 
+    //int val = 2 * NUM_COLS * NUM_ROWS;
+    //memcpy((int *) VIDEO, (int *)terminal.mem_video,val);
+    //printf("%d \n",val );
     buffer_key = terminal.buffer_key;
     buffer_idx = &(terminal.curr_idx);
     enter_flag = &(terminal.read_flag);
+    cursor_x = &(terminal.pos_x);
+    cursor_y = &(terminal.pos_y);
     //execute("shell");
 }
 

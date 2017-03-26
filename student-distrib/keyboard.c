@@ -8,7 +8,8 @@
 volatile unsigned char* buffer_key;
 volatile int* enter_flag;
 volatile int* buffer_idx;
-
+volatile int* cursor_x;
+volatile int* cursor_y;
 
 int curr_case = 0;
 int ctrl_on = 0;
@@ -97,10 +98,30 @@ handle_press(unsigned char scancode){
     }
     else if (*buffer_idx<BUFFER_SIZE) {
         buffer_key[*buffer_idx]=key_pressed;
+        (*buffer_idx)++;
+        if((*cursor_x)==NUM_COLS-1) {
+          *cursor_x = 0;
+
+          // if (*cursor_y==NUM_ROWS-1)
+          //   scroll_line();
+          // else
+          (*cursor_y)++;
+        }
+        else
+          (*cursor_x)++;
+        set_cursor(*cursor_x,*cursor_y);
         putc(key_pressed);
     }
 }
 
+void
+clear_buffer(int idx){
+  int i ;
+  for (i = 0; i < idx; i++) {
+    buffer_key[i] = KEY_EMPTY;
+  }
+
+}
 
 
 /*
@@ -151,19 +172,33 @@ keyboard_interrupt(void){
                 curr_case = CASE_CAPS;
             break;
         case BACKSPACE:
-            if (*buffer_idx>=0) {
-                delete_content(); // function to be written in lib.c
+            if(!(cursor_y==0 && cursor_x ==0)) { delete_content(); }
+            if((*cursor_x) == 0) {
+                if (cursor_y > 0) {
+                  *cursor_x = NUM_COLS - 1;
+                  (*cursor_y)--;
+                }
+            }
+            else {
+              (*cursor_x)--;
+            }
+
+            if (*buffer_idx > 0) {
+                 // function to be written in lib.c
+                (*buffer_idx)--;
                 buffer_key[*buffer_idx]= KEY_EMPTY;
-                buffer_idx--;
+
             }
             break;
 
         case ENTER:
             *enter_flag = 1;
-            if ((*buffer_idx)+1<BUFFER_SIZE) {
-                buffer_key[(*buffer_idx)++] = '\n'; // edge cases?
-                change_line();
-            }
+            clear_buffer(*buffer_idx);
+            (*buffer_idx)=0;
+            change_line();
+            (*cursor_x) = 0;
+            if((*cursor_y)<NUM_ROWS-1)
+              (*cursor_y)++;
             break;
 
         case LEFT_SHIFT_PRESSED:

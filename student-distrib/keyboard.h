@@ -33,6 +33,8 @@
 extern volatile unsigned char* buffer_key;
 extern volatile int* enter_flag;
 extern volatile int* buffer_idx;
+extern volatile int* cursor_x;
+extern volatile int* cursor_y;
 
 // initialize keyboard interrupt handler
 extern void keyboard_init(void);
@@ -40,6 +42,7 @@ extern void keyboard_init(void);
 // real keyboard interrupt handler
 extern void keyboard_interrupt(void);
 
+void clear_buffer(int idx);
 void handle_press(unsigned char scancode);
 
 
