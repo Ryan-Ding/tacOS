@@ -6,7 +6,6 @@
 #include "rtc.h"
 #include "sys_call.h"
 #include "lib.h"
-#include "fsop.h"
 #include "sys_call.h"
 
 #define DENTRY_BYTE_SIZE 64
@@ -25,6 +24,9 @@
 
 #define LOCATE_INODE_BLOCK(base,inode) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode )
 #define LOCATE_DATA_BLOCK(base,inode_all,data_blk) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode_all + FILE_SYS_BLOCK_SIZE * data_blk )
+#define FDT_SIZE 8
+
+
 typedef struct {
     uint8_t filename[FILENAME_SIZE]; // null terminator
     uint32_t filetype;
@@ -57,16 +59,30 @@ int32_t open(uint8_t* file_name);
 
 
 
-int32_t dir_read();
 
 void test_dir_read();
 void test_reg_read();
 void test_read_file_by_index(uint32_t index);
 void test_read_file_by_name();
+
+int32_t reg_open(const uint8_t* filename);
+int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes);
+int32_t reg_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t reg_close(int32_t fd);
+
+int32_t dir_open(const uint8_t* filename);
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes);
+int32_t dir_close(int32_t fd);
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
+
+void init_file_system();
+
+
 // global variable that keeps track of the boot block information
 
 
 extern void fetch_boot_block_info (module_t* module_ptr);
+
 
 
 

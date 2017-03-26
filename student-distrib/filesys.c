@@ -1,5 +1,14 @@
 #include "filesys.h"
 static boot_block_t* boot_block_ptr = NULL;
+
+file_desc_entry_t file_desc_table[FDT_SIZE];  
+int32_t LAST_FDT; 
+
+file_ops_table_t rtc_ops_table;
+file_ops_table_t dir_ops_table;
+file_ops_table_t reg_ops_table;
+
+
 /*
 fetch_boot_block_info
     Description: read the filesys information and stores a copy of ptr
@@ -16,7 +25,41 @@ void fetch_boot_block_info (module_t* module_ptr) {
     printf("inode number is: %d \n", boot_block_ptr->num_inodes );
     printf("data block number is: %d \n", boot_block_ptr->num_data_blocks );
     printf("matched? %d, \n", (boot_block_ptr->num_inodes + boot_block_ptr->num_data_blocks + 1 ) == (filesys_end_addr - filesys_start_addr) / FILE_SYS_BLOCK_SIZE );    
+    
+
 }
+
+/*
+init_file_system()
+    Description: Initial the filesys
+    Input:None
+    Output:None
+    Return value:None
+    Side Effect: ops_tables are filled
+*/
+void init_file_system()
+{
+    LAST_FDT = 2;
+                
+    rtc_ops_table.open = rtc_open_syscall;
+    rtc_ops_table.read = rtc_read;
+    rtc_ops_table.write = rtc_write_syscall;
+    rtc_ops_table.close = rtc_close;
+
+    dir_ops_table.open = dir_open;
+    dir_ops_table.read = dir_read;
+    dir_ops_table.write = dir_write;
+    dir_ops_table.close = dir_close;
+
+    reg_ops_table.open = reg_open;
+    reg_ops_table.read = reg_read;
+    reg_ops_table.write = reg_write;
+    reg_ops_table.close = reg_close;
+
+
+}
+
+
 
 
 /*
@@ -157,32 +200,30 @@ int32_t open(uint8_t* file_name){
         return -1;
     }
 
-    printf("File type: %d ",search_for_dir_entry.filetype );
-    uint32_t inode = search_for_dir_entry.inode_num;
-    inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
-    uint32_t length = inode_ptr->length;
+    if (LAST_FDT> 7)
+        return -1;
 
-    printf("File size: %d      ",length );
-    printf("File name: %s\n", search_for_dir_entry.filename);
+    fd = LAST_FDT;
+    LAST_FDT++;
+    // printf("File type: %d ",search_for_dir_entry.filetype );
+    uint32_t inode = search_for_dir_entry.inode_num;
+
+    file_desc_table[fd].inode = inode;
+    file_desc_table[fd].flag = 1;
+    file_desc_table[fd].file_position = 0;
+
+    // printf("File size: %d      ",length );
+    // printf("File name: %s\n", search_for_dir_entry.filename);
 
     switch (search_for_dir_entry.filetype) {
         case FILE_TYPE_RTC:
-            rtc_ops_table.open = rtc_open_syscall;
-            rtc_ops_table.read = rtc_read;
-            rtc_ops_table.write = rtc_write_syscall;
-            rtc_ops_table.close = rtc_close;
+            file_desc_table[fd].file_ops_table_ptr = &rtc_ops_table;
             break;
         case FILE_TYPE_DIRECTORY:
-            // dir_ops_table.open = dir_open;
-            // dir_ops_table.read = dir_read;
-            // dir_ops_table.write = dir_write;
-            // dir_ops_table.close = dir_close;
+            file_desc_table[fd].file_ops_table_ptr = &dir_ops_table;
             break;
         case FILE_TYPE_REGULAR:
-            // reg_ops_table.open = reg_open;
-            // reg_ops_table.read = reg_read;
-            // reg_ops_table.write = reg_write;
-            // reg_ops_table.close = reg_close;
+            file_desc_table[fd].file_ops_table_ptr = &reg_ops_table;
             break;
     }
 
@@ -190,6 +231,134 @@ int32_t open(uint8_t* file_name){
 
 
 }
+
+
+
+/*
+reg_open
+Description:open a regular file
+Input:  filename - the filename to be opened
+Output: none
+Return value: A file descriptor
+Side Effect: corresponding file is open
+
+*/
+
+int32_t reg_open(const uint8_t* filename)
+{
+
+    return open((uint8_t*)filename);
+}
+
+/*
+reg_write
+Description: write a regular file
+Input:  fd - file descriptor 
+        buf - the buffer to be used
+        nbytes - number of bytes to be written
+Output: none
+Return value: -1
+Side Effect: none
+
+*/
+
+int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes)
+{
+    return -1;
+}
+
+
+/*
+reg_read
+Description: write a regular file
+Input:  fd - file descriptor 
+        buf - the buffer to be used
+        nbytes - number of bytes to be written
+Output: A buffer contains the file content
+Return value: Number of bytes that have been successfully read
+Side Effect: None
+
+*/
+
+int32_t reg_read(int32_t fd, void* buf, int32_t nbytes)
+{
+    if (file_desc_table[fd].flag == 0)
+        return 0;
+
+    file_desc_entry_t fdd = file_desc_table[fd];
+    uint32_t inode = fdd.inode;
+    uint32_t offset = fdd.file_position; 
+
+    int n = read_data(inode,offset,(uint8_t*)buf,nbytes);
+    if (n < 0)
+        return n;
+
+    file_desc_table[fd].file_position += n;
+    return n;
+}
+
+/*
+reg_close
+Description: close a regular file
+Input:  fd - file descriptor
+Output: none
+Return value: 0
+Side Effect: None
+*/
+
+int32_t reg_close(int32_t fd)
+{
+    file_desc_table[fd].flag = 0;
+
+    return 0;
+}
+
+/*
+dir_open
+Description:open a directory
+Input:filename - the filename to be opened
+Output: none
+Return value: A file descriptor
+Side Effect: corresponding file is open
+
+*/
+
+int32_t dir_open(const uint8_t* filename)
+{
+    return 0;
+}
+
+/*
+dir_write
+Description: write a directory
+Input:  fd - file descriptor 
+        buf - the buffer to be used
+        nbytes - number of bytes to be written
+Output: none
+Return value: 0
+Side Effect: none
+*/
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes)
+{
+    return 0;
+}
+
+/*
+dir_close
+Description: close a dir file
+Input:  fd - file descriptor
+Output: none
+Return value: 0
+Side Effect: None
+*/
+int32_t dir_close(int32_t fd)
+{
+    return 0;
+}
+
+
+
+
 
 /*
 open
@@ -202,7 +371,7 @@ Side Effect: The info of file inside the directory is printed
 */
 
 
-int32_t dir_read()
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
 
     int i,j,k;
@@ -341,7 +510,7 @@ Side Effect: The dentry value is printed
 
 void test_dir_read(){
 
-    dir_read();
+    dir_read(0,0,0);
 }
 
 /*
@@ -356,23 +525,26 @@ Side Effect: The file is read
 void test_reg_read()
 {
     int i;
-    dentry_t search_for_dir_entry;
-    uint8_t file_name[32] = "frame0.txt"; 
-    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
-    uint32_t inode = search_for_dir_entry.inode_num;
+    // dentry_t search_for_dir_entry;
+    uint8_t file_name[32] = "frame1.txt"; 
+    // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
+    int32_t fd = reg_open(file_name);
+
+    uint32_t inode = file_desc_table[fd].inode;
     inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
     uint32_t length = inode_ptr->length;
     uint8_t buf[length];
-    file_desc_entry_t fd;
-    fd.inode = inode;
-    fd.file_position = 0; 
-    fd.flag = 1;
-    int n = reg_read((int32_t)&fd,buf,length);
+    
+    int n = reg_read(fd,buf,length);
     for (i = 0; i< n; i++)
     {
         printf("%c",buf[i]);
     }
-    printf("filename: %s", search_for_dir_entry.filename);
+    printf("filename: %s", file_name);
 
 }
+
+
+
+
 

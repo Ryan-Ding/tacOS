@@ -11,14 +11,13 @@ typedef struct {
 
 
 typedef struct { 
-  // file_ops_table_t* file_ops_table_ptr; 
+  file_ops_table_t* file_ops_table_ptr; 
   uint32_t inode; 
   uint32_t file_position; 
   int32_t flag; 
 } file_desc_entry_t;
 
-file_ops_table_t rtc_ops_table;
-file_ops_table_t dir_ops_table;
-file_ops_table_t reg_ops_table;
+
+
 
 #endif

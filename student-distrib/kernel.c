@@ -11,7 +11,6 @@
 #include "rtc.h"
 #include "paging.h"
 #include "filesys.h"
-#include "fsop.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -173,7 +172,7 @@ entry (unsigned long magic, unsigned long addr)
     /* init paging */
 	paging_init();
 	rtc_stop();
-
+	init_file_system();
 	clear();
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
@@ -195,7 +194,7 @@ entry (unsigned long magic, unsigned long addr)
 	// test_dir_read();
 	//test_read_file_by_index(10);
 	// test_read_file_by_name();
-	// test_reg_read();
+	 test_reg_read();
 	//testing_open_func();
 	//test_read_file_by_index(10);
 	//test_read_file_by_name();
