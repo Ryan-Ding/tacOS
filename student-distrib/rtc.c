@@ -177,6 +177,23 @@ rtc_write(unsigned int frequency)
 
 }
 
+
+int rtc_stop()
+{
+    unsigned char rate = 0;
+    cli();
+    outb(STATUS_REGISTER_A,NMI_PORT);
+    char prev = inb(CMOS_PORT);
+    outb(STATUS_REGISTER_A,NMI_PORT);
+    outb((prev & INB_MASK)|rate, CMOS_PORT);
+    sti();
+    return 0;
+}
+
+/*
+
+
+*/
 int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes)
 {
     return rtc_write((unsigned int)*(int32_t*)buf);

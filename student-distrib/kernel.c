@@ -172,11 +172,10 @@ entry (unsigned long magic, unsigned long addr)
 
     /* init paging */
 	paging_init();
+	rtc_stop();
 
 	clear();
-	//testing_open_func();
-	//test_read_file_by_index(10);
-	//test_read_file_by_name();
+
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 
@@ -194,9 +193,12 @@ entry (unsigned long magic, unsigned long addr)
 
 	// //test_interrupts();
 	// test_dir_read();
-	// test_read_file_by_index(10);
+	//test_read_file_by_index(10);
 	// test_read_file_by_name();
 	// test_reg_read();
+	//testing_open_func();
+	//test_read_file_by_index(10);
+	//test_read_file_by_name();
 	// //printf("Stop\n");
 	// //rtc_close();
 	// //printf("Open\n");

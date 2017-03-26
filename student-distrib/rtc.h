@@ -24,6 +24,7 @@ void rtc_init(void);
 // real interrupt handler for rtc
 void rtc_interrupt(void);
 
+int rtc_stop();
 int rtc_read();
 int rtc_close(int32_t fd);
 int rtc_write(unsigned int frequency);
