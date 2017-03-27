@@ -103,7 +103,7 @@ void set_cursor(int32_t x, int32_t y){
     outb((unsigned char)(position&EIGHT_BIT_MASK),HIGH_PORT);
     // cursor HIGH port to vga INDEX register
     outb(FOUR_BIT_MASK-1,LOW_PORT);
-    outb((unsigned char )((position>>8)&EIGHT_BIT_MASK),HIGH_PORT);
+    outb((unsigned char )((position>>ONE_BYTE)&EIGHT_BIT_MASK),HIGH_PORT);
 }
 
 /* Standard printf().

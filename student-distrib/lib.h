@@ -15,7 +15,7 @@
 #define HIGH_PORT 0x3D5
 #define FOUR_BIT_MASK 0x0F
 #define EIGHT_BIT_MASK 0xFF
-
+#define ONE_BYTE 8
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
 int32_t puts(int8_t *s);
