@@ -59,13 +59,13 @@ int
 rtc_open(void)
 {
 
-    unsigned char rate = OPEN_FLAG; //set the rate to be default value
-    cli();
-    outb(STATUS_REGISTER_A,NMI_PORT);
-    char prev = inb(CMOS_PORT);
-    outb(STATUS_REGISTER_A,NMI_PORT);
-    outb((prev & INB_MASK)|rate, CMOS_PORT);
-    sti();
+    // unsigned char rate = OPEN_FLAG; 
+    // cli();
+    // outb(STATUS_REGISTER_A,NMI_PORT);
+    // char prev = inb(CMOS_PORT);
+    // outb(STATUS_REGISTER_A,NMI_PORT);
+    // outb((prev & INB_MASK)|rate, CMOS_PORT);
+    // sti();
     return 0;
 }
 

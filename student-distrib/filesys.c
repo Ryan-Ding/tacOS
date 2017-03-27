@@ -2,7 +2,7 @@
 static boot_block_t* boot_block_ptr = NULL;
 
 file_desc_entry_t file_desc_table[FDT_SIZE];  
-int32_t LAST_FDT; 
+
 
 file_ops_table_t rtc_ops_table;
 file_ops_table_t dir_ops_table;
@@ -39,8 +39,8 @@ init_file_system()
 */
 void init_file_system()
 {
-    LAST_FDT = 2;
-                
+    int i;       
+
     rtc_ops_table.open = rtc_open_syscall;
     rtc_ops_table.read = rtc_read;
     rtc_ops_table.write = rtc_write_syscall;
@@ -55,6 +55,15 @@ void init_file_system()
     reg_ops_table.read = reg_read;
     reg_ops_table.write = reg_write;
     reg_ops_table.close = reg_close;
+
+
+
+    for (i=0;i<FDT_SIZE;i++)
+    {
+        file_desc_table[i].flag = 0;
+    }
+    file_desc_table[0].flag = 1;
+    file_desc_table[1].flag = 1;
 
 
 }
@@ -190,6 +199,7 @@ Side Effect: corresponding file is open
 int32_t open(uint8_t* file_name){
 
     int32_t fd;
+    int i;
 
     if(!file_name) 
         return -1;
@@ -200,11 +210,22 @@ int32_t open(uint8_t* file_name){
         return -1;
     }
 
-    if (LAST_FDT> 7)
-        return -1;
+    for (i=0;i<FDT_SIZE+1;i++)
+    {
+        if (i == FDT_SIZE)
+        {
+            return -1;
+        }
 
-    fd = LAST_FDT;
-    LAST_FDT++;
+        if (file_desc_table[i].flag == 0)
+        {
+            break;
+        }
+
+    }
+        
+
+    fd = i;
     // printf("File type: %d ",search_for_dir_entry.filetype );
     uint32_t inode = search_for_dir_entry.inode_num;
 
@@ -282,6 +303,9 @@ Side Effect: None
 
 int32_t reg_read(int32_t fd, void* buf, int32_t nbytes)
 {
+    if (fd == -1)
+        return -1;
+
     if (file_desc_table[fd].flag == 0)
         return 0;
 
@@ -482,7 +506,7 @@ Side Effect: corresponding file is read
 void test_read_file_by_name()
 {
     dentry_t search_for_dir_entry;
-    uint8_t file_name[32] = "frame1.txt"; 
+    uint8_t file_name[32] = "frame0.txt"; 
     if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
     uint32_t inode = search_for_dir_entry.inode_num;
     inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
