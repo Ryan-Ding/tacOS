@@ -178,13 +178,11 @@ entry (unsigned long magic, unsigned long addr)
 
 	// init the terminal
 	init_terminal();
-	/*while (1) {
-		if (terminal_read(buffer_key,BUFFER_SIZE)) {
-			terminal_write(buffer_key);
-		}
-	}*/
 
+	// stop rtc
 	rtc_stop();
+
+	// init file system
 	init_file_system();
 
 	clear();

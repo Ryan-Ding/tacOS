@@ -22,7 +22,7 @@
 #define MASTER_IDT_OFFSET 0x20
 #define SLAVE_IDT_OFFSET 0x28
 #define MASTER_SIZE 8
-
+#define SLAVE_SIZE 15
 
 /* Initialization control words to init each PIC.
  * See the Intel manuals for details on the meaning

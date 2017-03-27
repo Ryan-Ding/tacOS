@@ -23,7 +23,7 @@ typedef struct {
 
 extern void init_terminal();
 int terminal_read(unsigned char* buf, int num_bytes);
-int terminal_write(unsigned char* buf);
+int terminal_write(unsigned char* buf,int num_bytes);
 //int terminal_open();
 //int terminal_close();
 

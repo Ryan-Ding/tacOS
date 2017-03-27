@@ -575,7 +575,7 @@ void test_reg_read()
 {
     int i;
     // dentry_t search_for_dir_entry;
-    uint8_t file_name[32] = "frame0.txt";
+    uint8_t file_name[FILENAME_SIZE] = "frame0.txt";
     // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
     int32_t fd = reg_open(file_name);
 

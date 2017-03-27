@@ -3,7 +3,13 @@
 
 terminal_t terminal;
 
-// the following functions need more care
+/*
+ * init_terminal
+ * input: NONE
+ * description: This function inittialize terminal
+ * side effect : none
+ */
+
 void init_terminal(){
     int i;
     terminal.pos_x = 0;
@@ -14,21 +20,24 @@ void init_terminal(){
     terminal.curr_idx = 0;
     // may need a function to map the virtual address with physical addresses
 
-  //  terminal.mem_video = (int*)_128MB+_4KB;
+
     clear();
 
     set_cursor(0,0);
 
-    //int val = 2 * NUM_COLS * NUM_ROWS;
-    //memcpy((int *) VIDEO, (int *)terminal.mem_video,val);
-    //printf("%d \n",val );
     buffer_key = terminal.buffer_key;
     buffer_idx = &(terminal.curr_idx);
     enter_flag = &(terminal.read_flag);
     cursor_x = &(terminal.pos_x);
     cursor_y = &(terminal.pos_y);
-    //execute("shell");
+
 }
+/*
+ * terminal_read
+ * input: pointer to the buffer to be copied, num of bytes to be copied
+ * description: This function reads content from the buffer
+ * side effect : return numofbytes read, clear key buffer
+ */
 
 
 int
@@ -43,9 +52,14 @@ terminal_read(unsigned char* buf, int num_bytes){
     }
     return i;
 }
-
+/*
+ * terminal_write
+ * input: pointer to the buffer to be displayed, num of bytes to be written
+ * description: This function output chars in the buffer to screen
+ * side effect : return numofbytes written
+ */
 int
-terminal_write(unsigned char* buf){
+terminal_write(unsigned char* buf,int num_bytes){
     int i ;
     cli();
     i = printf((int8_t*)buf);

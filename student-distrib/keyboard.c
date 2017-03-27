@@ -10,11 +10,14 @@ volatile int* enter_flag;
 volatile int* buffer_idx;
 volatile int* cursor_x;
 volatile int* cursor_y;
-
+//flags
 int curr_case = 0;
 int ctrl_on = 0;
+
+// test function vars
 int file_idx = FS_IDX;
 int rtc_frq =  RTC_INI_FRQ;
+
 // scancode lookup table used for screen ecoing
 static unsigned char scancode_set[CASE_NUM][KEY_NUM] = {
 // regular
@@ -121,7 +124,7 @@ handle_press(unsigned char scancode){
       set_cursor(0,0);
       rtc_write(rtc_frq);
       rtc_frq = rtc_frq<<1;
-    } else if (ctrl_on && key_pressed == '5'){
+    } else if (ctrl_on && key_pressed == '5'){ // stop rtc
       clear();
       set_cursor(0,0);
       rtc_frq = RTC_INI_FRQ;

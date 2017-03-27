@@ -11,6 +11,10 @@
 #define NUM_COLS 80
 #define NUM_ROWS 25
 #define ATTRIB 0x7
+#define LOW_PORT 0x3D4
+#define HIGH_PORT 0x3D5
+#define FOUR_BIT_MASK 0x0F
+#define EIGHT_BIT_MASK 0xFF
 
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);

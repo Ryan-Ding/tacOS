@@ -99,11 +99,11 @@ void set_cursor(int32_t x, int32_t y){
     }
     unsigned short position = NUM_COLS*screen_y+screen_x;
     // cursor LOW port to vga INDEX register
-    outb(0x0F,0x3D4);
-    outb((unsigned char)(position&0xFF),0x3D5);
+    outb(FOUR_BIT_MASK,LOW_PORT);
+    outb((unsigned char)(position&EIGHT_BIT_MASK),HIGH_PORT);
     // cursor HIGH port to vga INDEX register
-    outb(0x0E,0x3D4);
-    outb((unsigned char )((position>>8)&0xFF),0x3D5);
+    outb(FOUR_BIT_MASK-1,LOW_PORT);
+    outb((unsigned char )((position>>8)&EIGHT_BIT_MASK),HIGH_PORT);
 }
 
 /* Standard printf().
