@@ -5,7 +5,8 @@
 #include "idt.h"
 #include "i8259.h"
 #include "isr_wrappers.h"
-
+#include "filesys.h"
+#include "rtc.h"
 #define KEYBOARD_STATUS_PORT 0x64
 #define KEYBOARD_SCANCODE_PORT 0x60
 #define KEYBOARD_IRQ 1
@@ -30,6 +31,10 @@
 #define RIGHT_SHIFT_RELEASED 0xB6
 #define CTRL_RELEASED 0x9D
 
+#define RTC_INI_FRQ 2
+#define FS_IDX 1
+
+
 extern volatile unsigned char* buffer_key;
 extern volatile int* enter_flag;
 extern volatile int* buffer_idx;
@@ -42,7 +47,7 @@ extern void keyboard_init(void);
 // real keyboard interrupt handler
 extern void keyboard_interrupt(void);
 
-void clear_buffer(int idx);
+// handle different keyboard functionality
 void handle_press(unsigned char scancode);
 
 

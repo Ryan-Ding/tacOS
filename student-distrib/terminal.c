@@ -48,7 +48,7 @@ int
 terminal_write(unsigned char* buf){
     int i ;
     cli();
-    i = printf((int*)buf);
+    i = printf((int8_t*)buf);
     sti();
     return i;
 }

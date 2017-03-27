@@ -473,7 +473,7 @@ Return value: None
 Side Effect: corresponding file is read
 */
 void test_read_file_by_index(uint32_t index){
-
+    int j;
     dentry_t search_for_dir_entry;
     //printf("The size of inode is: %d\n",sizeof(dentry_t));
 
@@ -494,7 +494,16 @@ for (i = 0; i< n; i++)
     {
         printf("%c",buf[i]);
     }
-printf("filename: %s", search_for_dir_entry.filename);
+//printf("filename: %s", search_for_dir_entry.filename);
+
+for (j=0 ; j<FILENAME_SIZE ; j++)
+{
+    if (search_for_dir_entry.filename[j] == '\0')
+        break;
+
+    printf("%c",search_for_dir_entry.filename[j]);
+
+}
 
 }
 
@@ -509,6 +518,7 @@ Side Effect: corresponding file is read
 
 void test_read_file_by_name()
 {
+    int j;
     dentry_t search_for_dir_entry;
 
     uint8_t file_name[32] = "frame0.txt";
@@ -524,7 +534,14 @@ void test_read_file_by_name()
     {
         printf("%c",buf[i]);
     }
-    printf("filename: %s", search_for_dir_entry.filename);
+    //printf("filename: %s", search_for_dir_entry.filename);
+    for (j=0 ; j<FILENAME_SIZE ; j++)
+    {
+        if (search_for_dir_entry.filename[j] == '\0')
+            break;
+
+        printf("%c",search_for_dir_entry.filename[j]);
+    }
 
 }
 

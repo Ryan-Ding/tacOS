@@ -60,13 +60,13 @@ rtc_open(void)
 {
 
 
-    // unsigned char rate = OPEN_FLAG;
-    // cli();
-    // outb(STATUS_REGISTER_A,NMI_PORT);
-    // char prev = inb(CMOS_PORT);
-    // outb(STATUS_REGISTER_A,NMI_PORT);
-    // outb((prev & INB_MASK)|rate, CMOS_PORT);
-    // sti();
+    unsigned char rate = OPEN_FLAG;
+    cli();
+    outb(STATUS_REGISTER_A,NMI_PORT);
+    char prev = inb(CMOS_PORT);
+    outb(STATUS_REGISTER_A,NMI_PORT);
+    outb((prev & INB_MASK)|rate, CMOS_PORT);
+    sti();
 
     return 0;
 }
@@ -179,6 +179,14 @@ rtc_write(unsigned int frequency)
 
 }
 
+/*
+rtc_stop
+Description: Stop the rtc
+Input: None
+Output: None
+Return value: 0
+Side Effect: Stop rtc
+*/
 
 
 int rtc_stop()
@@ -194,6 +202,15 @@ int rtc_stop()
 }
 
 
+/*
+rtc_write_syscall
+Description: Set the frequency.
+Input: frequency - the frequency to be set
+Output: None
+Return value: 0 - success
+             -1 - failure
+Side Effect: The rtc's frequency is set
+*/
 int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes)
 {
     return rtc_write((unsigned int)*(int32_t*)buf);
@@ -213,7 +230,7 @@ rtc_interrupt(void){
     outb(STATUS_REGISTER_C,NMI_PORT); // select register c
     inb(CMOS_PORT); // throw away contents
 
-    // printf("b \n");
+    printf("1");
     //test_interrupts();
     send_eoi(RTC_IRQ);
     rtc_service = 0;

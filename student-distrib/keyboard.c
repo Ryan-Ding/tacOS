@@ -13,6 +13,8 @@ volatile int* cursor_y;
 
 int curr_case = 0;
 int ctrl_on = 0;
+int file_idx = FS_IDX;
+int rtc_frq =  RTC_INI_FRQ;
 // scancode lookup table used for screen ecoing
 static unsigned char scancode_set[CASE_NUM][KEY_NUM] = {
 // regular
@@ -83,7 +85,11 @@ static unsigned char scancode_set[CASE_NUM][KEY_NUM] = {
   }
 };
 
-
+/*
+ * handle_press
+ * input: scancode received from the keyboard
+ * description: This function echo characters to the terminal and perform function tests
+ */
 
 void
 handle_press(unsigned char scancode){
@@ -96,30 +102,49 @@ handle_press(unsigned char scancode){
         clear(); // clear video memory
         set_cursor(0,0);
     }
+    else if (ctrl_on && key_pressed == '1'){ // test read file
+      clear();
+      set_cursor(0,0);
+      test_dir_read();
+    }
+    else if (ctrl_on && key_pressed == '2'){ // test read file
+      clear();
+      set_cursor(0,0);
+      test_reg_read();
+    }
+    else if (ctrl_on && key_pressed == '3'){ // test read file by idx
+      clear();
+      set_cursor(0,0);
+      test_read_file_by_index(file_idx++);
+    } else if (ctrl_on && key_pressed == '4'){ // rtc test
+      clear();
+      set_cursor(0,0);
+      rtc_write(rtc_frq);
+      rtc_frq = rtc_frq<<1;
+    } else if (ctrl_on && key_pressed == '5'){
+      clear();
+      set_cursor(0,0);
+      rtc_frq = RTC_INI_FRQ;
+      rtc_stop();
+    }
     else if (*buffer_idx<BUFFER_SIZE) {
         buffer_key[*buffer_idx]=key_pressed;
         (*buffer_idx)++;
-        if((*cursor_x)==NUM_COLS-1) {
+        if((*cursor_x)==NUM_COLS-1) { // edge cases when changing lines and scrolling is needed
+          putc(key_pressed);
           *cursor_x = 0;
           if ((*cursor_y)<NUM_ROWS-1 ) {  (*cursor_y)++; }
-          else{ scroll_line();}
+          //else{ scroll_line();}
         }
-        else
+        else{
           (*cursor_x)++;
-        putc(key_pressed);
-        //set_cursor(*cursor_x,*cursor_y);
+          putc(key_pressed);
+        }
+
 
     }
 }
 
-void
-clear_buffer(int idx){
-  int i ;
-  for (i = 0; i < idx; i++) {
-    buffer_key[i] = KEY_EMPTY;
-  }
-
-}
 
 
 /*
@@ -140,7 +165,8 @@ keyboard_init(void){
 /*
  * keyboard_interrupt
  * input: NONE
- * description: This function echo the scancode received to the screen
+ * description: This function handles input from keyboard
+ * side effect : mark flags for different cases
  */
 
 void
@@ -182,7 +208,6 @@ keyboard_interrupt(void){
             }
 
             if (*buffer_idx > 0) {
-                 // function to be written in lib.c
                 (*buffer_idx)--;
                 buffer_key[*buffer_idx]= KEY_EMPTY;
 
@@ -191,7 +216,7 @@ keyboard_interrupt(void){
 
         case ENTER:
             *enter_flag = 1;
-            //clear_buffer(*buffer_idx);
+
             (*buffer_idx)=0;
             change_line();
             (*cursor_x) = 0;
