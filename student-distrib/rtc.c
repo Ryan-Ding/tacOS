@@ -22,25 +22,25 @@
 void
 rtc_init(void){
     unsigned char prev;
-    
+
     cli();
 
- 
+
 
     set_intr_gate(RTC_IRQ + SLAVE_IDT_OFFSET - MASTER_SIZE, rtc_interrupt_handler);
-    
+
     // select register b and disable NMI
     outb(STATUS_REGISTER_B, NMI_PORT);
-    
+
     //read current value of Register B
     prev = inb(CMOS_PORT);
-    
+
     // set index again
     outb(STATUS_REGISTER_B,NMI_PORT);
-    
+
     // turn on bit 6 of register b
     outb(prev|BIT_SIX_MASK,CMOS_PORT);
-    
+
     enable_irq(RTC_IRQ);
     rtc_service = 0;
     sti();
@@ -59,13 +59,15 @@ int
 rtc_open(void)
 {
 
-    unsigned char rate = OPEN_FLAG; //set the rate to be default value
-    cli();
-    outb(STATUS_REGISTER_A,NMI_PORT);
-    char prev = inb(CMOS_PORT);
-    outb(STATUS_REGISTER_A,NMI_PORT);
-    outb((prev & INB_MASK)|rate, CMOS_PORT);
-    sti();
+
+    // unsigned char rate = OPEN_FLAG;
+    // cli();
+    // outb(STATUS_REGISTER_A,NMI_PORT);
+    // char prev = inb(CMOS_PORT);
+    // outb(STATUS_REGISTER_A,NMI_PORT);
+    // outb((prev & INB_MASK)|rate, CMOS_PORT);
+    // sti();
+
     return 0;
 }
 
@@ -142,7 +144,7 @@ rtc_write(unsigned int frequency)
         //printf("Invalid frequency\n");
         return -1;
     }
-    
+
     if (frequency == 1)
         return -1;
 
@@ -150,7 +152,7 @@ rtc_write(unsigned int frequency)
         rate = 0;
     else
     {
-        if ((frequency & (frequency - 1)) != 0) //check if input frequency is power of 2 
+        if ((frequency & (frequency - 1)) != 0) //check if input frequency is power of 2
         {
                 //printf("Invalid frequency\n");
                 return -1;                      //if not, return -1
@@ -164,7 +166,7 @@ rtc_write(unsigned int frequency)
             }
 
     }
-    
+
 
 
     cli();
@@ -176,6 +178,21 @@ rtc_write(unsigned int frequency)
     return 0;
 
 }
+
+
+
+int rtc_stop()
+{
+    unsigned char rate = 0;
+    cli();
+    outb(STATUS_REGISTER_A,NMI_PORT);
+    char prev = inb(CMOS_PORT);
+    outb(STATUS_REGISTER_A,NMI_PORT);
+    outb((prev & INB_MASK)|rate, CMOS_PORT);
+    sti();
+    return 0;
+}
+
 
 int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes)
 {

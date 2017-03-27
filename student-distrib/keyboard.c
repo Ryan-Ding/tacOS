@@ -107,7 +107,7 @@ handle_press(unsigned char scancode){
         else
           (*cursor_x)++;
         putc(key_pressed);
-        set_cursor(*cursor_x,*cursor_y);
+        //set_cursor(*cursor_x,*cursor_y);
 
     }
 }

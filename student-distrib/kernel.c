@@ -11,7 +11,7 @@
 #include "rtc.h"
 #include "paging.h"
 #include "filesys.h"
-#include "fsop.h"
+#include "terminal.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -23,7 +23,7 @@ void
 entry (unsigned long magic, unsigned long addr)
 {
 	multiboot_info_t *mbi;
-	unsigned char buffer_key[BUFFER_SIZE];
+	//unsigned char buffer_key[BUFFER_SIZE];
 	/* Clear the screen. */
 	clear();
 
@@ -161,8 +161,10 @@ entry (unsigned long magic, unsigned long addr)
 
 	// clear();
 
+
     /* init the rtc */
 	rtc_init();
+
 
 
 
@@ -173,6 +175,7 @@ entry (unsigned long magic, unsigned long addr)
     /* init paging */
 	paging_init();
 
+
 	// init the terminal
 	init_terminal();
 	/*while (1) {
@@ -180,6 +183,10 @@ entry (unsigned long magic, unsigned long addr)
 			terminal_write(buffer_key);
 		}
 	}*/
+
+	rtc_stop();
+	init_file_system();
+
 	clear();
 
 	//testing_open_func();
@@ -201,14 +208,19 @@ entry (unsigned long magic, unsigned long addr)
 	// sti();
 
 	// //test_interrupts();
-	// test_dir_read();
-	// test_read_file_by_index(10);
-	// test_read_file_by_name();
-	// test_reg_read();
+
+	//test_dir_read();
+	//test_read_file_by_index();
+	 // test_read_file_by_name();
+	test_reg_read();
+	//testing_open_func();
+	//test_read_file_by_index(10);
+	//test_read_file_by_name();
 	// //printf("Stop\n");
 	// //rtc_close();
 	// //printf("Open\n");
-	 //rtc_write(8);
+	// rtc_write(7);
+
 
 /* this is the place to be commented out for testing purposes */
 
