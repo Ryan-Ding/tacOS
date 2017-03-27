@@ -23,7 +23,7 @@ void
 entry (unsigned long magic, unsigned long addr)
 {
 	multiboot_info_t *mbi;
-
+	unsigned char buffer_key[BUFFER_SIZE];
 	/* Clear the screen. */
 	clear();
 
@@ -175,8 +175,13 @@ entry (unsigned long magic, unsigned long addr)
 
 	// init the terminal
 	init_terminal();
+	/*while (1) {
+		if (terminal_read(buffer_key,BUFFER_SIZE)) {
+			terminal_write(buffer_key);
+		}
+	}*/
 	clear();
-	
+
 	//testing_open_func();
 	//test_read_file_by_index(10);
 	//test_read_file_by_name();
@@ -203,7 +208,7 @@ entry (unsigned long magic, unsigned long addr)
 	// //printf("Stop\n");
 	// //rtc_close();
 	// //printf("Open\n");
-	// rtc_write(7);
+	 //rtc_write(8);
 
 /* this is the place to be commented out for testing purposes */
 

@@ -68,13 +68,13 @@ void change_line(void){
 
 void scroll_line(void){
     int i,j;
-    int prev_line, curr_line;
+    int old_position, new_position;
     for (j = 1; j<NUM_ROWS; j++) {
         for (i = 0; i<NUM_COLS; i++) {
-            curr_line = NUM_ROWS*(j-1) + i;
-            prev_line = NUM_ROWS*j + i;
-            *(uint8_t *)(video_mem +(curr_line<<1)) = *(uint8_t *)(video_mem +(prev_line<<1));
-            *(uint8_t *)(video_mem +(curr_line<<1)+1) = *(uint8_t *)(video_mem +(prev_line<<1)+1);
+            new_position = NUM_COLS*(j-1) + i;
+            old_position = NUM_COLS*j + i;
+            *(uint8_t *)(video_mem +(new_position<<1)) = *(uint8_t *)(video_mem +(old_position<<1));
+            *(uint8_t *)(video_mem +(new_position<<1)+1) = *(uint8_t *)(video_mem +(old_position<<1)+1);
         }
     }
     for (i =0; i<NUM_COLS; i++) {
@@ -271,9 +271,14 @@ putc(uint8_t c)
         *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+        screen_y = (screen_y + (screen_x / NUM_COLS));
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+    if (screen_y == NUM_ROWS) {
+      scroll_line();
+      screen_y--;
+    }
+    set_cursor(screen_x,screen_y);
 }
 
 /*

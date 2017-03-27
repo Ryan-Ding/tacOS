@@ -32,10 +32,9 @@ void init_terminal(){
 
 
 int
-terminal_read(int fd, unsigned char* buf, int num_bytes){
-    int i;
+terminal_read(unsigned char* buf, int num_bytes){
+    int i=0;
 
-    sti();
     while (!terminal.read_flag);
     terminal.read_flag = 0;
     for (i = 0; i<num_bytes && i<BUFFER_SIZE;i++ ) {
@@ -45,10 +44,11 @@ terminal_read(int fd, unsigned char* buf, int num_bytes){
     return i;
 }
 
-int terminal_write(int fd, unsigned char* buf, int num_bytes){
+int
+terminal_write(unsigned char* buf){
     int i ;
-    for (i = 0; i<num_bytes; i++)
-        putc(buf[i]);
-
+    cli();
+    i = printf((int*)buf);
+    sti();
     return i;
 }

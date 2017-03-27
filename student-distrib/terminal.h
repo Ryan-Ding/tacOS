@@ -22,8 +22,8 @@ typedef struct {
 }terminal_t;
 
 extern void init_terminal();
-int terminal_read(int fd,unsigned char* buf, int num_bytes);
-int terminal_write(int fd,unsigned char* buf, int num_bytes);
+int terminal_read(unsigned char* buf, int num_bytes);
+int terminal_write(unsigned char* buf);
 //int terminal_open();
 //int terminal_close();
 

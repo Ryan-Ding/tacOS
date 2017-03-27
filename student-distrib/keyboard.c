@@ -101,16 +101,14 @@ handle_press(unsigned char scancode){
         (*buffer_idx)++;
         if((*cursor_x)==NUM_COLS-1) {
           *cursor_x = 0;
-
-          // if (*cursor_y==NUM_ROWS-1)
-          //   scroll_line();
-          // else
-          (*cursor_y)++;
+          if ((*cursor_y)<NUM_ROWS-1 ) {  (*cursor_y)++; }
+          else{ scroll_line();}
         }
         else
           (*cursor_x)++;
-        set_cursor(*cursor_x,*cursor_y);
         putc(key_pressed);
+        set_cursor(*cursor_x,*cursor_y);
+
     }
 }
 
@@ -172,9 +170,9 @@ keyboard_interrupt(void){
                 curr_case = CASE_CAPS;
             break;
         case BACKSPACE:
-            if(!(cursor_y==0 && cursor_x ==0)) { delete_content(); }
+            if(!(*cursor_y==0 && *cursor_x ==0)) { delete_content(); }
             if((*cursor_x) == 0) {
-                if (cursor_y > 0) {
+                if (*cursor_y > 0) {
                   *cursor_x = NUM_COLS - 1;
                   (*cursor_y)--;
                 }
@@ -193,7 +191,7 @@ keyboard_interrupt(void){
 
         case ENTER:
             *enter_flag = 1;
-            clear_buffer(*buffer_idx);
+            //clear_buffer(*buffer_idx);
             (*buffer_idx)=0;
             change_line();
             (*cursor_x) = 0;
