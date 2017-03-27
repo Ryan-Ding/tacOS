@@ -101,7 +101,7 @@ handle_press(unsigned char scancode){
         return;
     unsigned char key_pressed = scancode_set[curr_case][scancode];
 
-    if (ctrl_on && key_pressed == 'l' ) {
+    if (ctrl_on && (key_pressed == 'l'|| key_pressed == 'L') ) {
         clear(); // clear video memory
         set_cursor(0,0);
     }
@@ -131,6 +131,36 @@ handle_press(unsigned char scancode){
       rtc_stop();
     }
     else if (*buffer_idx<BUFFER_SIZE) {
+      if(scancode == LEFT_CURSOR){
+        if (*cursor_x>0) {
+          (*cursor_x)--;
+          set_cursor(*cursor_x,*cursor_y);
+        }
+
+      }
+      else if(scancode ==  RIGHT_CURSOR){
+        if (*cursor_x<NUM_COLS-1) {
+          (*cursor_x)++;
+          set_cursor(*cursor_x,*cursor_y);
+        }
+
+      }
+      else if(scancode ==  UP_CURSOR){
+        if (*cursor_y>0) {
+          (*cursor_y)--;
+          set_cursor(*cursor_x,*cursor_y);
+        }
+
+      }
+      else if(scancode ==  DOWN_CURSOR){
+        if (*cursor_y<NUM_ROWS-1) {
+          (*cursor_y)++;
+          set_cursor(*cursor_x,*cursor_y);
+        }
+
+      }
+      else{
+
         buffer_key[*buffer_idx]=key_pressed;
         (*buffer_idx)++;
         if((*cursor_x)==NUM_COLS-1) { // edge cases when changing lines and scrolling is needed
@@ -143,6 +173,9 @@ handle_press(unsigned char scancode){
           (*cursor_x)++;
           putc(key_pressed);
         }
+      }
+
+
 
 
     }
@@ -250,7 +283,7 @@ keyboard_interrupt(void){
             break;
     }
     // only print when it is pressed instead of released
-    //if( scancode < 0x80) { printf("%c pressed \n",scancode_set[scancode]); }
+    //if( scancode < 0x80) { printf("%x pressed \n",scancode); }
 
     send_eoi(KEYBOARD_IRQ);
 
