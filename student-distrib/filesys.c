@@ -62,8 +62,8 @@ void init_file_system()
     {
         file_desc_table[i].flag = 0;
     }
-    file_desc_table[0].flag = 1;
-    file_desc_table[1].flag = 1;
+    file_desc_table[STDIN].flag = 1;
+    file_desc_table[STDO].flag = 1;
 
 
 }

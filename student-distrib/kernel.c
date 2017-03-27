@@ -191,7 +191,7 @@ entry (unsigned long magic, unsigned long addr)
 	// sti();
 
 	// //test_interrupts();
-	// test_dir_read();
+	test_dir_read();
 	//test_read_file_by_index();
 	 // test_read_file_by_name();
 	//test_reg_read();
