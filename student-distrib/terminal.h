@@ -10,7 +10,7 @@
 
 #define _128MB 0x8000000
 #define _4KB 0x1000
-
+#define BUFFER_SIZE 128
 typedef struct {
     int pos_x;
     int pos_y;
@@ -24,8 +24,8 @@ typedef struct {
 extern void init_terminal();
 int terminal_read(unsigned char* buf, int num_bytes);
 int terminal_write(unsigned char* buf,int num_bytes);
-//int terminal_open();
-//int terminal_close();
+int terminal_open();
+int terminal_close();
 
 
 #endif

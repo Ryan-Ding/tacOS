@@ -489,11 +489,14 @@ uint32_t length = inode_ptr->length;
 uint8_t buf[length];
 
 int n = read_data(inode,0,buf,length);
-int i ;
-for (i = 0; i< n; i++)
-    {
-        printf("%c",buf[i]);
-    }
+//int i ;
+// for (i = 0; i< n; i++)
+//     {
+//         printf("%c",buf[i]);
+//     }
+terminal_write(buf,n);
+
+
 //printf("filename: %s", search_for_dir_entry.filename);
 
 for (j=0 ; j<FILENAME_SIZE ; j++)

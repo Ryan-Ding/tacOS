@@ -6,7 +6,7 @@
 #include "rtc.h"
 #include "sys_call.h"
 #include "lib.h"
-
+#include "terminal.h"
 #include "sys_call.h"
 
 #define DENTRY_BYTE_SIZE 64
@@ -80,7 +80,8 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
 
 void init_file_system();
 
-
+void add_dir_entry(const uint8_t* filename);
+void add_inode(const uint8_t* );
 
 // global variable that keeps track of the boot block information
 

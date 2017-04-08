@@ -210,9 +210,9 @@ entry (unsigned long magic, unsigned long addr)
 	//test_dir_read();
 	//test_read_file_by_index();
 	 // test_read_file_by_name();
-	test_reg_read();
+	//test_reg_read();
 	//testing_open_func();
-	//test_read_file_by_index(10);
+	test_read_file_by_index(10);
 	//test_read_file_by_name();
 	// //printf("Stop\n");
 	// //rtc_close();

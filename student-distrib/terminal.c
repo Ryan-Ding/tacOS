@@ -61,8 +61,44 @@ terminal_read(unsigned char* buf, int num_bytes){
 int
 terminal_write(unsigned char* buf,int num_bytes){
     int i ;
+    int count = 0;
+
     cli();
-    i = printf((int8_t*)buf);
+    for (i = 0; i < num_bytes;i++)
+    {
+        if (buf == NULL)
+            break;
+
+        putc(*buf);
+        buf++;
+        count++;
+    }
     sti();
-    return i;
+    return count;
 }
+
+/*
+ * terminal_open
+ * input: none
+ * description: open the terminal
+ * return value: 0
+ * side effect : none
+ */
+
+int terminal_open(){
+    return 0;
+}
+
+/*
+ * terminal_close
+ * input: none
+ * description: close the terminal
+ * return value: 0
+ * side effect : none
+ */
+
+int terminal_close(){
+    return 0;
+}
+
+
