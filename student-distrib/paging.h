@@ -23,21 +23,32 @@
 
 #define KERNEL_START_ADDR 0x00400000
 
-uint32_t page_directory[PAGE_DIRECTORY_NUM] __attribute__((aligned(PAGE_DIRECTORY_SIZE)));
-uint32_t page_table[PAGE_TABLE_NUM] __attribute__((aligned(PAGE_TABLE_SIZE)));
+/* stuff added in cp3 */
+#define PID_PD_OFFSET 0 // TODO needs verification
+#define MAX_PROCESS_NUM 9
+typedef uint32_t page_directory_t[PAGE_DIRECTORY_NUM] __attribute__((aligned(PAGE_DIRECTORY_SIZE)));
+typedef uint32_t page_table_t[PAGE_TABLE_NUM] __attribute__((aligned(PAGE_TABLE_SIZE)));
+
+page_directory_t page_directory_list[MAX_PROCESS_NUM]; 
+page_table_t page_table_list[MAX_PROCESS_NUM];
+
+/* ends here */
+
+// uint32_t page_directory[PAGE_DIRECTORY_NUM] __attribute__((aligned(PAGE_DIRECTORY_SIZE)));
+//uint32_t page_table[PAGE_TABLE_NUM] __attribute__((aligned(PAGE_TABLE_SIZE)));
 //uint32_t first_page_table[1024] __attribute__((aligned(4096)));
 
 // functions to initialize page directory and page table
-extern void create_empty_page_directory();
-extern void create_empty_page_table();
-extern void init_first_page_directory_entry();
+extern void create_empty_page_directory(uint32_t pid);
+extern void create_empty_page_table(uint32_t pid);
+extern void init_first_page_directory_entry(uint32_t pid);
 
-extern void add_video_memory(uint32_t page_table_idx);
-extern void init_kernel_page();
+extern void add_video_memory(uint32_t pid, uint32_t page_table_idx);
+extern void init_kernel_page(uint32_t pid);
 
 
 // functions written in assembly to enable paging
-extern void load_page_directory(unsigned int* page_dir);
+extern void load_page_directory(uint32_t pid);
 extern void enable_paging();
 extern void enable_mix_paging_size();
 

@@ -173,7 +173,7 @@ entry (unsigned long magic, unsigned long addr)
 	keyboard_init();
 
     /* init paging */
-	paging_init();
+	paging_init(0);
 
 
 	// init the terminal

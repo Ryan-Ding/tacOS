@@ -9,10 +9,11 @@
  * side effect: set pages as not present
  */
 
-void create_empty_page_directory() {
+void create_empty_page_directory(uint32_t pid) {
 	int i;
+	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
 	for (i = 0; i < PAGE_DIRECTORY_NUM; ++i) {
-		page_directory[i] = NOT_PRESENT_MASK; // set present bit to be 10 (meaning not present)
+		(*page_directory)[i] = NOT_PRESENT_MASK; // set present bit to be 10 (meaning not present)
 	}
 }
 
@@ -23,10 +24,11 @@ void create_empty_page_directory() {
  * side effect: none
  */
 
-void create_empty_page_table() {
+void create_empty_page_table(uint32_t pid) {
 	int i;
+	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
 	for (i = 0; i < PAGE_TABLE_NUM; ++i) {
-		page_table[i] = (i * 0x1000) | NOT_PRESENT_MASK; // leaving trailing 12 bits for starting addresses to be 0
+		(*page_table)[i] = (i * 0x1000) | NOT_PRESENT_MASK; // leaving trailing 12 bits for starting addresses to be 0
 	}
 }
 
@@ -36,8 +38,10 @@ void create_empty_page_table() {
  * description: initialize the first page directory entry
  * side effect: put the newly created page table into blank page directory
  */
-void init_first_page_directory_entry() {
-	page_directory[0] =  ((unsigned int) page_table)  |  SMALL_PAGE_DIRECTORY_ENTRY_MASK; 
+void init_first_page_directory_entry(uint32_t pid) {
+	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
+	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
+	(*page_directory)[0] =  ((unsigned int) page_table)  |  SMALL_PAGE_DIRECTORY_ENTRY_MASK; 
 }
 
 
@@ -48,8 +52,9 @@ void init_first_page_directory_entry() {
  * side effect: none
  */
 
-void init_kernel_page() {
-	page_directory[KERNEL_PAGE_DIRECTORY_OFFSET] = 	((unsigned int)  KERNEL_START_ADDR) | LARGE_PAGE_DIRECTORY_ENTRY_MASK;
+void init_kernel_page(uint32_t pid) {
+	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
+	(*page_directory)[KERNEL_PAGE_DIRECTORY_OFFSET] = 	((unsigned int)  KERNEL_START_ADDR) | LARGE_PAGE_DIRECTORY_ENTRY_MASK;
 }
 
 /*
@@ -58,9 +63,10 @@ void init_kernel_page() {
  * description: set a page in the page table to be present
  * side effect: none
  */
-
-void add_video_memory(uint32_t page_table_idx) {
-	page_table[page_table_idx] = ((unsigned int) (page_table[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present 	
+//TODO change to |=
+void add_video_memory(uint32_t pid, uint32_t page_table_idx) {
+	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
+	(*page_table)[page_table_idx] = ((unsigned int) ((*page_table)[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present 	
 }
 
 /*
@@ -70,7 +76,8 @@ void add_video_memory(uint32_t page_table_idx) {
  * side effect: none
  */
 
-void load_page_directory(unsigned int* page_dir) {
+void load_page_directory(uint32_t pid) {
+	unsigned int* page_dir = (unsigned int*) &(page_directory_list[pid + PID_PD_OFFSET]);
 	asm volatile (
 		"movl %0, %%eax;"
 		"movl %%eax, %%cr3;"
@@ -121,19 +128,19 @@ void enable_mix_paging_size() {
  * input: NONE
  * description: initialize page directory and page table, 
  *  put page table in the page directory and enable paging
+ * common tasks for initalize new process
  * side effect: none
  */
 
-void paging_init() {
-	create_empty_page_directory(); //set up PDE/PTE
-	create_empty_page_table();
-	init_first_page_directory_entry();	//initialize first page directory entry
-	init_kernel_page();	//initialize second PDE
-	add_video_memory(VIDEO_PAGE_TABLE_IDX);	//set up video memory
-	load_page_directory(page_directory);	//load page directory
+void paging_init(uint32_t pid) {
+	create_empty_page_directory(pid); //set up PDE/PTE
+	create_empty_page_table(pid);
+	init_first_page_directory_entry(pid);	//initialize first page directory entry
+	init_kernel_page(pid);	//initialize second PDE
+	add_video_memory(pid, VIDEO_PAGE_TABLE_IDX);	//set up video memory
+	load_page_directory(pid);	//load page directory
 	enable_mix_paging_size();	//enable page directory to be varied sized
-	enable_paging();	//enable paging finally
-	
+	enable_paging();	//enable paging finally	
 }
 
 
