@@ -123,6 +123,14 @@ void enable_mix_paging_size() {
 	);
 }
 
+
+//TODO INTERFACE
+
+void create_program_page(uint32_t pid){
+	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
+	(*page_directory)[PROGRAM_IMAGE_PAGE_OFFSET] = 	((unsigned int)  PROGRAM_IMAGE_START_ADDRESS(pid)) | PROGRAM_IMAGE_ENTRY_MASK;
+}
+
 /*
  * paging_init()
  * input: NONE
@@ -138,6 +146,10 @@ void paging_init(uint32_t pid) {
 	init_first_page_directory_entry(pid);	//initialize first page directory entry
 	init_kernel_page(pid);	//initialize second PDE
 	add_video_memory(pid, VIDEO_PAGE_TABLE_IDX);	//set up video memory
+	if (pid !=  PID_PD_OFFSET) {
+		// create progam image page
+		create_program_page(pid);
+	}
 	load_page_directory(pid);	//load page directory
 	enable_mix_paging_size();	//enable page directory to be varied sized
 	enable_paging();	//enable paging finally	

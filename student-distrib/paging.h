@@ -26,6 +26,14 @@
 /* stuff added in cp3 */
 #define PID_PD_OFFSET 0 // TODO needs verification
 #define MAX_PROCESS_NUM 9
+#define PROGRAM_IMAGE_PAGE_OFFSET 0x20
+#define FIRST_PROGRAM_IMAGE_ADDRESS (0x8 << 20) // 8MB
+#define PORGRAM_IMAGE_SIZE (0x4 << 20) // 4MB
+#define PROGRAM_IMAGE_START_ADDRESS(pid) ( (1 + pid) << 22 )   
+
+#define SUPERVISOR_MASK 0x4
+#define PROGRAM_IMAGE_ENTRY_MASK  (LARGE_PAGE_DIRECTORY_ENTRY_MASK | SUPERVISOR_MASK)
+
 typedef uint32_t page_directory_t[PAGE_DIRECTORY_NUM] __attribute__((aligned(PAGE_DIRECTORY_SIZE)));
 typedef uint32_t page_table_t[PAGE_TABLE_NUM] __attribute__((aligned(PAGE_TABLE_SIZE)));
 
@@ -54,5 +62,8 @@ extern void enable_mix_paging_size();
 
 
 extern void paging_init();
+
+extern void create_program_page(uint32_t pid);
+
 
 #endif
