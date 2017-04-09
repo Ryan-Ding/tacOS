@@ -173,7 +173,7 @@ entry (unsigned long magic, unsigned long addr)
 	keyboard_init();
 
     /* init paging */
-	paging_init(1);
+	paging_init(0);
 
 
 	// init the terminal
@@ -184,6 +184,10 @@ entry (unsigned long magic, unsigned long addr)
 
 	// init file system
 	init_file_system();
+	init_sys_call();
+	// paging_init(1);
+	// uint8_t filename[] = "frame0.txt";
+	// program_loader(filename);
 
 	clear();
 
@@ -212,7 +216,7 @@ entry (unsigned long magic, unsigned long addr)
 	 // test_read_file_by_name();
 	//test_reg_read();
 	//testing_open_func();
-	test_read_file_by_index(10);
+	//test_read_file_by_index(10);
 	//test_read_file_by_name();
 	// //printf("Stop\n");
 	// //rtc_close();

@@ -82,7 +82,7 @@ void init_file_system();
 
 void add_dir_entry(const uint8_t* filename);
 void add_inode(const uint8_t* );
-
+boot_block_t* get_boot_block_info();
 // global variable that keeps track of the boot block information
 
 

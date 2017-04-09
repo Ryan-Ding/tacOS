@@ -1,6 +1,6 @@
 #include "filesys.h"
-static boot_block_t* boot_block_ptr = NULL;
 
+static boot_block_t* boot_block_ptr = NULL;
 
 file_desc_entry_t file_desc_table[FDT_SIZE];
 
@@ -460,7 +460,10 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
     return n;
 }
 
-
+boot_block_t* get_boot_block_info()
+{
+    return boot_block_ptr;
+}
 
 
 
