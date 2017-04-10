@@ -15,6 +15,17 @@ void program_loader(const uint8_t* filename){
     read_data(inode,0,(uint8_t*)PROGRAM_IMAGE_ADDR,length);
 }
 
+int32_t check_if_executable(dentry_t* search_for_dir_entry){
+	uint8_t buf[4];
+	if(read_data(search_for_dir_entry->inode_num, 0, buf, 4 )!=4)
+		return -1;
+
+	if (buf[0]==0x7f && buf[1]==0x45 && buf[2]== 0x4c && buf[3] == 0x46)
+		return 0;
+	
+	return -1;
+}
+
 int32_t system_halt (uint8_t status)
 {
 	//TODO
@@ -57,6 +68,11 @@ int32_t system_execute (const uint8_t* command)
     if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1){
         return -1;
     }
+
+ //    if (check_if_executable(&search_for_dir_entry)!=0){
+	// 	printf("Not executable!\n");
+	// 	return -1;
+	// }
 
     //set up paging
     paging_init();
