@@ -9,5 +9,6 @@
 void init_sys_call();
 void program_loader(const uint8_t* filename);
 
-
+extern int32_t system_halt (uint8_t status);
+extern int32_t system_execute (const uint8_t* command);
 #endif

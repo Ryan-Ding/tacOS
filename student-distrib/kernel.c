@@ -186,11 +186,13 @@ entry (unsigned long magic, unsigned long addr)
 	init_file_system();
 	init_sys_call();
 	// paging_init(1);
-	// uint8_t filename[] = "frame0.txt";
+	uint8_t filename[] = "frame0.txt";
 	// program_loader(filename);
 
 	clear();
-	printf("what the f %u", sizeof(tss_t));
+	system_execute(filename);
+	system_execute(filename);
+
 	//testing_open_func();
 	//test_read_file_by_index(10);
 	//test_read_file_by_name();

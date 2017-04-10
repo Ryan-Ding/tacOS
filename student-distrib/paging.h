@@ -2,6 +2,7 @@
 #define PAGING_H
 
 #include "types.h"
+#include "pcb.h"
 
 #define VIDEO_PAGE_TABLE_IDX 0x000000B8
 
@@ -24,12 +25,6 @@
 #define KERNEL_START_ADDR 0x00400000
 
 /* stuff added in cp3 */
-#define PID_PD_OFFSET 0 // TODO needs verification
-#define MAX_PROCESS_NUM 9
-#define PROGRAM_IMAGE_PAGE_OFFSET 0x20
-#define FIRST_PROGRAM_IMAGE_ADDRESS (0x8 << 20) // 8MB
-#define PORGRAM_IMAGE_SIZE (0x4 << 20) // 4MB
-#define PROGRAM_IMAGE_START_ADDRESS(pid) ( (1 + pid) << 22 )   
 
 #define SUPERVISOR_MASK 0x4
 #define PROGRAM_IMAGE_ENTRY_MASK  (LARGE_PAGE_DIRECTORY_ENTRY_MASK | SUPERVISOR_MASK)
