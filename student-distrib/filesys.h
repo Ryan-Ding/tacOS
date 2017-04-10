@@ -7,7 +7,6 @@
 #include "sys_call.h"
 #include "lib.h"
 #include "terminal.h"
-#include "sys_call.h"
 
 #define DENTRY_BYTE_SIZE 64
 #define FILENAME_SIZE 32
@@ -26,9 +25,6 @@
 #define LOCATE_INODE_BLOCK(base,inode) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode )
 #define LOCATE_DATA_BLOCK(base,inode_all,data_blk) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode_all + FILE_SYS_BLOCK_SIZE * data_blk )
 
-#define FDT_SIZE 8
-#define STDIN 0
-#define STDO 1
 
 typedef struct {
     uint8_t filename[FILENAME_SIZE]; // null terminator

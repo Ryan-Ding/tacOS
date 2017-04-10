@@ -190,7 +190,7 @@ entry (unsigned long magic, unsigned long addr)
 	// program_loader(filename);
 
 	clear();
-
+	printf("what the f %u", sizeof(tss_t));
 	//testing_open_func();
 	//test_read_file_by_index(10);
 	//test_read_file_by_name();
