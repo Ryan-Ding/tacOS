@@ -3,9 +3,23 @@
 
 #include "types.h"
 
+#define PID_PD_OFFSET 0 // TODO needs verification
+#define MAX_PROCESS_NUM 9
+#define PROGRAM_IMAGE_PAGE_OFFSET 0x20
+#define FIRST_PROGRAM_IMAGE_ADDRESS (0x8 << 20) // 8MB
+#define KERNEL_END_ADDR FIRST_PROGRAM_IMAGE_ADDRESS
+#define PORGRAM_IMAGE_SIZE (0x4 << 20) // 4MB
+#define PROGRAM_IMAGE_START_ADDRESS(pid) ( (1 + pid) << 22 )   
+#define KERNEL_STACK_ENTRY_SIZE (0x8 << 10)
+
 #define FDT_SIZE 8
 #define STDIN 0
 #define STDO 1
+ 
+#define PCB_START_ADDR(pid) (KERNEL_END_ADDR - (pid * KERNEL_STACK_ENTRY_SIZE))
+
+static uint32_t process_bitmap = 0;
+static uint32_t kernel_stack_top;
 
 typedef struct {
    int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);
@@ -25,6 +39,7 @@ typedef struct {
 typedef struct pcb_t {
     file_desc_entry_t file_desc_table[FDT_SIZE];
     uint32_t pid;
+    //uint32_t odd_cr3;
     uint32_t old_ebp;
     uint32_t old_esp;
     uint32_t old_esp0;
@@ -32,5 +47,7 @@ typedef struct pcb_t {
     uint32_t current_esp;
     struct pcb_t* parent; 
 } pcb_t;
+
+extern int32_t find_available_pid();
 
 #endif
