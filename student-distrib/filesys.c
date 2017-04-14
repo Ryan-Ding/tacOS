@@ -168,7 +168,7 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 
         data_ptr = (uint32_t*) LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr, num_inodes, (inode_ptr->data_blocks)[index] );
         bytes_to_be_copied =  min(length, FILE_SYS_BLOCK_SIZE - offset_temp);
-        memcpy(buf, data_ptr + offset_temp, bytes_to_be_copied);
+        memcpy(buf, ((uint8_t*)data_ptr + offset_temp), bytes_to_be_copied);
         // prepare for further copies
         length -= bytes_to_be_copied;
         count += bytes_to_be_copied;
@@ -527,18 +527,18 @@ void test_read_file_by_name()
     int j;
     dentry_t search_for_dir_entry;
 
-    uint8_t file_name[32] = "frame0.txt";
+    uint8_t file_name[32] = "frame1.txt";
 
     if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
     uint32_t inode = search_for_dir_entry.inode_num;
     inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
     uint32_t length = inode_ptr->length;
     uint8_t buf[length];
-    int n = read_data(inode,0,buf,length);
+    int n = read_data(inode,2,buf,length);
     int i ;
     for (i = 0; i< n; i++)
     {
-        printf("%c",buf[i]);
+        printf("(%c,%d)",buf[i],i);
     }
     //printf("filename: %s", search_for_dir_entry.filename);
     for (j=0 ; j<FILENAME_SIZE ; j++)

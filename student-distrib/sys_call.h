@@ -4,6 +4,7 @@
 #include "paging.h"
 #include "pcb.h"
 #include "filesys.h"
+#include "x86_desc.h"
 #define PROGRAM_IMAGE_ADDR 0x08048000
 #define EXECUTABLE_STARTING_ADDR 24
 #define THREE_BYTES_SHIFT 24
