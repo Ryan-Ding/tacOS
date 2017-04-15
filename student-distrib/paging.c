@@ -128,7 +128,7 @@ void enable_mix_paging_size() {
 
 void create_program_page(uint32_t pid){
 	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
-	(*page_directory)[PROGRAM_IMAGE_PAGE_OFFSET] = 	((unsigned int)  PROGRAM_IMAGE_START_ADDRESS(pid)) | PROGRAM_IMAGE_ENTRY_MASK;
+	(*page_directory)[PROGRAM_IMAGE_PAGE_OFFSET] = 	((unsigned int)  PROGRAM_IMAGE_START_ADDRESS(pid) | PROGRAM_IMAGE_ENTRY_MASK;
 }
 
 /*
