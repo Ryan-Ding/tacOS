@@ -9,10 +9,14 @@
 #define THREE_BYTES_SHIFT 24
 #define TWO_BYTES_SHIFT 16
 #define ONE_BYTE_SHIFT 8
-#define MAGIC_NUM_1 0x7f 
+#define MAGIC_NUM_1 0x7f
 #define MAGIC_NUM_2 0x45
 #define MAGIC_NUM_3 0x4c
 #define MAGIC_NUM_4 0x46
+
+#define _8MB       0x00800000
+#define _8KB       0x2000
+#define ALIGN_8KB 0xFFFFE000
 
 void init_sys_call();
 void program_loader(const uint8_t* filename);

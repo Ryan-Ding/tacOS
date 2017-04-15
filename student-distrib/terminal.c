@@ -19,7 +19,10 @@ void init_terminal(){
     terminal.read_flag = 0;
     terminal.curr_idx = 0;
     // may need a function to map the virtual address with physical addresses
-
+    terminal.num_process = 0;
+   for (i =0; i<PID_SIZE; i++) {
+       terminal.pid_array[i] = -1;
+   }
 
     clear();
 
@@ -101,4 +104,13 @@ int terminal_close(){
     return 0;
 }
 
-
+int get_curr_pid() {
+    int i =terminal.num_process;
+    if( i == 0) return -1;
+    return terminal.pid_array[i-1];
+}
+void close_process(){
+    int i =terminal.num_process;
+    terminal.pid_array[i-1] = -1;
+    terminal.num_process--;
+}

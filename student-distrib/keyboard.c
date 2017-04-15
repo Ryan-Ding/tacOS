@@ -131,35 +131,7 @@ handle_press(unsigned char scancode){
       rtc_stop();
     }
     else if (*buffer_idx<BUFFER_SIZE) {
-      if(scancode == LEFT_CURSOR){
-        if (*cursor_x>0) {
-          (*cursor_x)--;
-          set_cursor(*cursor_x,*cursor_y);
-        }
 
-      }
-      else if(scancode ==  RIGHT_CURSOR){
-        if (*cursor_x<NUM_COLS-1) {
-          (*cursor_x)++;
-          set_cursor(*cursor_x,*cursor_y);
-        }
-
-      }
-      else if(scancode ==  UP_CURSOR){
-        if (*cursor_y>0) {
-          (*cursor_y)--;
-          set_cursor(*cursor_x,*cursor_y);
-        }
-
-      }
-      else if(scancode ==  DOWN_CURSOR){
-        if (*cursor_y<NUM_ROWS-1) {
-          (*cursor_y)++;
-          set_cursor(*cursor_x,*cursor_y);
-        }
-
-      }
-      else{
 
         buffer_key[*buffer_idx]=key_pressed;
         (*buffer_idx)++;
@@ -178,7 +150,7 @@ handle_press(unsigned char scancode){
 
 
 
-    }
+
 }
 
 

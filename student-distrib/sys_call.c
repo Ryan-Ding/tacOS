@@ -25,7 +25,7 @@ int32_t check_if_executable(dentry_t* search_for_dir_entry){
 
 	if (buf[0]==MAGIC_NUM_1 && buf[1]==MAGIC_NUM_2 && buf[2]== MAGIC_NUM_3 && buf[3] == MAGIC_NUM_4)
 		return 0;
-	
+
 	return -1;
 }
 
@@ -37,7 +37,41 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
 
 int32_t system_halt (uint8_t status)
 {
-	//TODO
+	int i;
+    i = get_curr_pid();
+    pcb_t* curr_process = (pcb_t*)(kernel_stack_top & ALIGN_8KB);
+
+    if (i==-1) { // no task running any more
+        //restart the shell
+    }
+    //pcb_t * parent_pcb = curr_process->parent;
+  //  parent_pcb->child = NULL;
+    curr_process->parent = NULL;
+    // mark current pid as done
+    close_process();
+    i = get_curr_pid(); // get the parent's pid after poping curr process
+    // reset kernel_top, free space of curr process
+  kernel_stack_top = _8MB - _8KB *i-4;
+
+    //load the parent page directory
+
+    load_page_directory(i);
+
+    uint32_t ret_status = status;
+		i = curr_process->old_esp;
+    //restore esp and ebp
+    asm volatile("movl %0, %%esp	;"
+                    "pushl %1			;"
+                    ::"g"(i),"g"(ret_status));
+
+		i = curr_process->old_ebp;
+    asm volatile("movl %0, %%ebp"::"g"(i));
+
+    asm volatile("popl %eax");
+    asm volatile("leave");
+    asm volatile("ret");
+
+
 	return 0;
 }
 
@@ -47,7 +81,7 @@ int32_t system_execute (const uint8_t* command)
 	pcb_t new_pcb;
 	uint32_t old_ebp = 0, old_esp = 0;
 	/* Parse Command Arguments */
-	
+
 		int i=0;
 		int j=0;
 		if(!command)
@@ -75,16 +109,16 @@ int32_t system_execute (const uint8_t* command)
 			j++;
 		}
 		arguments[i]='\0';
-	
+
 	/* Check for executable */
 	dentry_t search_for_dir_entry;
     //printf("The size of inode is: %d\n",sizeof(dentry_t));
-	
+
 	//check file validity
     if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1){
         return -1;
     }
-	   
+
 	   if (check_if_executable(&search_for_dir_entry)!=0){
 		printf("Not executable!\n");
 		return -1;
@@ -98,12 +132,12 @@ int32_t system_execute (const uint8_t* command)
 
 	//get first instruction
 	uint32_t new_instruction=get_first_instruction(&search_for_dir_entry);
- 
+
 
 	/*creat new pcb*/
 	asm volatile (
 		"movl %%ebp, %0;"
-		"movl %%esp, %1;"		
+		"movl %%esp, %1;"
 		: "=g"(old_ebp), "=g"(old_esp)
 	);
 
@@ -116,11 +150,11 @@ int32_t system_execute (const uint8_t* command)
 	if (new_pid != PID_PD_OFFSET) {
 		new_pcb.parent = (pcb_t*) kernel_stack_top;
 	} else {
-		new_pcb.parent = NULL;		
+		new_pcb.parent = NULL;
 	}
 	memcpy((void*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE), (void*) &new_pcb, sizeof(typeof(pcb_t)));
 	kernel_stack_top -= KERNEL_STACK_ENTRY_SIZE;
-	
+
 	/* Prepare for Context Switch; tss.esp0/ebp */
 	tss.ss0 = KERNEL_DS;
 	tss.esp0 = kernel_stack_top - 4;
@@ -137,7 +171,7 @@ int32_t system_execute (const uint8_t* command)
     //  "mov %ax, %es;"
     //  "mov %ax, %fs;"
     //  "mov %ax, %gs;"
-                  
+
     //  "mov %esp, %eax;"
     //  "pushl $0x2B;"
     //  "pushl %eax;"
@@ -152,13 +186,3 @@ int32_t system_execute (const uint8_t* command)
 
 	return 0;
 	}
-
-
-
-
-
-
-
-
-
-
