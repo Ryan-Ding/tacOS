@@ -41,7 +41,7 @@ void create_empty_page_table(uint32_t pid) {
 void init_first_page_directory_entry(uint32_t pid) {
 	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
 	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
-	(*page_directory)[0] =  ((unsigned int) page_table)  |  SMALL_PAGE_DIRECTORY_ENTRY_MASK; 
+	(*page_directory)[0] =  ((unsigned int) page_table)  |  SMALL_PAGE_DIRECTORY_ENTRY_MASK;
 }
 
 
@@ -66,7 +66,7 @@ void init_kernel_page(uint32_t pid) {
 //TODO change to |=
 void add_video_memory(uint32_t pid, uint32_t page_table_idx) {
 	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
-	(*page_table)[page_table_idx] = ((unsigned int) ((*page_table)[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present 	
+	(*page_table)[page_table_idx] = ((unsigned int) ((*page_table)[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
 }
 
 /*
@@ -138,7 +138,7 @@ void create_program_page(uint32_t pid){
 /*
  * paging_init()
  * input: NONE
- * description: initialize page directory and page table, 
+ * description: initialize page directory and page table,
  *  put page table in the page directory and enable paging
  * common tasks for initalize new process
  * side effect: none
@@ -156,10 +156,7 @@ void paging_init(uint32_t pid) {
 	}
 	load_page_directory(pid);	//load page directory
 	enable_mix_paging_size();	//enable page directory to be varied sized
-	enable_paging();	//enable paging finally	
+	enable_paging();	//enable paging finally
 	// uint32_t new_cr3=get_cr3(pid);
 	// asm volatile("movl %0, %%cr3\n\t": : "r"(new_cr3):"cc");
 }
-
-
-
