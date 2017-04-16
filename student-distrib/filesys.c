@@ -185,7 +185,7 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 }
 
 /*
-open
+fs_open
 Description:find the diretory entry corresponding to the named le, allo
 ate an unused le desriptor, and set up any data neessary to handle the given type of file;
 Input: pointer to file name
@@ -196,7 +196,7 @@ Side Effect: corresponding file is open
 */
 
 
-int32_t open(uint8_t* file_name){
+int32_t fs_open(uint8_t* file_name){
 
     int32_t fd;
     int i;
@@ -270,7 +270,7 @@ Side Effect: corresponding file is open
 int32_t reg_open(const uint8_t* filename)
 {
 
-    return open((uint8_t*)filename);
+    return fs_open((uint8_t*)filename);
 }
 
 /*

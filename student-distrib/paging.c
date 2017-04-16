@@ -79,8 +79,10 @@ void add_video_memory(uint32_t pid, uint32_t page_table_idx) {
 void load_page_directory(uint32_t pid) {
 	unsigned int* page_dir = (unsigned int*) &(page_directory_list[pid + PID_PD_OFFSET]);
 	asm volatile (
+		"pushl %%eax;"
 		"movl %0, %%eax;"
 		"movl %%eax, %%cr3;"
+		"popl %%eax;"
 		:
 		: "r"(page_dir)
 		: "%eax", "cc"

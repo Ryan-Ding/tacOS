@@ -186,7 +186,7 @@ entry (unsigned long magic, unsigned long addr)
 	init_file_system();
 	init_sys_call();
 	// paging_init(1);
-	uint8_t filename[] = "testprint";
+	uint8_t filename[] = "shell";
 	//program_loader(filename);
 
 	clear();

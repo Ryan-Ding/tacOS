@@ -1,15 +1,15 @@
 #include "sys_call.h"
 
 boot_block_t* boot_block_ptr;
-static pcb_t* curr_process;
-static uint32_t kernel_stack_top;
+pcb_t* curr_process;
+uint32_t kernel_stack_top;
 
-unsigned char process_running = PROCESS_MASK;
 //extern pcb_t* curr_process;
 void init_sys_call(){
 	boot_block_ptr = get_boot_block_info();
 	process_bitmap = 0;
 	kernel_stack_top = KERNEL_END_ADDR;
+	curr_process = NULL;
 }
 
 void program_loader(const uint8_t* filename){
@@ -38,50 +38,60 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
 	read_data(dir_entry->inode_num, EXECUTABLE_STARTING_ADDR, buf, 4);
 	return ((uint32_t)((buf[3]<<THREE_BYTES_SHIFT) | (buf[2]<<TWO_BYTES_SHIFT) | (buf[1]<<ONE_BYTE_SHIFT) | buf[0]));
 }
-
+                                          
 int32_t system_halt (uint8_t status)
 {
-	int i;
-
-		pcb_t * parent_pcb = curr_process->parent;
+	printf("system halt \n");
+	uint32_t i;
+	pcb_t * parent_pcb = curr_process->parent;
     if (parent_pcb==NULL) { // no task running any more, terminating shell
         return 0;//restart the shell
     }
 	i = curr_process->process_number;
-  //  mark the current process as not running
-	process_running = process_running & (~(PROCESS_MASK>>i));
+  	//  mark the current process as not running
+	process_bitmap &= (0 << i);
 	curr_process->parent = NULL;
 
-	// add load cr3
+	// restore cr3
+	asm volatile (
+		"pushl %%eax;"
+		"movl %0, %%eax;"
+		"movl %%eax, %%cr3;"
+		"popl %%eax;"
+		:
+		: "r"(curr_process->old_cr3)
+		: "%eax", "cc"
+	);
 
     uint32_t ret_status = status;
-		// should be parent's
-		i = curr_process->old_esp;
+	// should be parent's
+	i = curr_process->old_esp;
     //restore esp and ebp
     asm volatile("movl %0, %%esp	;"
-                    "pushl %1			;"
-                    ::"g"(i),"g"(ret_status));
+                 "pushl %1	        ;"
+                 ::"g"(i),"g"(ret_status));
 
-		i = curr_process->old_ebp;
+	i = curr_process->old_ebp;
     asm volatile("movl %0, %%ebp"::"g"(i));
 
-		// update curr_process as parent process
-		/*if (parent_pcb!= NULL) {
-			j = parent_pcb->process_number;
-			curr_process = curr_process->parent;
-		}else {
-			j = 0;
-		}*/
+	// update curr_process as parent process
+	/*if (parent_pcb!= NULL) {
+		j = parent_pcb->process_number;
+		curr_process = curr_process->parent;
+	}else {
+		j = 0;
+	}*/
+
     asm volatile("popl %eax");
-    asm volatile("leave");
-    asm volatile("ret");
-
-
+    asm volatile("jmp return_from_halt");
+    // asm volatile("leave");
+    // asm volatile("ret");
 	return 0;
 }
 
 int32_t system_execute (const uint8_t* command)
 {
+	printf("system execute \n");
 	int32_t new_pid;
 	pcb_t new_pcb;
 	uint32_t old_ebp = 0, old_esp = 0, old_cr3=0;
@@ -159,14 +169,15 @@ int32_t system_execute (const uint8_t* command)
 	new_pcb.old_esp = old_esp;
 	new_pcb.old_cr3 = old_cr3;
 	if (new_pid != PID_PD_OFFSET) {
-		new_pcb.parent = (pcb_t*) kernel_stack_top;
+		new_pcb.parent = (pcb_t*) curr_process;
 	} else {
 		new_pcb.parent = NULL;
 	}
-	paging_init(new_pid+1);
+	paging_init(new_pid + 1);
 	program_loader(file_name);
 
 	memcpy((void*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE), (void*) &new_pcb, sizeof(typeof(pcb_t)));
+	curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
 	kernel_stack_top -= KERNEL_STACK_ENTRY_SIZE;
 
 
@@ -260,9 +271,65 @@ int32_t system_execute (const uint8_t* command)
 
   //    );
 
-
-	sti();
-
+  sti();
+  asm volatile (
+	"return_from_halt: "
+	"leave;"
+	"ret"
+  );
 
 	return 0;
+}
+
+
+
+int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
+{
+	// printf("system read \n");
+	if(fd<FD_MIN || fd>FD_MAX)	//check range
+		return -1;
+	
+	if (fd == FD_STDIN) {
+		terminal_read(fd, buf);
 	}
+
+	if(fd == FD_STDOUT)	//can't read from stdout
+		return -1;
+	
+	return (curr_process->file_desc_table[fd].file_ops_table_ptr->read)(fd, buf, nbytes);		//to be replaced by pcb
+}
+
+int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
+{
+	printf("system write \n");
+	if(fd<FD_MIN || fd>FD_MAX)	//check range
+		return -1;
+
+	if(fd == FD_STDIN)	//can't read from stdin
+		return -1;
+
+	if (fd == FD_STDOUT){
+		terminal_write(buf, nbytes);
+		return 0;
+	}
+	
+	if(curr_process->file_desc_table[fd].flag == 0)	//can't write if it's not open yet
+		return -1;
+
+	return (curr_process->file_desc_table[fd].file_ops_table_ptr->write)(fd, buf, nbytes); //to be replaced by pcb
+}
+
+int32_t system_open (const uint8_t* filename)
+{
+	printf("system open\n");
+	if(!filename)
+		return -1;
+
+	if(filename == (uint8_t*)"stdin")
+		return 0;
+	if(filename == (uint8_t*)"stdout")
+		return 1;
+
+	return fs_open(filename);
+
+}

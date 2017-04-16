@@ -46,13 +46,14 @@ void init_terminal(){
 int
 terminal_read(unsigned char* buf, int num_bytes){
     int i=0;
-
+    sti();
     while (!terminal.read_flag);
     terminal.read_flag = 0;
     for (i = 0; i<num_bytes && i<BUFFER_SIZE;i++ ) {
         buf[i] = buffer_key[i];
         buffer_key[i] = KEY_EMPTY;
     }
+    cli();
     return i;
 }
 /*

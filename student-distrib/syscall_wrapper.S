@@ -1,13 +1,21 @@
 
-.sys_call_general_handler:
-    andl %EAX, %EAX
+sys_call_general_handler:
+	pushal
+	pushfl
+	cmpl $0, %EAX
     jle invalid_syscall_num
     cmpl $10,%eax
     jg invalid_syscall_num
     # start to call
-		call *syscall_jump_table(,%eax,4)
-
-
+	pushl %EDX
+	pushl %ECX
+	pushl %EBX
+	call *syscall_jump_table(, %eax, 4)
+	popl  %EBX
+	popl  %ECX
+	popl  %EDX
+	popfl
+	popal
     jmp end_of_sys_call
 
 
@@ -17,7 +25,6 @@ invalid_syscall_num:
 		iret
 
 end_of_sys_call:
-		popl  %EBX
 		iret
 
 open_asm:
@@ -62,6 +69,7 @@ write_asm:
 		movl 	0x0C(%ESP),%ECX
 		movl 	0x08(%ESP),%EBX
 		movl  $0x04,%EAX
+		
 		int 	$0x80
 		jmp 	end_of_sys_call
 
@@ -70,9 +78,12 @@ close_asm:
 		movl 	0x10(%ESP),%EDX
 		movl 	0x0C(%ESP),%ECX
 		movl 	0x08(%ESP),%EBX
-		movl  $0x05,%EAX
+		movl  	$0x05,%EAX
 		int 	$0x80
 		jmp 	end_of_sys_call
 
 syscall_jump_table:
-    .long halt_asm,execute_asm,read_asm,write_asm,open_asm,close_asm
+    .long 0x0, system_halt, system_execute,system_read,system_write,system_open,close_asm
+
+
+.global sys_call_general_handler

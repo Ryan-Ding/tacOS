@@ -415,5 +415,5 @@ void idt_init() {
 		if (i != RESERVE_EXC) //Ignore the reserved exception
 			set_trap_gate(i, exception_handler[i]);
 	}
-	set_system_intr_gate(SYSTEM_INT,System_Call_Interrupt);
+	set_system_intr_gate(SYSTEM_INT,sys_call_general_handler);
 }

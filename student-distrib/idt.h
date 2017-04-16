@@ -3,7 +3,7 @@
 
 #include "x86_desc.h"
 #include "lib.h"
-
+#include "syscall_wrapper.h"
 
 #define GATE_INTERRUPT 0
 #define GATE_TRAP 1
