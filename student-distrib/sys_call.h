@@ -13,7 +13,7 @@
 #define MAGIC_NUM_2 0x45
 #define MAGIC_NUM_3 0x4c
 #define MAGIC_NUM_4 0x46
-
+#define PROCESS_MASK 0x80
 #define _8MB       0x00800000
 #define _8KB       0x2000
 #define ALIGN_8KB 0xFFFFE000

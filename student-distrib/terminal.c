@@ -103,7 +103,7 @@ int terminal_open(){
 int terminal_close(){
     return 0;
 }
-
+/*
 int get_curr_pid() {
     int i =terminal.num_process;
     if( i == 0) return -1;
@@ -114,3 +114,4 @@ void close_process(){
     terminal.pid_array[i-1] = -1;
     terminal.num_process--;
 }
+*/

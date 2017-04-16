@@ -2,6 +2,8 @@
 
 boot_block_t* boot_block_ptr;
 
+unsigned char process_running = PROCESS_MASK;
+//extern pcb_t* curr_process;
 void init_sys_call(){
 	boot_block_ptr = get_boot_block_info();
 	process_bitmap = 0;
@@ -38,26 +40,20 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
 int32_t system_halt (uint8_t status)
 {
 	int i;
-    i = get_curr_pid();
-    pcb_t* curr_process = (pcb_t*)(kernel_stack_top & ALIGN_8KB);
 
-    if (i==-1) { // no task running any more
-        //restart the shell
+		pcb_t * parent_pcb = curr_process->parent;
+    if (parent_pcb==NULL) { // no task running any more, terminating shell
+        return 0;//restart the shell
     }
-    //pcb_t * parent_pcb = curr_process->parent;
-  //  parent_pcb->child = NULL;
-    curr_process->parent = NULL;
-    // mark current pid as done
-    close_process();
-    i = get_curr_pid(); // get the parent's pid after poping curr process
-    // reset kernel_top, free space of curr process
-  kernel_stack_top = _8MB - _8KB *i-4;
+	i = curr_process->process_number;
+  //  mark the current process as not running
+	process_running = process_running & (~(PROCESS_MASK>>i));
+	curr_process->parent = NULL;
 
-    //load the parent page directory
-
-    load_page_directory(i);
+	// add load cr3
 
     uint32_t ret_status = status;
+		// should be parent's
 		i = curr_process->old_esp;
     //restore esp and ebp
     asm volatile("movl %0, %%esp	;"
@@ -67,6 +63,13 @@ int32_t system_halt (uint8_t status)
 		i = curr_process->old_ebp;
     asm volatile("movl %0, %%ebp"::"g"(i));
 
+		// update curr_process as parent process
+		/*if (parent_pcb!= NULL) {
+			j = parent_pcb->process_number;
+			curr_process = curr_process->parent;
+		}else {
+			j = 0;
+		}*/
     asm volatile("popl %eax");
     asm volatile("leave");
     asm volatile("ret");

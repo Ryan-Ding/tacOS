@@ -9,17 +9,18 @@
 #define FIRST_PROGRAM_IMAGE_ADDRESS (0x8 << 20) // 8MB
 #define KERNEL_END_ADDR FIRST_PROGRAM_IMAGE_ADDRESS
 #define PORGRAM_IMAGE_SIZE (0x4 << 20) // 4MB
-#define PROGRAM_IMAGE_START_ADDRESS(pid) ( (1 + pid) << 22 )   
+#define PROGRAM_IMAGE_START_ADDRESS(pid) ( (1 + pid) << 22 )
 #define KERNEL_STACK_ENTRY_SIZE (0x8 << 10)
 
 #define FDT_SIZE 8
 #define STDIN 0
 #define STDO 1
- 
+
 #define PCB_START_ADDR(pid) (KERNEL_END_ADDR - (pid * KERNEL_STACK_ENTRY_SIZE))
 
 static uint32_t process_bitmap = 0;
 static uint32_t kernel_stack_top;
+
 
 typedef struct {
    int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);
@@ -29,11 +30,11 @@ typedef struct {
  } file_ops_table_t;
 
 
-typedef struct { 
-  file_ops_table_t* file_ops_table_ptr; 
-  uint32_t inode; 
-  uint32_t file_position; 
-  int32_t flag; 
+typedef struct {
+  file_ops_table_t* file_ops_table_ptr;
+  uint32_t inode;
+  uint32_t file_position;
+  int32_t flag;
 } file_desc_entry_t;
 
 typedef struct pcb_t {
@@ -45,9 +46,11 @@ typedef struct pcb_t {
     uint32_t old_esp0;
     uint32_t current_ebp;
     uint32_t current_esp;
-    struct pcb_t* parent; 
+    struct pcb_t* parent;
+    uint32_t process_number; // begin with 0 for shell
 } pcb_t;
 
+static pcb_t* curr_process;
 extern int32_t find_available_pid();
 
 #endif
