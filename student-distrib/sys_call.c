@@ -266,3 +266,65 @@ int32_t system_execute (const uint8_t* command)
 
 	return 0;
 	}
+	int32_t read (int32_t fd, void* buf, int32_t nbytes)
+	{
+
+		  if(fd<FD_MIN || fd>FD_MAX)  //check range
+		    return -1;
+
+		  if(fd == FD_STDOUT)  //can't read from stdout
+		    return -1;
+			file_desc_entry_t current_file = curr_process->file_desc_table[fd];
+		  return (current_file.file_ops_table_ptr->read)(fd, buf, nbytes);    //to be replaced by pcb
+	}
+
+	int32_t write (int32_t fd, const void* buf, int32_t nbytes)
+	{
+		  if(fd<FD_MIN || fd>FD_MAX)  //check range
+		    return -1;
+
+		  if(fd == FD_STDIN)  //can't read from stdin
+		    return -1;
+			file_desc_entry_t current_file = curr_process->file_desc_table[fd];
+		  if(current_file.flag == 0)  //can't write if it's not open yet
+		    return -1;
+
+		  return (current_file.file_ops_table_ptr->write)(fd, buf, nbytes); //to be replaced by pcb
+	}
+
+	int32_t system_open(const uint8_t* fname){
+
+		if (strncmp((const int8_t*)fname,(int8_t *) "stdin",5)) {
+
+			return 0;
+		}
+		if (strncmp((const int8_t*)fname,(int8_t *) "stdout",5)) {
+
+			return 0;
+		}
+		return open((uint8_t*)fname);
+	}
+
+
+
+	int32_t  system_close (int fd){
+ int i;
+	file_desc_entry_t current_file = curr_process->file_desc_table[fd];
+	// error if file is not in use
+	if (current_file.flag == 0 || fd <FD_STDOUT || fd>FD_MAX) {
+		return -1;
+	}
+	asm volatile("call  *%0		;"
+				 :
+				 : "g" (current_file.file_ops_table_ptr->close));
+
+// save return value
+	asm volatile("movl %%eax, %0":"=g"(i));
+// clear file info
+	current_file.file_ops_table_ptr = NULL;
+	current_file.inode = 0;
+	current_file.file_position = 0;
+	current_file.flag = 0;
+	return  i;
+
+}
