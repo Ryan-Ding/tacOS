@@ -18,8 +18,7 @@
 
 #define PCB_START_ADDR(pid) (KERNEL_END_ADDR - (pid * KERNEL_STACK_ENTRY_SIZE))
 
-static uint32_t process_bitmap = 0;
-static uint32_t kernel_stack_top;
+extern uint32_t process_bitmap;
 
 
 typedef struct {
@@ -40,7 +39,7 @@ typedef struct {
 typedef struct pcb_t {
     file_desc_entry_t file_desc_table[FDT_SIZE];
     uint32_t pid;
-    //uint32_t odd_cr3;
+    uint32_t old_cr3;
     uint32_t old_ebp;
     uint32_t old_esp;
     uint32_t old_esp0;
@@ -50,7 +49,9 @@ typedef struct pcb_t {
     uint32_t process_number; // begin with 0 for shell
 } pcb_t;
 
-static pcb_t* curr_process;
+
+
+
 extern int32_t find_available_pid();
 
 #endif

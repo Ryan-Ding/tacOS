@@ -87,6 +87,10 @@ void load_page_directory(uint32_t pid) {
 	);
 }
 
+uint32_t get_cr3(uint32_t pid){
+	return (uint32_t) &(page_directory_list[pid + PID_PD_OFFSET]);
+}
+
 /*
  * enable_paging
  * input: NONE
@@ -153,6 +157,8 @@ void paging_init(uint32_t pid) {
 	load_page_directory(pid);	//load page directory
 	enable_mix_paging_size();	//enable page directory to be varied sized
 	enable_paging();	//enable paging finally	
+	// uint32_t new_cr3=get_cr3(pid);
+	// asm volatile("movl %0, %%cr3\n\t": : "r"(new_cr3):"cc");
 }
 
 
