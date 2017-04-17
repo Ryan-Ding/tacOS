@@ -186,7 +186,7 @@ entry (unsigned long magic, unsigned long addr)
 	init_file_system();
 	init_sys_call();
 	// paging_init(1);
-	uint8_t filename[] = "shell";
+	uint8_t filename[] = "pingpong";
 	//program_loader(filename);
 
 	clear();

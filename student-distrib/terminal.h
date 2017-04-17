@@ -15,7 +15,7 @@
 typedef struct {
     int pos_x;
     int pos_y;
-    int read_flag;
+    volatile int read_flag;
     int curr_idx;
     unsigned char buffer_key[BUFFER_SIZE];
     int * mem_video;

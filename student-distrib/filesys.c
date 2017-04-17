@@ -2,13 +2,9 @@
 
 static boot_block_t* boot_block_ptr = NULL;
 
-file_desc_entry_t file_desc_table[FDT_SIZE];
-
-
 file_ops_table_t rtc_ops_table;
 file_ops_table_t dir_ops_table;
 file_ops_table_t reg_ops_table;
-
 
 /*
 fetch_boot_block_info
@@ -41,8 +37,6 @@ init_file_system()
 */
 void init_file_system()
 {
-    int i;
-
     rtc_ops_table.open = rtc_open_syscall;
     rtc_ops_table.read = rtc_read;
     rtc_ops_table.write = rtc_write_syscall;
@@ -58,16 +52,23 @@ void init_file_system()
     reg_ops_table.write = reg_write;
     reg_ops_table.close = reg_close;
 
+    // for (i=0;i<FDT_SIZE;i++)
+    // {
+    //     file_desc_table[i].flag = 0;
+    // }
+    // file_desc_table[STDIN].flag = 1;
+    // file_desc_table[STDO].flag = 1;
+}
 
-
+void init_new_fdt() {
+    int i;
+    if (curr_process == NULL) { return; }
     for (i=0;i<FDT_SIZE;i++)
     {
-        file_desc_table[i].flag = 0;
+        curr_process->file_desc_table[i].flag = 0;
     }
-    file_desc_table[STDIN].flag = 1;
-    file_desc_table[STDO].flag = 1;
-
-
+    curr_process->file_desc_table[STDIN].flag = 1;
+    curr_process->file_desc_table[STDO].flag = 1;
 }
 
 
@@ -212,47 +213,47 @@ int32_t fs_open(uint8_t* file_name){
     }
 
 
-    for (i=0;i<FDT_SIZE+1;i++)
+    for (i = 0; i<FDT_SIZE + 1; i++)
     {
         if (i == FDT_SIZE)
         {
-            return -1;
+            //we add FDT_SIZE by 1 because we want to detect the case when all fd entries have been used
+            return -1; 
         }
 
-        if (file_desc_table[i].flag == 0)
+        if (curr_process->file_desc_table[i].flag == 0)
         {
             break;
         }
 
     }
-
 
     fd = i;
     // printf("File type: %d ",search_for_dir_entry.filetype );
     uint32_t inode = search_for_dir_entry.inode_num;
 
-    file_desc_table[fd].inode = inode;
-    file_desc_table[fd].flag = 1;
-    file_desc_table[fd].file_position = 0;
+    // initialize file descriptor entries
+    curr_process->file_desc_table[fd].inode = inode;
+    curr_process->file_desc_table[fd].flag = 1;
+    curr_process->file_desc_table[fd].file_position = 0;
 
     // printf("File size: %d      ",length );
     // printf("File name: %s\n", search_for_dir_entry.filename);
 
+    // attach appropriate operation table based on file type
     switch (search_for_dir_entry.filetype) {
         case FILE_TYPE_RTC:
-            file_desc_table[fd].file_ops_table_ptr = &rtc_ops_table;
+            curr_process->file_desc_table[fd].file_ops_table_ptr = &rtc_ops_table;
             break;
         case FILE_TYPE_DIRECTORY:
-            file_desc_table[fd].file_ops_table_ptr = &dir_ops_table;
+            curr_process->file_desc_table[fd].file_ops_table_ptr = &dir_ops_table;
             break;
         case FILE_TYPE_REGULAR:
-            file_desc_table[fd].file_ops_table_ptr = &reg_ops_table;
+            curr_process->file_desc_table[fd].file_ops_table_ptr = &reg_ops_table;
             break;
     }
 
     return fd;
-
-
 }
 
 
@@ -308,18 +309,18 @@ int32_t reg_read(int32_t fd, void* buf, int32_t nbytes)
     if (fd == -1)
         return -1;
 
-    if (file_desc_table[fd].flag == 0)
+    if (curr_process->file_desc_table[fd].flag == 0)
         return 0;
 
-    file_desc_entry_t fdd = file_desc_table[fd];
-    uint32_t inode = fdd.inode;
-    uint32_t offset = fdd.file_position;
+    file_desc_entry_t* fdd = & (curr_process->file_desc_table[fd]);
+    uint32_t inode = fdd->inode;
+    uint32_t offset = fdd->file_position;
 
     int n = read_data(inode,offset,(uint8_t*)buf,nbytes);
     if (n < 0)
         return n;
 
-    file_desc_table[fd].file_position += n;
+    fdd->file_position += n;
     return n;
 }
 
@@ -334,8 +335,7 @@ Side Effect: None
 
 int32_t reg_close(int32_t fd)
 {
-    file_desc_table[fd].flag = 0;
-
+    curr_process->file_desc_table[fd].flag = 0;
     return 0;
 }
 
@@ -451,9 +451,6 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
         n += length;
         //print the file name
         // printf("File name: %s\n", search_for_dir_entry.filename);
-
-
-
     }
 
 
@@ -585,7 +582,7 @@ void test_reg_read()
     // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
     int32_t fd = reg_open(file_name);
 
-    uint32_t inode = file_desc_table[fd].inode;
+    uint32_t inode = curr_process->file_desc_table[fd].inode;
     inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
     uint32_t length = inode_ptr->length;
     uint8_t buf[length];

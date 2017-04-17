@@ -75,6 +75,8 @@ int32_t dir_close(int32_t fd);
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
 
 void init_file_system();
+void init_new_fdt();
+
 
 void add_dir_entry(const uint8_t* filename);
 void add_inode(const uint8_t* );
@@ -84,6 +86,6 @@ boot_block_t* get_boot_block_info();
 
 extern void fetch_boot_block_info (module_t* module_ptr);
 
-
+extern pcb_t* curr_process;
 
 #endif

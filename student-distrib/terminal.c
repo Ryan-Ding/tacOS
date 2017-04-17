@@ -1,7 +1,7 @@
 // this file support terminal driver
 #include "terminal.h"
 
-terminal_t terminal;
+volatile terminal_t terminal;
 
 /*
  * init_terminal

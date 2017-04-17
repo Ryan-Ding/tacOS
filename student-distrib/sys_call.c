@@ -180,6 +180,8 @@ int32_t system_execute (const uint8_t* command)
 	curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
 	kernel_stack_top -= KERNEL_STACK_ENTRY_SIZE;
 
+	// initialize file descriptor table
+	init_new_fdt();
 
 	/* Prepare for Context Switch; tss.esp0/ebp */
 	tss.ss0 = KERNEL_DS;
@@ -285,7 +287,8 @@ int32_t system_execute (const uint8_t* command)
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 {
-	// printf("system read \n");
+	printf("fd is %d, nbytes is %d \n" , fd, nbytes);
+	printf("system read \n");
 	if(fd<FD_MIN || fd>FD_MAX)	//check range
 		return -1;
 	
