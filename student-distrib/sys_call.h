@@ -22,6 +22,8 @@
 #define FD_MAX 7
 #define FD_STDIN 0
 #define FD_STDOUT 1
+#define IN_LENGTH 5
+#define OUT_LENGTH 6
 
 void init_sys_call();
 void program_loader(const uint8_t* filename);

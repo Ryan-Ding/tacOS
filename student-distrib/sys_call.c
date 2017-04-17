@@ -417,16 +417,16 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 
 int32_t system_open(const uint8_t* filename){
 	int i;
-	for (i = 0; i< 32 && filename[i] != '\0';i++)
+	for (i = 0; i< FILENAME_SIZE && filename[i] != KEY_EMPTY;i++)
 	{
 		printf("%c",filename[i]);
 	}
 	printf("\n");
 
-	if (strncmp((const int8_t*)filename,(int8_t *) "stdin",5) == 0) {
+	if (strncmp((const int8_t*)filename,(int8_t *) "stdin",IN_LENGTH) == 0) {
 		return 0;
 	}
-	if (strncmp((const int8_t*)filename,(int8_t *) "stdout", 6) == 0) {
+	if (strncmp((const int8_t*)filename,(int8_t *) "stdout", OUT_LENGTH) == 0) {
 		return 0;
 	}
 	return fs_open((uint8_t*)filename);
@@ -436,7 +436,7 @@ int32_t system_open(const uint8_t* filename){
  * system_close
  * input:fd number to be closed
  * description: close the given file
- * return value: 0 if successfully closed, -1 if not 
+ * return value: 0 if successfully closed, -1 if not
  * side effect :none
  */
 
