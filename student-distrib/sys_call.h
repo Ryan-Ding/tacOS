@@ -11,10 +11,10 @@
 #define THREE_BYTES_SHIFT 24
 #define TWO_BYTES_SHIFT 16
 #define ONE_BYTE_SHIFT 8
-#define MAGIC_NUM_1 0x7f
-#define MAGIC_NUM_2 0x45
-#define MAGIC_NUM_3 0x4c
-#define MAGIC_NUM_4 0x46
+#define CHECK_ELF_1 0x7f
+#define CHECK_ELF_2 0x45
+#define CHECK_ELF_3 0x4c
+#define CHECK_ELF_4 0x46
 #define _8MB       0x00800000
 #define _8KB       0x2000
 #define ALIGN_8KB 0xFFFFE000
@@ -24,6 +24,8 @@
 #define FD_STDOUT 1
 #define IN_LENGTH 5
 #define OUT_LENGTH 6
+#define FILE_NAME_BUFFER_SIZE 128
+#define IRET_ESP 0x08400000-4
 
 void init_sys_call();
 void program_loader(const uint8_t* filename);

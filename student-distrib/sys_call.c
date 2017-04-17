@@ -9,36 +9,43 @@ uint32_t kernel_stack_top;
  * input: none
  * description: prepare for system call
  * return value: none
- * side effect : none
+ * side effect : get boot block pointer and initialize process bitmap
  */
 
 void init_sys_call(){
+	//get boot block pointer and initialize process bitmap
 	boot_block_ptr = get_boot_block_info();
 	process_bitmap = 0;
+	//initialize kernel stack pointer variable
 	kernel_stack_top = KERNEL_END_ADDR;
 	curr_process = NULL;
 }
 
 /*
  * program_loader
- * input: pointer to the filename of file to be open
+ * input: filename - pointer to the filename of file to be open
  * description: load the file pointed by the file pointer
  * return value: none
- * side effect : none
+ * side effect : copy disk blocks to contiguous physical memory
  */
 
 void program_loader(const uint8_t* filename){
+	//get directory entry of the file
 	dentry_t search_for_dir_entry;
 	if(read_dentry_by_name(filename, &search_for_dir_entry) == -1) {return;}
+
+	//initialize inode block pointer
 	uint32_t inode = search_for_dir_entry.inode_num;
 	inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+
+	//load the file into virtual address
     uint32_t length = inode_ptr->length;
     read_data(inode,0,(uint8_t*)PROGRAM_IMAGE_ADDR,length);
 }
 
 /*
  * check_if_executable
- * input: pointer to the dentry to be checked
+ * input: dir_entry - pointer to the dentry to be checked
  * description:check if the input dentry is executable or not
  * return value: 0 if yes. -1 if not
  * side effect : none
@@ -49,14 +56,15 @@ int32_t check_if_executable(dentry_t* search_for_dir_entry){
 		return -1;
 	// read_data(search_for_dir_entry->inode_num, 0, buf, 4 );
 
-	if (buf[0]==MAGIC_NUM_1 && buf[1]==MAGIC_NUM_2 && buf[2]== MAGIC_NUM_3 && buf[3] == MAGIC_NUM_4)
+	//check if the file executable bytes match elf requirement
+	if (buf[0]==CHECK_ELF_1 && buf[1]==CHECK_ELF_2 && buf[2]== CHECK_ELF_3 && buf[3] == CHECK_ELF_4)
 		return 0;
 
 	return -1;
 }
 /*
  * get first instruction
- * input: pointer to the dentry to be inferenced
+ * input: dir_entry - pointer to the dentry to be inferenced
  * description:get the first instruction in the dentry
  * return value: the first executable in the given dentry
  * side effect : none
@@ -64,13 +72,16 @@ int32_t check_if_executable(dentry_t* search_for_dir_entry){
 
 uint32_t get_first_instruction(dentry_t* dir_entry){
 	uint8_t buf[4];
+	//get the starting point instruction from executable
 	read_data(dir_entry->inode_num, EXECUTABLE_STARTING_ADDR, buf, 4);
+
+	//comply to little endian rule
 	return ((uint32_t)((buf[3]<<THREE_BYTES_SHIFT) | (buf[2]<<TWO_BYTES_SHIFT) | (buf[1]<<ONE_BYTE_SHIFT) | buf[0]));
 }
 
 /*
  * system_halt
- * input: status that is returned from previous progress
+ * input: status - status that is returned from previous progress
  * description: halt the current process
  * return value: return value from previous process
  * side effect : clear related value for the process to be halted, mark the process as not running, return to parent stack
@@ -122,6 +133,7 @@ int32_t system_halt (uint8_t status)
 		: "%eax", "cc"
 	);
 
+    //restore tss values
 	tss.esp0 = curr_process->old_esp0;
 	tss.ss0 = curr_process->old_ss;
 	kernel_stack_top = curr_process->old_kernel_stack_top;
@@ -142,7 +154,7 @@ int32_t system_halt (uint8_t status)
 
 /*
  * system_execute
- * input: pointer to the command to be executed
+ * input: command - pointer to the command to be executed
  * description: execute the given command
  * return value: return value from previous process
  * side effect :create new pcb, fdts for the current command, prepare for context switch
@@ -163,9 +175,10 @@ int32_t system_execute (const uint8_t* command)
 		}
 		//printf("%s\n",strchr(command,' '));
 
-		uint8_t file_name[128] = {0};
-		uint8_t arguments[128] = {0};
+		uint8_t file_name[FILE_NAME_BUFFER_SIZE] = {0};
+		uint8_t arguments[FILE_NAME_BUFFER_SIZE] = {0};
 
+		//parsing the file name
 		while(command[i]!=' ' && command[i]!='\0')
 		{
 			file_name[i] = command[i];
@@ -174,6 +187,7 @@ int32_t system_execute (const uint8_t* command)
 
 		file_name[i]='\0';
 
+		//parsing arguments from command
 		i++;
 		while(command[i]!='\0')
 		{
@@ -240,10 +254,11 @@ int32_t system_execute (const uint8_t* command)
 		:
 	);
 
-
+	//initialize paging and load program image
 	paging_init(new_pid + 1);
 	program_loader(file_name);
 
+	//put pcb in corresponding location in memory
 	memcpy((void*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE), (void*) &new_pcb, sizeof(typeof(pcb_t)));
 	curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
 	kernel_stack_top -= KERNEL_STACK_ENTRY_SIZE;
@@ -281,68 +296,13 @@ int32_t system_execute (const uint8_t* command)
      "pushl %2;"
      //push eip
      "pushl %3;"
-     // "wtf: "
-     // "jmp wtf;"
      "iret;"
      :
-     : "g"(USER_DS), "g"(0x08400000-4), "g"(USER_CS), "g"(new_instruction)
+     : "g"(USER_DS), "g"(IRET_ESP), "g"(USER_CS), "g"(new_instruction)
      : "cc","memory"
      );
 
-  //   i = 0;
-  //   asm volatile(
-	 // // "mov %0, %%ax;"
-  // //    "mov %%ax, %%ds;"
-
-  //    //push ss
-  //    "pushl %0;"
-  //    :
-  //    :"r"(USER_DS)
-  //    : "cc","memory"
-  //   );
-  //   //printf("Checkpoint %d \n",++i);
-  //    //push esp
-  //   asm volatile (
-
-  //    "pushl %0;"
-  //    "pushl $0x202;"
-  //    :
-  //    :"r"(0x08400000-4)
-  //    : "cc","memory"
-  //    );
-  //   //printf("Checkpoint %d \n",++i);
-  //    //push eflags
-
-  //    // "pushl %%eax;"
-  //    //push cs
-  //   asm volatile (
-  //    "pushl %0;"
-  //    :
-  //    :"r"(USER_CS)
-  //    : "cc","memory"
-  //    );
-  //   //printf("Checkpoint %d \n",++i);
-  //    //push eip
-  //   asm volatile (
-  //    "pushl %0;"
-  //    :
-  //    :"r"(new_instruction)
-  //    : "cc","memory"
-  //    );
-  //   //printf("Checkpoint %d \n",++i);
-  //    // "wtf: "
-  //    // "jmp wtf;"
-  //   printf("buffer is  %x \n",new_instruction);
-
-  //    asm volatile(
-  //    "iret;"
-  //    :
-  //    :
-  //    : "cc","memory"
-
-  //    );
-
-
+//leave and return
 
   sti();
   asm volatile (
@@ -357,7 +317,9 @@ int32_t system_execute (const uint8_t* command)
 
 /*
  * system_read
- * input:fd number, pointer to the buffer to be read, num of bytes to be read
+ * input:fd - fd number
+ * buf - pointer to the buffer to be read
+ * nbytes - num of bytes to be read
  * description: read from the given buffer
  * return value: bytes read
  * side effect :none
@@ -382,7 +344,10 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 
 /*
  * system_write
- * input:fd number, pointer to the buffer to be written , num of bytes to be written
+ * input:
+ * fd- fd number
+ * buf - pointer to the buffer to be written 
+ * nbytes - num of bytes to be written
  * description: write to the given buffer
  * return value: bytes written
  * side effect :none
