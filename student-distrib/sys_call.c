@@ -91,6 +91,7 @@ int32_t system_halt (uint8_t status)
 
 int32_t system_execute (const uint8_t* command)
 {
+
 	printf("system execute \n");
 	int32_t new_pid;
 	pcb_t new_pcb;
@@ -287,7 +288,7 @@ int32_t system_execute (const uint8_t* command)
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 {
-	printf("fd is %d, nbytes is %d \n" , fd, nbytes);
+	// printf("fd is %d, nbytes is %d \n" , fd, nbytes);
 	printf("system read \n");
 	if(fd<FD_MIN || fd>FD_MAX)	//check range
 		return -1;
@@ -324,6 +325,13 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 
 int32_t system_open(const uint8_t* filename){
 	printf("system open\n");
+	int i;
+	for (i = 0; i< 32 && filename[i] != '\0';i++)
+	{
+		printf("%c",filename[i]);
+	}
+	printf("\n");
+
 	if (strncmp((const int8_t*)filename,(int8_t *) "stdin",5) == 0) {
 		return 0;
 	}
