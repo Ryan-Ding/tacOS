@@ -293,7 +293,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 		return -1;
 	
 	if (fd == FD_STDIN) {
-		terminal_read(fd, buf);
+		terminal_read(buf, nbytes);
 	}
 
 	if(fd == FD_STDOUT)	//can't read from stdout
@@ -312,7 +312,7 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 		return -1;
 
 	if (fd == FD_STDOUT){
-		terminal_write(buf, nbytes);
+		terminal_write((unsigned char*) buf, nbytes);
 		return 0;
 	}
 	
@@ -322,17 +322,34 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 	return (curr_process->file_desc_table[fd].file_ops_table_ptr->write)(fd, buf, nbytes); //to be replaced by pcb
 }
 
-int32_t system_open (const uint8_t* filename)
-{
+int32_t system_open(const uint8_t* filename){
 	printf("system open\n");
-	if(!filename)
-		return -1;
-
-	if(filename == (uint8_t*)"stdin")
+	if (strncmp((const int8_t*)filename,(int8_t *) "stdin",5) == 0) {
 		return 0;
-	if(filename == (uint8_t*)"stdout")
-		return 1;
+	}
+	if (strncmp((const int8_t*)filename,(int8_t *) "stdout", 6) == 0) {
+		return 0;
+	}
+	return fs_open((uint8_t*)filename);
+}
 
-	return fs_open(filename);
-
+int32_t system_close (int32_t fd){
+	int retval;
+	file_desc_entry_t* current_file = &(curr_process->file_desc_table[fd]);
+	// error if file is not in use
+	if (current_file->flag == 0 || fd <= FD_STDOUT || fd > FD_MAX) {
+		return -1;
+	}
+	retval = current_file->file_ops_table_ptr->close(fd);
+	// asm volatile("call  *%0;"
+	// 			 :
+	// 			 : "g" (current_file->file_ops_table_ptr->close));
+	// save return value
+	// asm volatile("movl %%eax, %0":"=g"(i));
+	// clear file info
+	current_file->file_ops_table_ptr = NULL;
+	current_file->inode = 0;
+	current_file->file_position = 0;
+	current_file->flag = 0;
+	return  retval;
 }

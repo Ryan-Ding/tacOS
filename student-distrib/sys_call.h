@@ -18,8 +18,8 @@
 #define _8MB       0x00800000
 #define _8KB       0x2000
 #define ALIGN_8KB 0xFFFFE000
-#define FD_MAX 7
 #define FD_MIN 0
+#define FD_MAX 7
 #define FD_STDIN 0
 #define FD_STDOUT 1
 
@@ -28,14 +28,13 @@ void program_loader(const uint8_t* filename);
 
 extern int32_t system_halt (uint8_t status);
 extern int32_t system_execute (const uint8_t* command);
-
 extern int32_t system_read (int32_t fd, void* buf, int32_t nbytes);
-
 extern int32_t system_write (int32_t fd, const void* buf, int32_t nbytes);
 extern int32_t system_open (const uint8_t* filename);
-
+extern int32_t system_close (int32_t fd);
 
 extern pcb_t* curr_process;
 extern uint32_t kernel_stack_top;
+
 
 #endif

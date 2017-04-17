@@ -44,8 +44,8 @@ void init_terminal(){
 
 
 int
-terminal_read(unsigned char* buf, int num_bytes){
-    int i=0;
+terminal_read(unsigned char* buf, int32_t num_bytes){
+    int i = 0;
     sti();
     while (!terminal.read_flag);
     terminal.read_flag = 0;
@@ -63,7 +63,7 @@ terminal_read(unsigned char* buf, int num_bytes){
  * side effect : return numofbytes written
  */
 int
-terminal_write(unsigned char* buf,int num_bytes){
+terminal_write(unsigned char* buf,int32_t num_bytes){
     int i ;
     int count = 0;
 
