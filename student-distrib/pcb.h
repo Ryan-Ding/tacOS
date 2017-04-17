@@ -44,8 +44,8 @@ typedef struct pcb_t {
     uint32_t old_ebp;
     uint32_t old_esp;
     uint32_t old_esp0;
-    uint32_t current_ebp;
-    uint32_t current_esp;
+    uint32_t old_ss;
+    uint32_t old_kernel_stack_top;
     struct pcb_t* parent;
 } pcb_t;
 

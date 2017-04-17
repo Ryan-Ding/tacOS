@@ -41,7 +41,6 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
                                           
 int32_t system_halt (uint8_t status)
 {
-	printf("\nsystem halt \n");
 	uint32_t i;
 	pcb_t * parent_pcb = curr_process->parent;
     if (parent_pcb==NULL) { // no task running any more, terminating shell
@@ -50,7 +49,9 @@ int32_t system_halt (uint8_t status)
 	i = curr_process->pid;
   	//  mark the current process as not running
 	process_bitmap &= ~((1 << i));
-	curr_process->parent = NULL;
+	// curr_process->parent = NULL;
+	paging_init(parent_pcb->pid + 1);
+
 
 	// restore cr3
 	asm volatile (
@@ -74,7 +75,19 @@ int32_t system_halt (uint8_t status)
 	i = curr_process->old_ebp;
     asm volatile("movl %0, %%ebp"::"g"(i));
 
+    asm volatile (
+		"pushl %%eax;"
+		"movl %0, %%eax;"
+		"movl %%eax, %%ss;"
+		"popl %%eax;"
+		:
+		: "r"(curr_process->old_ss)
+		: "%eax", "cc"
+	);
 
+	tss.esp0 = curr_process->old_esp0;
+	tss.ss0 = curr_process->old_ss;
+	kernel_stack_top = curr_process->old_kernel_stack_top;
 	// update curr_process as parent process
 	/*if (parent_pcb!= NULL) {
 		j = parent_pcb->process_number;
@@ -82,8 +95,8 @@ int32_t system_halt (uint8_t status)
 	}else {
 		j = 0;
 	}*/
-
-    asm volatile("popl %eax");
+	curr_process = curr_process->parent;
+	asm volatile("popl %eax");
     asm volatile("jmp return_from_halt");
     // asm volatile("leave");
     // asm volatile("ret");
@@ -169,11 +182,21 @@ int32_t system_execute (const uint8_t* command)
 	new_pcb.old_ebp = old_ebp;
 	new_pcb.old_esp = old_esp;
 	new_pcb.old_cr3 = old_cr3;
+	new_pcb.old_esp0 = tss.esp0;
+	new_pcb.old_kernel_stack_top = kernel_stack_top;
 	if (new_pid != PID_PD_OFFSET) {
 		new_pcb.parent = (pcb_t*) curr_process;
 	} else {
 		new_pcb.parent = NULL;
 	}
+
+	asm volatile(
+		"movl  %%ss, %0;"
+		: "=r" (new_pcb.old_ss)
+		:
+	);
+
+
 	paging_init(new_pid + 1);
 	program_loader(file_name);
 
@@ -183,6 +206,7 @@ int32_t system_execute (const uint8_t* command)
 
 	// initialize file descriptor table
 	init_new_fdt();
+
 
 	/* Prepare for Context Switch; tss.esp0/ebp */
 	tss.ss0 = KERNEL_DS;
@@ -273,6 +297,8 @@ int32_t system_execute (const uint8_t* command)
   //    : "cc","memory"
 
   //    );
+
+
 
   sti();
   asm volatile (
