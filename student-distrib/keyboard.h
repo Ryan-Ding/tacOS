@@ -37,7 +37,7 @@
 
 #define RTC_INI_FRQ 2
 #define FS_IDX 1
-
+#define LINE_END '\n'
 
 extern volatile unsigned char* buffer_key;
 extern volatile int* enter_flag;
