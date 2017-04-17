@@ -47,7 +47,6 @@ typedef struct pcb_t {
     uint32_t current_ebp;
     uint32_t current_esp;
     struct pcb_t* parent;
-    uint32_t process_number; // begin with 0 for shell
 } pcb_t;
 
 

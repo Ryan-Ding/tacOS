@@ -162,3 +162,5 @@ void paging_init(uint32_t pid) {
 	// uint32_t new_cr3=get_cr3(pid);
 	// asm volatile("movl %0, %%cr3\n\t": : "r"(new_cr3):"cc");
 }
+
+

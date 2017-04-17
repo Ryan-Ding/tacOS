@@ -41,15 +41,15 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
                                           
 int32_t system_halt (uint8_t status)
 {
-	printf("system halt \n");
+	printf("\nsystem halt \n");
 	uint32_t i;
 	pcb_t * parent_pcb = curr_process->parent;
     if (parent_pcb==NULL) { // no task running any more, terminating shell
         return 0;//restart the shell
     }
-	i = curr_process->process_number;
+	i = curr_process->pid;
   	//  mark the current process as not running
-	process_bitmap &= (0 << i);
+	process_bitmap &= ~((1 << i));
 	curr_process->parent = NULL;
 
 	// restore cr3
@@ -73,6 +73,7 @@ int32_t system_halt (uint8_t status)
 
 	i = curr_process->old_ebp;
     asm volatile("movl %0, %%ebp"::"g"(i));
+
 
 	// update curr_process as parent process
 	/*if (parent_pcb!= NULL) {
