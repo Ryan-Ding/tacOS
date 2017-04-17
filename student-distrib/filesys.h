@@ -21,6 +21,7 @@
 #define FILE_TYPE_RTC 0
 
 #define MAX_DIR_ENTRY_SIZE 63
+#define RESERVED_LENGTH 52
 
 #define LOCATE_INODE_BLOCK(base,inode) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode )
 #define LOCATE_DATA_BLOCK(base,inode_all,data_blk) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode_all + FILE_SYS_BLOCK_SIZE * data_blk )
@@ -37,7 +38,7 @@ typedef struct {
     uint32_t num_dir_entries;
     uint32_t num_inodes;
     uint32_t num_data_blocks;
-    uint8_t reserved[52];
+    uint8_t reserved[RESERVED_LENGTH];
     dentry_t dir_entries[MAX_DIR_ENTRY_SIZE];
 } boot_block_t;
 

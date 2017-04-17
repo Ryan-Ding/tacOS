@@ -15,7 +15,7 @@ void init_terminal(){
     terminal.pos_x = 0;
     terminal.pos_y = 0;
     for (i=0; i< BUFFER_SIZE; i++)
-        terminal.buffer_key[i] = '\0';
+        terminal.buffer_key[i] = KEY_EMPTY;
     terminal.read_flag = 0;
     terminal.curr_idx = 0;
     // may need a function to map the virtual address with physical addresses
@@ -49,7 +49,7 @@ terminal_read(unsigned char* buf, int32_t num_bytes){
     sti();
     while (!terminal.read_flag);
     terminal.read_flag = 0;
-    for (i = 0; i<num_bytes && i<BUFFER_SIZE && buffer_key[i] != '\0';i++ ) {
+    for (i = 0; i<num_bytes && i<BUFFER_SIZE && buffer_key[i] != KEY_EMPTY;i++ ) {
         buf[i] = buffer_key[i];
         buffer_key[i] = KEY_EMPTY;
     }

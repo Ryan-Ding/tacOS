@@ -60,6 +60,14 @@ void init_file_system()
     // file_desc_table[STDO].flag = 1;
 }
 
+/*
+init_new_fdt()
+    Description: Initialize a new fdt
+    Input:None
+    Output:None
+    Return value:None
+    Side Effect:  fdt table is filled , mark stdin ,stdout as always opened
+*/
 void init_new_fdt() {
     int i;
     if (curr_process == NULL) { return; }
@@ -218,7 +226,7 @@ int32_t fs_open(uint8_t* file_name){
         if (i == FDT_SIZE)
         {
             //we add FDT_SIZE by 1 because we want to detect the case when all fd entries have been used
-            return -1; 
+            return -1;
         }
 
         if (curr_process->file_desc_table[i].flag == 0)
@@ -457,6 +465,16 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
     return n;
 }
 
+
+/*
+get_boot_block_info
+Description:get the pointer to the boot block
+Input: NONE
+Output: None
+Return value: the pointer to boot block
+Side Effect: NONE
+*/
+
 boot_block_t* get_boot_block_info()
 {
     return boot_block_ptr;
@@ -524,7 +542,7 @@ void test_read_file_by_name()
     int j;
     dentry_t search_for_dir_entry;
 
-    uint8_t file_name[32] = "frame1.txt";
+    uint8_t file_name[FILENAME_SIZE] = "frame1.txt";
 
     if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
     uint32_t inode = search_for_dir_entry.inode_num;

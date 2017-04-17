@@ -29,6 +29,15 @@ typedef struct pcb_t {
     struct pcb_t* parent;
 } pcb_t;
 */
+
+/*
+ * find_available_pid
+ * input: none
+ * description: find the pid that is open to use
+ * return value: pid number found, or -1 if none is found
+ * side effect : process_bitmap is updated as running
+ */
+
 int32_t find_available_pid() {
   int32_t idx, bit_mask = 0x1, bitmap_length = sizeof(typeof(process_bitmap)) * 8;
   // printf("bitmap: %x \n", process_bitmap);

@@ -4,13 +4,28 @@ boot_block_t* boot_block_ptr;
 pcb_t* curr_process;
 uint32_t kernel_stack_top;
 
-//extern pcb_t* curr_process;
+/*
+ * init_sys_call
+ * input: none
+ * description: prepare for system call
+ * return value: none
+ * side effect : none
+ */
+
 void init_sys_call(){
 	boot_block_ptr = get_boot_block_info();
 	process_bitmap = 0;
 	kernel_stack_top = KERNEL_END_ADDR;
 	curr_process = NULL;
 }
+
+/*
+ * program_loader
+ * input: pointer to the filename of file to be open
+ * description: load the file pointed by the file pointer
+ * return value: none
+ * side effect : none
+ */
 
 void program_loader(const uint8_t* filename){
 	dentry_t search_for_dir_entry;
@@ -21,6 +36,13 @@ void program_loader(const uint8_t* filename){
     read_data(inode,0,(uint8_t*)PROGRAM_IMAGE_ADDR,length);
 }
 
+/*
+ * check_if_executable
+ * input: pointer to the dentry to be checked
+ * description:check if the input dentry is executable or not
+ * return value: 0 if yes. -1 if not
+ * side effect : none
+ */
 int32_t check_if_executable(dentry_t* search_for_dir_entry){
 	uint8_t buf[4];
 	if(read_data(search_for_dir_entry->inode_num, 0, buf, 4 )!=4)
@@ -32,13 +54,28 @@ int32_t check_if_executable(dentry_t* search_for_dir_entry){
 
 	return -1;
 }
+/*
+ * get first instruction
+ * input: pointer to the dentry to be inferenced
+ * description:get the first instruction in the dentry
+ * return value: the first executable in the given dentry
+ * side effect : none
+ */
 
 uint32_t get_first_instruction(dentry_t* dir_entry){
 	uint8_t buf[4];
 	read_data(dir_entry->inode_num, EXECUTABLE_STARTING_ADDR, buf, 4);
 	return ((uint32_t)((buf[3]<<THREE_BYTES_SHIFT) | (buf[2]<<TWO_BYTES_SHIFT) | (buf[1]<<ONE_BYTE_SHIFT) | buf[0]));
 }
-                                          
+
+/*
+ * system_halt
+ * input: status that is returned from previous progress
+ * description: halt the current process
+ * return value: return value from previous process
+ * side effect : clear related value for the process to be halted, mark the process as not running, return to parent stack
+ */
+
 int32_t system_halt (uint8_t status)
 {
 	uint32_t i;
@@ -103,6 +140,13 @@ int32_t system_halt (uint8_t status)
 	return 0;
 }
 
+/*
+ * system_execute
+ * input: pointer to the command to be executed
+ * description: execute the given command
+ * return value: return value from previous process
+ * side effect :create new pcb, fdts for the current command, prepare for context switch
+ */
 int32_t system_execute (const uint8_t* command)
 {
 
@@ -311,14 +355,20 @@ int32_t system_execute (const uint8_t* command)
 }
 
 
-
+/*
+ * system_read
+ * input:fd number, pointer to the buffer to be read, num of bytes to be read
+ * description: read from the given buffer
+ * return value: bytes read
+ * side effect :none
+ */
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 {
 	// printf("fd is %d, nbytes is %d \n" , fd, nbytes);
 
 	if(fd<FD_MIN || fd>FD_MAX)	//check range
 		return -1;
-	
+
 	if (fd == FD_STDIN) {
 		int n = terminal_read(buf, nbytes);
 		return n;
@@ -326,10 +376,17 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 
 	if(fd == FD_STDOUT)	//can't read from stdout
 		return -1;
-	
+
 	return (curr_process->file_desc_table[fd].file_ops_table_ptr->read)(fd, buf, nbytes);		//to be replaced by pcb
 }
 
+/*
+ * system_write
+ * input:fd number, pointer to the buffer to be written , num of bytes to be written
+ * description: write to the given buffer
+ * return value: bytes written
+ * side effect :none
+ */
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 {
 
@@ -343,12 +400,20 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 		terminal_write((unsigned char*) buf, nbytes);
 		return 0;
 	}
-	
+
 	if(curr_process->file_desc_table[fd].flag == 0)	//can't write if it's not open yet
 		return -1;
 
 	return (curr_process->file_desc_table[fd].file_ops_table_ptr->write)(fd, buf, nbytes); //to be replaced by pcb
 }
+
+/*
+ * system_open
+ * input: pointer to the file to be opened
+ * description: open the file specified by filename
+ * return value: 0 if success, -1 if failed
+ * side effect :none
+ */
 
 int32_t system_open(const uint8_t* filename){
 	int i;
@@ -366,6 +431,14 @@ int32_t system_open(const uint8_t* filename){
 	}
 	return fs_open((uint8_t*)filename);
 }
+
+/*
+ * system_close
+ * input:fd number to be closed
+ * description: close the given file
+ * return value: 0 if successfully closed, -1 if not 
+ * side effect :none
+ */
 
 int32_t system_close (int32_t fd){
 	int retval;

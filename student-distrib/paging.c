@@ -132,6 +132,14 @@ void enable_mix_paging_size() {
 
 //TODO INTERFACE
 
+
+/*
+ * create_program_page()
+ * input: pid number
+ * description:create a page for the given process
+ * side effect: none
+ */
+
 void create_program_page(uint32_t pid){
 	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
 	(*page_directory)[PROGRAM_IMAGE_PAGE_OFFSET] = 	((unsigned int)  PROGRAM_IMAGE_START_ADDRESS(pid)) | PROGRAM_IMAGE_ENTRY_MASK;
@@ -162,5 +170,3 @@ void paging_init(uint32_t pid) {
 	// uint32_t new_cr3=get_cr3(pid);
 	// asm volatile("movl %0, %%cr3\n\t": : "r"(new_cr3):"cc");
 }
-
-

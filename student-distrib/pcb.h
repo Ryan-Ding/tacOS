@@ -21,7 +21,7 @@
 
 extern uint32_t process_bitmap;
 
-
+// struct for file operation tables  r/w open close
 typedef struct {
    int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);
    int32_t (*write)(int32_t fd, const void* buf, int32_t nbytes);
@@ -29,7 +29,7 @@ typedef struct {
    int32_t (*close)(int32_t fd);
  } file_ops_table_t;
 
-
+// struct for file descriptor entry
 typedef struct {
   file_ops_table_t* file_ops_table_ptr;
   uint32_t inode;
@@ -37,6 +37,7 @@ typedef struct {
   int32_t flag;
 } file_desc_entry_t;
 
+// struct for a pcb
 typedef struct pcb_t {
     file_desc_entry_t file_desc_table[FDT_SIZE];
     uint32_t pid;
