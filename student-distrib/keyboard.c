@@ -224,7 +224,7 @@ keyboard_interrupt(void){
 
         case ENTER:
             *enter_flag = 1;
-
+            buffer_key[*buffer_idx]='\0';
             (*buffer_idx)=0;
             change_line();
             (*cursor_x) = 0;

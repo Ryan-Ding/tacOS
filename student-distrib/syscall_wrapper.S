@@ -13,7 +13,9 @@ sys_call_general_handler:
 	pushl %ECX
 	pushl %EBX
 	call *syscall_jump_table(, %eax, 4)
-	addl  $12,%esp
+	popl  %EBX
+	popl  %ECX
+	popl  %EDX
 	popl  %EBX
 	popl  %EDI
 	popl  %ESI

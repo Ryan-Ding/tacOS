@@ -46,16 +46,14 @@ void init_terminal(){
 int
 terminal_read(unsigned char* buf, int32_t num_bytes){
     int i = 0;
-    printf("terminal read \n");
     sti();
     while (!terminal.read_flag);
     terminal.read_flag = 0;
-    for (i = 0; i<num_bytes && i<BUFFER_SIZE;i++ ) {
+    for (i = 0; i<num_bytes && i<BUFFER_SIZE && buffer_key[i] != '\0';i++ ) {
         buf[i] = buffer_key[i];
         buffer_key[i] = KEY_EMPTY;
     }
     cli();
-    printf("i is %d \n",i);
     return i;
 }
 /*
@@ -68,7 +66,6 @@ int
 terminal_write(unsigned char* buf,int32_t num_bytes){
     int i ;
     int count = 0;
-    printf("terminal write\n");
     cli();
     for (i = 0; i < num_bytes;i++)
     {
