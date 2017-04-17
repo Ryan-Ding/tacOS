@@ -89,16 +89,23 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
 
 int32_t system_halt (uint8_t status)
 {
+	//printf("system halt");
 	uint32_t i;
 	pcb_t * parent_pcb = curr_process->parent;
-    if (parent_pcb==NULL) { // no task running any more, terminating shell
-        return 0;//restart the shell
-    }
+    // if (parent_pcb==NULL) { // no task running any more, terminating shell
+    //     return 0;//restart the shell
+    // }
 	i = curr_process->pid;
   	//  mark the current process as not running
 	process_bitmap &= ~((1 << i));
 	// curr_process->parent = NULL;
+	if(parent_pcb==NULL){
+		paging_init(0);
+	}
+	else
+	{
 	paging_init(parent_pcb->pid + 1);
+	}
 
 
 	// restore cr3

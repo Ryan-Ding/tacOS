@@ -462,7 +462,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
     }
 
 
-    return n;
+    return 0;
 }
 
 
