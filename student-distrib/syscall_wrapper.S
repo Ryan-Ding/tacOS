@@ -1,3 +1,11 @@
+/*
+ * system_call_general_handler
+ * description: This file serves as a wrapper for ongoing system call
+ * input: %EAX - system call number
+ * %EDX,%ECS, %EBX are parameters for sys calls
+ * return value: none
+ * side effect : none
+ */
 
 sys_call_general_handler:
 	cmpl $0, %EAX
