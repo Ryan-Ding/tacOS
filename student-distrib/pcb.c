@@ -39,13 +39,17 @@ typedef struct pcb_t {
  */
 
 int32_t find_available_pid() {
-  int32_t idx, bit_mask = 0x1, bitmap_length = sizeof(typeof(process_bitmap)) * 8;
+
+  int8_t idx, bit_mask = 0x1;
   // printf("bitmap: %x \n", process_bitmap);
-  for(idx = 0; idx < bitmap_length; ++idx ) {
+  for(idx = 0; idx < BITMAP_LENGTH; ++idx ) {
     if ( ((bit_mask << idx) & process_bitmap) == 0 ) {
       process_bitmap |= (bit_mask << idx);
       return idx;
     }
   }
+
+  printf("You cannot open more process.\n");
+
   return -1;
 }

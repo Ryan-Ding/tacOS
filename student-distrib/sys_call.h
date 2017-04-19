@@ -25,6 +25,7 @@
 #define IN_LENGTH 5
 #define OUT_LENGTH 6
 #define FILE_NAME_BUFFER_SIZE 128
+#define ARG_BUFFER_SIZE ARG_SIZE
 #define IRET_ESP 0x08400000-4
 
 void init_sys_call();
@@ -36,6 +37,7 @@ extern int32_t system_read (int32_t fd, void* buf, int32_t nbytes);
 extern int32_t system_write (int32_t fd, const void* buf, int32_t nbytes);
 extern int32_t system_open (const uint8_t* filename);
 extern int32_t system_close (int32_t fd);
+extern int32_t system_getargs (uint8_t* buf, int32_t nbytes);
 
 extern pcb_t* curr_process;
 extern uint32_t kernel_stack_top;

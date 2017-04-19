@@ -2,6 +2,7 @@
 #define PCB_H
 
 #include "types.h"
+#include "lib.h"
 
 #define PID_PD_OFFSET 0 // TODO needs verification
 #define MAX_PROCESS_NUM 9
@@ -11,6 +12,8 @@
 #define PORGRAM_IMAGE_SIZE (0x4 << 20) // 4MB
 #define PROGRAM_IMAGE_START_ADDRESS(pid) ( (1 + pid) << 22 )
 #define KERNEL_STACK_ENTRY_SIZE (0x8 << 10)
+#define ARG_SIZE 40
+#define BITMAP_LENGTH MAX_PROCESS_NUM -1
 
 #define FDT_SIZE 8
 #define STDIN 0
@@ -47,6 +50,7 @@ typedef struct pcb_t {
     uint32_t old_esp0;
     uint32_t old_ss;
     uint32_t old_kernel_stack_top;
+    uint8_t args[ARG_SIZE];
     struct pcb_t* parent;
 } pcb_t;
 

@@ -36,7 +36,7 @@ invalid_syscall_num:
  	iret
 
 syscall_jump_table:
-    .long 0x0, system_halt, system_execute,system_read,system_write,system_open,system_close
+    .long 0x0, system_halt, system_execute,system_read,system_write,system_open,system_close,system_getargs
 
 
 .global sys_call_general_handler

@@ -19,6 +19,7 @@ void init_sys_call(){
 	//initialize kernel stack pointer variable
 	kernel_stack_top = KERNEL_END_ADDR;
 	curr_process = NULL;
+
 }
 
 /*
@@ -183,7 +184,7 @@ int32_t system_execute (const uint8_t* command)
 		//printf("%s\n",strchr(command,' '));
 
 		uint8_t file_name[FILE_NAME_BUFFER_SIZE] = {0};
-		uint8_t arguments[FILE_NAME_BUFFER_SIZE] = {0};
+		uint8_t arguments[ARG_BUFFER_SIZE] = {0};
 
 		//parsing the file name
 		while(command[i]!=' ' && command[i]!='\0')
@@ -202,7 +203,7 @@ int32_t system_execute (const uint8_t* command)
 			i++;
 			j++;
 		}
-		arguments[i]='\0';
+		arguments[j]='\0';
 
 	/* Check for executable */
 	dentry_t search_for_dir_entry;
@@ -249,6 +250,8 @@ int32_t system_execute (const uint8_t* command)
 	new_pcb.old_cr3 = old_cr3;
 	new_pcb.old_esp0 = tss.esp0;
 	new_pcb.old_kernel_stack_top = kernel_stack_top;
+	strncpy_uint(new_pcb.args,arguments,j);
+
 	if (new_pid != PID_PD_OFFSET) {
 		new_pcb.parent = (pcb_t*) curr_process;
 	} else {
@@ -432,3 +435,12 @@ int32_t system_close (int32_t fd){
 	current_file->flag = 0;
 	return  retval;
 }
+
+int32_t system_getargs (uint8_t* buf, int32_t nbytes){
+	if (buf == NULL || nbytes < 0 || curr_process->args == NULL)
+		return -1;
+
+	strncpy_uint(buf,curr_process->args,nbytes);
+	return 0;
+}
+

@@ -316,8 +316,16 @@ void General_Protection()
 void Page_Fault()
 {
 	printf("Page Fault\n");
-	while (1)
-	 {}
+
+	uint32_t cr2_temp;
+	asm volatile(
+		"movl  %%cr2, %0;"
+		: "=r" (cr2_temp)
+		:
+	);
+	printf("Page Fault when trying to access %x\n",cr2_temp);
+
+	system_execute("shell");
 }
 //15
 /* 
