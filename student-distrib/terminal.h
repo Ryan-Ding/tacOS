@@ -12,6 +12,8 @@
 #define _4KB 0x1000
 #define BUFFER_SIZE 128
 #define PID_SIZE 6
+#define SHELL_LENGTH 7
+#define OUR_SHELL_LENGTH 8
 typedef struct {
     int pos_x;
     int pos_y;

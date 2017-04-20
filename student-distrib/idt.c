@@ -325,7 +325,8 @@ void Page_Fault()
 	);
 	printf("Page Fault when trying to access %x\n",cr2_temp);
 
-	system_execute("shell");
+	uint8_t filename[] = "shell";
+	system_execute(filename);
 }
 //15
 /* 

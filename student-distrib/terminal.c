@@ -3,6 +3,7 @@
 
 volatile terminal_t terminal;
 
+
 /*
  * init_terminal
  * input: NONE
@@ -71,7 +72,6 @@ terminal_write(unsigned char* buf,int32_t num_bytes){
     {
         if (buf == NULL)
             break;
-
         putc(*buf);
         buf++;
         count++;

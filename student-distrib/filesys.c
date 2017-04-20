@@ -255,6 +255,7 @@ int32_t fs_open(uint8_t* file_name){
             break;
         case FILE_TYPE_DIRECTORY:
             curr_process->file_desc_table[fd].file_ops_table_ptr = &dir_ops_table;
+            curr_process->file_desc_table[fd].file_position++;
             break;
         case FILE_TYPE_REGULAR:
             curr_process->file_desc_table[fd].file_ops_table_ptr = &reg_ops_table;
@@ -359,7 +360,7 @@ Side Effect: corresponding file is open
 
 int32_t dir_open(const uint8_t* filename)
 {
-    return 0;
+    return fs_open((uint8_t*)filename);
 }
 
 /*
@@ -374,7 +375,7 @@ Side Effect: none
 */
 int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes)
 {
-    return 0;
+    return -1;
 }
 
 /*
@@ -387,6 +388,7 @@ Side Effect: None
 */
 int32_t dir_close(int32_t fd)
 {
+    curr_process->file_desc_table[fd].flag = 0;
     return 0;
 }
 
@@ -409,60 +411,31 @@ Side Effect: The info of file inside the directory is printed
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
 
-    int i,j,k;
+    file_desc_entry_t* fde = &(curr_process->file_desc_table[fd]);
+    int position = fde->file_position;
+    uint8_t* name_ptr = boot_block_ptr->dir_entries[position].filename;
+    uint8_t* buf_ptr = (uint8_t*)buf;
+    int i;
+    int n = 0;
 
-    int32_t n = 0;
-    for (i = 0; i < MAX_DIR_ENTRY_SIZE; ++i) {
-        if(boot_block_ptr->dir_entries[i].filename[0] == 0)
-            continue;
-        //read all the file's name
-    dentry_t search_for_dir_entry;
-    //printf("The size of inode is: %d\n",sizeof(dentry_t));
-        if(read_dentry_by_index(i, &search_for_dir_entry) == -1){
-            return -1;
-        }
+    if (name_ptr[0] == '\0')
+        return 0;
 
-
-        printf("file name:");
-        for (j=0 ; j<FILENAME_SIZE ; j++)
-        {
-            if (search_for_dir_entry.filename[j] == '\0')
-                break;
-
-        }
-        printf(" ");
-
-        for (k=0;k<FILENAME_SIZE-j;k++)
-        {
-            printf(" ");
-        }
+    
+    for (i = 0; i< nbytes; i++)
+    {
 
 
-        for (j=0 ; j<FILENAME_SIZE ; j++)
-        {
-            if (search_for_dir_entry.filename[j] == '\0')
-                break;
-
-            printf("%c",search_for_dir_entry.filename[j]);
-
-        }
-        printf("  ");
-
-        printf("File type: %d ",search_for_dir_entry.filetype );
-        //print the file type
-        uint32_t inode = search_for_dir_entry.inode_num;
-        inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
-        uint32_t length = inode_ptr->length;
-        //print the file size
-
-        printf("     File size: %d\n",length );
-        n += length;
-        //print the file name
-        // printf("File name: %s\n", search_for_dir_entry.filename);
+        *buf_ptr = *name_ptr;
+        buf_ptr++;
+        name_ptr++;
+        n++;
     }
 
+    fde->file_position++;
 
-    return 0;
+
+    return n;
 }
 
 
