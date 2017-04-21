@@ -197,16 +197,27 @@ int32_t system_execute (const uint8_t* command)
 		}
 
 		file_name[i]='\0';
-
 		//parsing arguments from command
 		i++;
-		while(command[i]!='\0')
+		if (command[i] != '\0')
 		{
-			arguments[j] = command[i];
-			i++;
-			j++;
+			while(command[i] == ' ') {i++;}
+
+
+			while(command[i]!='\0')
+		 	{
+				arguments[j] = command[i];
+				i++;
+				j++;
+			}
 		}
+		j++;
 		arguments[j]='\0';
+
+
+
+
+
 
 	/* Check for executable */
 	dentry_t search_for_dir_entry;
@@ -344,11 +355,6 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 	if(fd<FD_MIN || fd>FD_MAX)	//check range
 		return -1;
 
-	if (fd == FD_STDIN) {
-		int n = terminal_read(buf, nbytes);
-		return n;
-	}
-
 	if(fd == FD_STDOUT)	//can't read from stdout
 		return -1;
 
@@ -371,13 +377,6 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 	if(fd<FD_MIN || fd>FD_MAX)	//check range
 		return -1;
 
-	if(fd == FD_STDIN)	//can't read from stdin
-		return -1;
-
-	if (fd == FD_STDOUT){
-		terminal_write((unsigned char*) buf, nbytes);
-		return 0;
-	}
 
 	if(curr_process->file_desc_table[fd].flag == 0)	//can't write if it's not open yet
 		return -1;

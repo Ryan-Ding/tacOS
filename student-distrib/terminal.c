@@ -44,14 +44,15 @@ void init_terminal(){
  */
 
 
-int
-terminal_read(unsigned char* buf, int32_t num_bytes){
+int32_t
+terminal_read(int32_t fd, void* buf, int32_t nbytes){
     int i = 0;
     sti();
+    uint8_t* buff = (uint8_t*)buf;
     while (!terminal.read_flag);
     terminal.read_flag = 0;
-    for (i = 0; i<num_bytes && i<BUFFER_SIZE && buffer_key[i] != KEY_EMPTY;i++ ) {
-        buf[i] = buffer_key[i];
+    for (i = 0; i<nbytes && i<BUFFER_SIZE && buffer_key[i] != KEY_EMPTY;i++ ) {
+        buff[i] = buffer_key[i];
         buffer_key[i] = KEY_EMPTY;
     }
     cli();
@@ -63,17 +64,18 @@ terminal_read(unsigned char* buf, int32_t num_bytes){
  * description: This function output chars in the buffer to screen
  * side effect : return numofbytes written
  */
-int
-terminal_write(unsigned char* buf,int32_t num_bytes){
+int32_t
+terminal_write(int32_t fd,const void* buf, int32_t nbytes){
     int i ;
     int count = 0;
     cli();
-    for (i = 0; i < num_bytes;i++)
+    uint8_t* buff = (uint8_t*)buf;
+    for (i = 0; i < nbytes;i++)
     {
-        if (buf == NULL)
+        if (buff == NULL)
             break;
-        putc(*buf);
-        buf++;
+        putc(*buff);
+        buff++;
         count++;
     }
     sti();
@@ -88,7 +90,7 @@ terminal_write(unsigned char* buf,int32_t num_bytes){
  * side effect : none
  */
 
-int terminal_open(){
+int32_t terminal_open(const uint8_t* filename){
     return 0;
 }
 
@@ -100,8 +102,8 @@ int terminal_open(){
  * side effect : none
  */
 
-int terminal_close(){
-    return 0;
+int32_t terminal_close(int32_t fd){
+    return -1;
 }
 /*
 int get_curr_pid() {
