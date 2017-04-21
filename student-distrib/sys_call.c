@@ -341,11 +341,6 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 	if(fd<FD_MIN || fd>FD_MAX)	//check range
 		return -1;
 
-	if (fd == FD_STDIN) {
-		int n = terminal_read(buf, nbytes);
-		return n;
-	}
-
 	if(fd == FD_STDOUT)	//can't read from stdout
 		return -1;
 
@@ -368,13 +363,6 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
 	if(fd<FD_MIN || fd>FD_MAX)	//check range
 		return -1;
 
-	if(fd == FD_STDIN)	//can't read from stdin
-		return -1;
-
-	if (fd == FD_STDOUT){
-		terminal_write((unsigned char*) buf, nbytes);
-		return 0;
-	}
 
 	if(curr_process->file_desc_table[fd].flag == 0)	//can't write if it's not open yet
 		return -1;

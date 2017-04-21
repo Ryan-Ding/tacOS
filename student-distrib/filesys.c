@@ -5,6 +5,7 @@ static boot_block_t* boot_block_ptr = NULL;
 file_ops_table_t rtc_ops_table;
 file_ops_table_t dir_ops_table;
 file_ops_table_t reg_ops_table;
+file_ops_table_t terminal_ops_table;
 
 /*
 fetch_boot_block_info
@@ -52,12 +53,12 @@ void init_file_system()
     reg_ops_table.write = reg_write;
     reg_ops_table.close = reg_close;
 
-    // for (i=0;i<FDT_SIZE;i++)
-    // {
-    //     file_desc_table[i].flag = 0;
-    // }
-    // file_desc_table[STDIN].flag = 1;
-    // file_desc_table[STDO].flag = 1;
+    terminal_ops_table.open = terminal_open;
+    terminal_ops_table.read = terminal_read;
+    terminal_ops_table.write = terminal_write;
+    terminal_ops_table.close = terminal_close;
+
+
 }
 
 /*
@@ -76,7 +77,9 @@ void init_new_fdt() {
         curr_process->file_desc_table[i].flag = 0;
     }
     curr_process->file_desc_table[STDIN].flag = 1;
+    curr_process->file_desc_table[STDIN].file_ops_table_ptr = &terminal_ops_table;
     curr_process->file_desc_table[STDO].flag = 1;
+    curr_process->file_desc_table[STDO].file_ops_table_ptr = &terminal_ops_table;
 }
 
 
@@ -485,7 +488,7 @@ int n = read_data(inode,0,buf,length);
 //     {
 //         printf("%c",buf[i]);
 //     }
-terminal_write(buf,n);
+terminal_write(0,buf,n);
 
 
 //printf("filename: %s", search_for_dir_entry.filename);
