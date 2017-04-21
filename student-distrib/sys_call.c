@@ -194,16 +194,27 @@ int32_t system_execute (const uint8_t* command)
 		}
 
 		file_name[i]='\0';
-
 		//parsing arguments from command
 		i++;
-		while(command[i]!='\0')
+		if (command[i] != '\0')
 		{
-			arguments[j] = command[i];
-			i++;
-			j++;
+			while(command[i] == ' ') {i++;}
+
+
+			while(command[i]!='\0')
+		 	{
+				arguments[j] = command[i];
+				i++;
+				j++;
+			}
 		}
+		j++;
 		arguments[j]='\0';
+
+
+
+
+
 
 	/* Check for executable */
 	dentry_t search_for_dir_entry;
