@@ -24,10 +24,13 @@
 
 #define KERNEL_START_ADDR 0x00400000
 
-/* stuff added in cp3 */
-
 #define SUPERVISOR_MASK 0x4
 #define PROGRAM_IMAGE_ENTRY_MASK  (LARGE_PAGE_DIRECTORY_ENTRY_MASK | SUPERVISOR_MASK)
+
+#define PAGE_DIRECTORY_OFFSET_MASK 0xFFC00000
+
+
+
 
 typedef uint32_t page_directory_t[PAGE_DIRECTORY_NUM] __attribute__((aligned(PAGE_DIRECTORY_SIZE)));
 typedef uint32_t page_table_t[PAGE_TABLE_NUM] __attribute__((aligned(PAGE_TABLE_SIZE)));

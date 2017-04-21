@@ -27,6 +27,11 @@
 #define FILE_NAME_BUFFER_SIZE 128
 #define ARG_BUFFER_SIZE ARG_SIZE
 #define IRET_ESP 0x08400000-4
+#define VIDEO_MEM_USER_ADDR 0x08002000
+#define USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET (PROGRAM_IMAGE_PAGE_OFFSET + 1) // TODO
+#define USER_VIDEO_MEM_PAGE_TABLE_OFFSET 0x0
+#define VIDEO_MEM_PHYS_ADDR 0x000B8000
+
 
 void init_sys_call();
 void program_loader(const uint8_t* filename);
@@ -38,6 +43,7 @@ extern int32_t system_write (int32_t fd, const void* buf, int32_t nbytes);
 extern int32_t system_open (const uint8_t* filename);
 extern int32_t system_close (int32_t fd);
 extern int32_t system_getargs (uint8_t* buf, int32_t nbytes);
+extern int32_t system_vidmap (uint8_t** screen_start);
 
 extern pcb_t* curr_process;
 extern uint32_t kernel_stack_top;
