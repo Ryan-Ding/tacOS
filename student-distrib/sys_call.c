@@ -180,23 +180,33 @@ int32_t system_execute (const uint8_t* command)
 
 		int i=0;
 		int j=0;
+		int k=0;
 		if(!command)
 		{
 			printf("command must be valid\n");
 		}
 		//printf("%s\n",strchr(command,' '));
 
+
 		uint8_t file_name[FILE_NAME_BUFFER_SIZE] = {0};
 		uint8_t arguments[ARG_BUFFER_SIZE] = {0};
+
+		while(command[i] == ' '&& command !='\0')
+		{
+			i++;
+		}
+
+
 
 		//parsing the file name
 		while(command[i]!=' ' && command[i]!='\0')
 		{
-			file_name[i] = command[i];
+			file_name[k] = command[i];
 			i++;
+			k++;
 		}
 
-		file_name[i]='\0';
+		file_name[k]='\0';
 		//parsing arguments from command
 		i++;
 		if (command[i] != '\0')

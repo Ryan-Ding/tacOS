@@ -424,7 +424,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
         return 0;
 
     
-    for (i = 0; i< nbytes; i++)
+    for (i = 0; (i< nbytes) &&(i< FILENAME_SIZE); i++)
     {
 
 
