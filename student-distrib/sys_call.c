@@ -403,12 +403,12 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
  */
 
 int32_t system_open(const uint8_t* filename){
-	int i;
-	for (i = 0; i< FILENAME_SIZE && filename[i] != KEY_EMPTY;i++)
-	{
-		printf("%c",filename[i]);
-	}
-	printf("\n");
+	// int i;
+	// for (i = 0; i< FILENAME_SIZE && filename[i] != KEY_EMPTY;i++)
+	// {
+	// 	printf("%c",filename[i]);
+	// }
+	// printf("\n");
 
 	if (strncmp((const int8_t*)filename,(int8_t *) "stdin",IN_LENGTH) == 0) {
 		return 0;
@@ -465,14 +465,10 @@ int32_t system_getargs (uint8_t* buf, int32_t nbytes){
  * side effect :none
  */
 int32_t system_vidmap (uint8_t** screen_start) {
-	printf("sys vidmap lol\n");
 	// check address validity
-	//TODO
-	printf("screenstart %x \n", (int32_t)screen_start );
-	printf("*screenstart %x \n", (int32_t) *screen_start );
 	uint32_t pid = curr_process->pid;	
-	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
-	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
+	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
+	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
 	void* base_addr = (void*) (PROGRAM_IMAGE_ADDR & 0xFF000000);
 	if ( (void*) screen_start < base_addr || (void*) screen_start >= (base_addr + PORGRAM_IMAGE_SIZE) ) {
 		printf("address user passed in is not valid\n");
@@ -480,13 +476,13 @@ int32_t system_vidmap (uint8_t** screen_start) {
 	}
 
 	// set up paging entry
-	(*page_directory)[USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET] = ((uint32_t) page_table)  | (PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK); // TODO
-	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | LARGE_PAGE_DIRECTORY_ENTRY_MASK | SUPERVISOR_MASK;
+	(*page_directory)[USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET] = 	((uint32_t) (&((*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET])) )  | ( SMALL_PAGE_DIRECTORY_ENTRY_MASK  | SUPERVISOR_MASK);
+	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	
 	// update screen_start
 	*screen_start = (uint8_t*) VIDEO_MEM_USER_ADDR;
 	// need a way to represent that the video memory is mapped for the user program? 
 	// may be stored in pcb
 	// TODO
-	printf("sys vidmap page fault?\n");
 	return 0;
 }
