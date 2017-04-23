@@ -80,6 +80,50 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
 	return ((uint32_t)((buf[3]<<THREE_BYTES_SHIFT) | (buf[2]<<TWO_BYTES_SHIFT) | (buf[1]<<ONE_BYTE_SHIFT) | buf[0]));
 }
 
+uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arguments)
+{
+
+		int i=0;
+		int j=0;
+		int k=0;
+
+	while(command[i] == ' '&& command !='\0')
+		{
+			i++;
+		}
+
+
+
+		//parsing the file name
+		while(command[i]!=' ' && command[i]!='\0')
+		{
+			file_name[k] = command[i];
+			i++;
+			k++;
+		}
+
+		file_name[k]='\0';
+		//parsing arguments from command
+		i++;
+		if (command[i] != '\0')
+		{
+			while(command[i] == ' ') {i++;}
+
+
+			while(command[i]!='\0')
+		 	{
+				arguments[j] = command[i];
+				i++;
+				j++;
+			}
+		}
+		j++;
+		arguments[j]='\0';
+
+		return j;
+
+}
+
 /*
  * system_halt
  * input: status - status that is returned from previous progress
@@ -173,14 +217,12 @@ int32_t system_halt (uint8_t status)
 int32_t system_execute (const uint8_t* command)
 {
 
+	int j;
 	int32_t new_pid;
 	pcb_t new_pcb;
 	uint32_t old_ebp = 0, old_esp = 0, old_cr3=0;
 	/* Parse Command Arguments */
 
-		int i=0;
-		int j=0;
-		int k=0;
 		if(!command)
 		{
 			printf("command must be valid\n");
@@ -191,44 +233,8 @@ int32_t system_execute (const uint8_t* command)
 		uint8_t file_name[FILE_NAME_BUFFER_SIZE] = {0};
 		uint8_t arguments[ARG_BUFFER_SIZE] = {0};
 
-		while(command[i] == ' '&& command !='\0')
-		{
-			i++;
-		}
 
-
-
-		//parsing the file name
-		while(command[i]!=' ' && command[i]!='\0')
-		{
-			file_name[k] = command[i];
-			i++;
-			k++;
-		}
-
-		file_name[k]='\0';
-		//parsing arguments from command
-		i++;
-		if (command[i] != '\0')
-		{
-			while(command[i] == ' ') {i++;}
-
-
-			while(command[i]!='\0')
-		 	{
-				arguments[j] = command[i];
-				i++;
-				j++;
-			}
-		}
-		j++;
-		arguments[j]='\0';
-
-
-
-
-
-
+		j = parse_argument(command, file_name, arguments);
 	/* Check for executable */
 	dentry_t search_for_dir_entry;
     //printf("The size of inode is: %d\n",sizeof(dentry_t));
