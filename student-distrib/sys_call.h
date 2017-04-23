@@ -32,7 +32,7 @@
 
 #define VIDEO_MEM_USER_ADDR (PORGRAM_IMAGE_SIZE * USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET) + (0x1000 * USER_VIDEO_MEM_PAGE_TABLE_OFFSET  )
 #define VIDEO_MEM_PHYS_ADDR 0x000B8000
-
+#define PROGRAM_IMG_BASE_ADDR_MASK 0xFF000000
 
 void init_sys_call();
 void program_loader(const uint8_t* filename);

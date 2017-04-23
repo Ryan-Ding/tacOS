@@ -47,8 +47,10 @@ void init_terminal(){
 int32_t
 terminal_read(int32_t fd, void* buf, int32_t nbytes){
     int i = 0;
+    uint8_t* buff = (uint8_t*)buf;    
+    if(fd == FD_STDOUT)	//can't read from stdout
+		return -1;
     sti();
-    uint8_t* buff = (uint8_t*)buf;
     while (!terminal.read_flag);
     terminal.read_flag = 0;
     for (i = 0; i<nbytes && i<BUFFER_SIZE && buffer_key[i] != KEY_EMPTY;i++ ) {

@@ -365,9 +365,6 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 	if(fd<FD_MIN || fd>FD_MAX || curr_process->file_desc_table[fd].flag == 0)	//check range
 		return -1;
 
-	if(fd == FD_STDOUT)	//can't read from stdout
-		return -1;
-
 	return (curr_process->file_desc_table[fd].file_ops_table_ptr->read)(fd, buf, nbytes);		//to be replaced by pcb
 }
 
@@ -473,7 +470,7 @@ int32_t system_vidmap (uint8_t** screen_start) {
 	uint32_t pid = curr_process->pid;	
 	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
 	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
-	void* base_addr = (void*) (PROGRAM_IMAGE_ADDR & 0xFF000000);
+	void* base_addr = (void*) (PROGRAM_IMAGE_ADDR & PROGRAM_IMG_BASE_ADDR_MASK);
 	if ( (void*) screen_start < base_addr || (void*) screen_start >= (base_addr + PORGRAM_IMAGE_SIZE) ) {
 		// printf("address user passed in is not valid\n");
 		return -1;
