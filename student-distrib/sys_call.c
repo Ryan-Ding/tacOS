@@ -136,24 +136,23 @@ int32_t system_halt (uint8_t status)
 {
 	//printf("system halt");
 	uint32_t i;
+	if(curr_process->parent == NULL)
+	{
+		printf("You exit the last shell\n");
+		printf("Restart a new shell\n");
+		uint8_t filename[] = "shell";
+		system_execute(filename);
+		system_halt(-1);
+	}
 	pcb_t * parent_pcb = curr_process->parent;
 
-    if (parent_pcb==NULL) { // no task running any more, terminating shell
-        //return 0;//restart the shell
-		goto return_to_execute;
-    }
+
 	i = curr_process->pid;
   	//  mark the current process as not running
 	process_bitmap &= ~((1 << i));
 	// curr_process->parent = NULL;
-	if(parent_pcb==NULL){
-		paging_init(0);
-	}
-	else
-	{
-	paging_init(parent_pcb->pid + 1);
-	}
 
+	paging_init(parent_pcb->pid + 1);
 
 	// restore cr3
 	asm volatile (
@@ -199,8 +198,11 @@ int32_t system_halt (uint8_t status)
 		j = 0;
 	}*/
 	curr_process = curr_process->parent;
+
+
+
+
 	asm volatile("popl %eax");
-	return_to_execute:
     asm volatile("jmp return_from_halt");
     // asm volatile("leave");
     // asm volatile("ret");
