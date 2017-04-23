@@ -230,7 +230,7 @@ rtc_interrupt(void){
     outb(STATUS_REGISTER_C,NMI_PORT); // select register c
     inb(CMOS_PORT); // throw away contents
 
-    printf("1");
+    // printf("1");
     //test_interrupts();
     send_eoi(RTC_IRQ);
     rtc_service = 0;

@@ -258,7 +258,6 @@ int32_t fs_open(uint8_t* file_name){
             break;
         case FILE_TYPE_DIRECTORY:
             curr_process->file_desc_table[fd].file_ops_table_ptr = &dir_ops_table;
-            curr_process->file_desc_table[fd].file_position++;
             break;
         case FILE_TYPE_REGULAR:
             curr_process->file_desc_table[fd].file_ops_table_ptr = &reg_ops_table;
