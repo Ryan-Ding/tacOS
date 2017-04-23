@@ -105,6 +105,11 @@ handle_press(unsigned char scancode){
         clear(); // clear video memory
         set_cursor(0,0);
     }
+    else if (ctrl_on && key_pressed == 'c') {
+        send_eoi(KEYBOARD_IRQ);
+        sti();
+        system_halt(-1);
+    }
     else if (ctrl_on && key_pressed == '1'){ // test read file
       clear();
       set_cursor(0,0);
@@ -146,8 +151,7 @@ handle_press(unsigned char scancode){
           putc(key_pressed);
         }
       }
-
-
+      
 
 
 
@@ -204,7 +208,11 @@ keyboard_interrupt(void){
                 curr_case = CASE_CAPS;
             break;
         case BACKSPACE:
-            if(!(*cursor_y==0 && *cursor_x ==0)) { delete_content(); }
+            if(!(*cursor_y==0 && *cursor_x ==0)) { 
+                if (*buffer_idx > 0) {
+                    delete_content(); 
+                }
+            }
             if((*cursor_x) == 0) {
                 if (*cursor_y > 0) {
                   *cursor_x = NUM_COLS - 1;

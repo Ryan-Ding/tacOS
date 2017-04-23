@@ -362,7 +362,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 {
 	// printf("fd is %d, nbytes is %d \n" , fd, nbytes);
 
-	if(fd<FD_MIN || fd>FD_MAX)	//check range
+	if(fd<FD_MIN || fd>FD_MAX || curr_process->file_desc_table[fd].flag == 0)	//check range
 		return -1;
 
 	if(fd == FD_STDOUT)	//can't read from stdout
@@ -409,6 +409,9 @@ int32_t system_open(const uint8_t* filename){
 	// 	printf("%c",filename[i]);
 	// }
 	// printf("\n");
+	
+	// check if it is null string
+	if (*filename == '\0') { return -1; }
 
 	if (strncmp((const int8_t*)filename,(int8_t *) "stdin",IN_LENGTH) == 0) {
 		return 0;
@@ -428,6 +431,7 @@ int32_t system_open(const uint8_t* filename){
  */
 
 int32_t system_close (int32_t fd){
+	// printf("fd %d about to be closed\n", fd);
 	int retval;
 	file_desc_entry_t* current_file = &(curr_process->file_desc_table[fd]);
 	// error if file is not in use
@@ -471,7 +475,7 @@ int32_t system_vidmap (uint8_t** screen_start) {
 	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
 	void* base_addr = (void*) (PROGRAM_IMAGE_ADDR & 0xFF000000);
 	if ( (void*) screen_start < base_addr || (void*) screen_start >= (base_addr + PORGRAM_IMAGE_SIZE) ) {
-		printf("address user passed in is not valid\n");
+		// printf("address user passed in is not valid\n");
 		return -1;
 	}
 
