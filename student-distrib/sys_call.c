@@ -80,6 +80,17 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
 	return ((uint32_t)((buf[3]<<THREE_BYTES_SHIFT) | (buf[2]<<TWO_BYTES_SHIFT) | (buf[1]<<ONE_BYTE_SHIFT) | buf[0]));
 }
 
+
+/*
+ * parse_argument
+ * input: command -- the original command
+ 		  file_name -- file_name buffer
+ 		  arguments -- arguments buffer
+ * description: parsing command
+ * return value: the length of arguments
+ * side effect : none
+ */
+
 uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arguments)
 {
 
