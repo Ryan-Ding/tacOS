@@ -1,9 +1,9 @@
 // this file support terminal driver
 #include "terminal.h"
 
-volatile terminal_t terminal;
+volatile terminal_t terminal[TERM_NUM];
 
-
+int curr_term = 0;
 /*
  * init_terminal
  * input: NONE
@@ -12,29 +12,57 @@ volatile terminal_t terminal;
  */
 
 void init_terminal(){
-    int i;
-    terminal.pos_x = 0;
-    terminal.pos_y = 0;
-    for (i=0; i< BUFFER_SIZE; i++)
-        terminal.buffer_key[i] = KEY_EMPTY;
-    terminal.read_flag = 0;
-    terminal.curr_idx = 0;
-    // may need a function to map the virtual address with physical addresses
-    terminal.num_process = 0;
-   for (i =0; i<PID_SIZE; i++) {
-       terminal.pid_array[i] = -1;
-   }
+    int i,j;
 
-    clear();
+    for(j = 0;j<TERM_NUM;j++){
+      terminal[j].pos_x = 0;
+      terminal[j].pos_y = 0;
+      terminal[j].read_flag = 0;
+      terminal[j].curr_idx = 0;
+      terminal[j].num_process = 0;
+      for (i=0; i< BUFFER_SIZE; i++){
+        terminal[j].buffer_key[i] = KEY_EMPTY;
+      }
+      for (i =0; i<PID_SIZE; i++) {
+              terminal[j].pid_array[i] = -1;
+      }
+      clear();
+    }
+    restore_term(0);
+    curr_term = 0;
 
-    set_cursor(0,0);
+}
 
-    buffer_key = terminal.buffer_key;
-    buffer_idx = &(terminal.curr_idx);
-    enter_flag = &(terminal.read_flag);
-    cursor_x = &(terminal.pos_x);
-    cursor_y = &(terminal.pos_y);
+void save_term(int term){
+  int i;
+  for (i=0; i< BUFFER_SIZE; i++){
+    terminal[term].buffer_key[i] = buffer_key[i];
+  }
 
+  terminal[term].curr_idx = *buffer_idx;
+  terminal[term].read_flag = *enter_flag;
+  terminal[term].pos_x = *cursor_x;
+  terminal[term].pos_y = *cursor_y;
+
+}
+
+void restore_term(int term){
+  buffer_key = terminal[term].buffer_key;
+
+  buffer_idx = &(terminal[term].curr_idx);
+  enter_flag = &(terminal[term].read_flag);
+  cursor_x = &(terminal[term].pos_x);
+  cursor_y = &(terminal[term].pos_y);
+  set_cursor(*cursor_x,*cursor_y);
+
+}
+
+void switch_term(int term){
+  if (curr_term == term)
+    return;
+    save_term(curr_term);
+    restore_term(term);
+    curr_term = term;
 }
 /*
  * terminal_read
@@ -49,8 +77,8 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
     int i = 0;
     sti();
     uint8_t* buff = (uint8_t*)buf;
-    while (!terminal.read_flag);
-    terminal.read_flag = 0;
+    while (!terminal[curr_term].read_flag);
+    terminal[curr_term].read_flag = 0;
     for (i = 0; i<nbytes && i<BUFFER_SIZE && buffer_key[i] != KEY_EMPTY;i++ ) {
         buff[i] = buffer_key[i];
         buffer_key[i] = KEY_EMPTY;

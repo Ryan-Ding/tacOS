@@ -80,6 +80,61 @@ uint32_t get_first_instruction(dentry_t* dir_entry){
 	return ((uint32_t)((buf[3]<<THREE_BYTES_SHIFT) | (buf[2]<<TWO_BYTES_SHIFT) | (buf[1]<<ONE_BYTE_SHIFT) | buf[0]));
 }
 
+
+/*
+ * parse_argument
+ * input: command -- the original command
+ 		  file_name -- file_name buffer
+ 		  arguments -- arguments buffer
+ * description: parsing command
+ * return value: the length of arguments
+ * side effect : none
+ */
+
+uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arguments)
+{
+
+		int i=0;
+		int j=0;
+		int k=0;
+
+	while(command[i] == ' '&& command !='\0')
+		{
+			i++;
+		}
+
+
+
+		//parsing the file name
+		while(command[i]!=' ' && command[i]!='\0')
+		{
+			file_name[k] = command[i];
+			i++;
+			k++;
+		}
+
+		file_name[k]='\0';
+		//parsing arguments from command
+		i++;
+		if (command[i] != '\0')
+		{
+			while(command[i] == ' ') {i++;}
+
+
+			while(command[i]!='\0')
+		 	{
+				arguments[j] = command[i];
+				i++;
+				j++;
+			}
+		}
+		j++;
+		arguments[j]='\0';
+
+		return j;
+
+}
+
 /*
  * system_halt
  * input: status - status that is returned from previous progress
@@ -92,24 +147,23 @@ int32_t system_halt (uint8_t status)
 {
 	//printf("system halt");
 	uint32_t i;
+	if(curr_process->parent == NULL)
+	{
+		printf("You exit the last shell\n");
+		printf("Restart a new shell\n");
+		uint8_t filename[] = "shell";
+		system_execute(filename);
+		system_halt(-1);
+	}
 	pcb_t * parent_pcb = curr_process->parent;
 
-    if (parent_pcb==NULL) { // no task running any more, terminating shell
-        //return 0;//restart the shell
-		goto return_to_execute;
-    }
+
 	i = curr_process->pid;
   	//  mark the current process as not running
 	process_bitmap &= ~((1 << i));
 	// curr_process->parent = NULL;
-	if(parent_pcb==NULL){
-		paging_init(0);
-	}
-	else
-	{
-	paging_init(parent_pcb->pid + 1);
-	}
 
+	paging_init(parent_pcb->pid + 1);
 
 	// restore cr3
 	asm volatile (
@@ -155,8 +209,11 @@ int32_t system_halt (uint8_t status)
 		j = 0;
 	}*/
 	curr_process = curr_process->parent;
+
+
+
+
 	asm volatile("popl %eax");
-	return_to_execute:
     asm volatile("jmp return_from_halt");
     // asm volatile("leave");
     // asm volatile("ret");
@@ -173,14 +230,12 @@ int32_t system_halt (uint8_t status)
 int32_t system_execute (const uint8_t* command)
 {
 
+	int j;
 	int32_t new_pid;
 	pcb_t new_pcb;
 	uint32_t old_ebp = 0, old_esp = 0, old_cr3=0;
 	/* Parse Command Arguments */
 
-		int i=0;
-		int j=0;
-		int k=0;
 		if(!command)
 		{
 			printf("command must be valid\n");
@@ -191,44 +246,8 @@ int32_t system_execute (const uint8_t* command)
 		uint8_t file_name[FILE_NAME_BUFFER_SIZE] = {0};
 		uint8_t arguments[ARG_BUFFER_SIZE] = {0};
 
-		while(command[i] == ' '&& command !='\0')
-		{
-			i++;
-		}
 
-
-
-		//parsing the file name
-		while(command[i]!=' ' && command[i]!='\0')
-		{
-			file_name[k] = command[i];
-			i++;
-			k++;
-		}
-
-		file_name[k]='\0';
-		//parsing arguments from command
-		i++;
-		if (command[i] != '\0')
-		{
-			while(command[i] == ' ') {i++;}
-
-
-			while(command[i]!='\0')
-		 	{
-				arguments[j] = command[i];
-				i++;
-				j++;
-			}
-		}
-		j++;
-		arguments[j]='\0';
-
-
-
-
-
-
+		j = parse_argument(command, file_name, arguments);
 	/* Check for executable */
 	dentry_t search_for_dir_entry;
     //printf("The size of inode is: %d\n",sizeof(dentry_t));
@@ -362,10 +381,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
 {
 	// printf("fd is %d, nbytes is %d \n" , fd, nbytes);
 
-	if(fd<FD_MIN || fd>FD_MAX)	//check range
-		return -1;
-
-	if(fd == FD_STDOUT)	//can't read from stdout
+	if(fd<FD_MIN || fd>FD_MAX || curr_process->file_desc_table[fd].flag == 0)	//check range
 		return -1;
 
 	return (curr_process->file_desc_table[fd].file_ops_table_ptr->read)(fd, buf, nbytes);		//to be replaced by pcb
@@ -403,12 +419,15 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes)
  */
 
 int32_t system_open(const uint8_t* filename){
-	int i;
-	for (i = 0; i< FILENAME_SIZE && filename[i] != KEY_EMPTY;i++)
-	{
-		printf("%c",filename[i]);
-	}
-	printf("\n");
+	// int i;
+	// for (i = 0; i< FILENAME_SIZE && filename[i] != KEY_EMPTY;i++)
+	// {
+	// 	printf("%c",filename[i]);
+	// }
+	// printf("\n");
+	
+	// check if it is null string
+	if (*filename == '\0') { return -1; }
 
 	if (strncmp((const int8_t*)filename,(int8_t *) "stdin",IN_LENGTH) == 0) {
 		return 0;
@@ -428,25 +447,25 @@ int32_t system_open(const uint8_t* filename){
  */
 
 int32_t system_close (int32_t fd){
-	int retval;
+	// printf("fd %d about to be closed\n", fd);
 	file_desc_entry_t* current_file = &(curr_process->file_desc_table[fd]);
 	// error if file is not in use
 	if (current_file->flag == 0 || fd <= FD_STDOUT || fd > FD_MAX) {
 		return -1;
 	}
-	retval = current_file->file_ops_table_ptr->close(fd);
-	// asm volatile("call  *%0;"
-	// 			 :
-	// 			 : "g" (current_file->file_ops_table_ptr->close));
-	// save return value
-	// asm volatile("movl %%eax, %0":"=g"(i));
-	// clear file info
-	current_file->file_ops_table_ptr = NULL;
-	current_file->inode = 0;
-	current_file->file_position = 0;
-	current_file->flag = 0;
-	return  retval;
+	return current_file->file_ops_table_ptr->close(fd);
+
 }
+
+/*
+ * system_getargs
+ * input: buf -- the user space buffer
+ 		  nbytes -- number of bytes to be copied 
+ * description: copy the arguments to user space buffer
+ * return value: 0 on success -1 failure
+ * side effect :none
+ */
+
 
 int32_t system_getargs (uint8_t* buf, int32_t nbytes){
 	if (buf == NULL || nbytes < 0 || curr_process->args == NULL)
@@ -465,28 +484,24 @@ int32_t system_getargs (uint8_t* buf, int32_t nbytes){
  * side effect :none
  */
 int32_t system_vidmap (uint8_t** screen_start) {
-	printf("sys vidmap lol\n");
 	// check address validity
-	//TODO
-	printf("screenstart %x \n", (int32_t)screen_start );
-	printf("*screenstart %x \n", (int32_t) *screen_start );
 	uint32_t pid = curr_process->pid;	
-	page_directory_t * page_directory = &(page_directory_list[pid + PID_PD_OFFSET]);
-	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
-	void* base_addr = (void*) (PROGRAM_IMAGE_ADDR & 0xFF000000);
+	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
+	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
+	void* base_addr = (void*) (PROGRAM_IMAGE_ADDR & PROGRAM_IMG_BASE_ADDR_MASK);
 	if ( (void*) screen_start < base_addr || (void*) screen_start >= (base_addr + PORGRAM_IMAGE_SIZE) ) {
-		printf("address user passed in is not valid\n");
+		// printf("address user passed in is not valid\n");
 		return -1;
 	}
 
 	// set up paging entry
-	(*page_directory)[USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET] = ((uint32_t) page_table)  | (PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK); // TODO
-	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | LARGE_PAGE_DIRECTORY_ENTRY_MASK | SUPERVISOR_MASK;
+	(*page_directory)[USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET] = 	((uint32_t) (&((*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET])) )  | ( SMALL_PAGE_DIRECTORY_ENTRY_MASK  | SUPERVISOR_MASK);
+	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	
 	// update screen_start
 	*screen_start = (uint8_t*) VIDEO_MEM_USER_ADDR;
 	// need a way to represent that the video memory is mapped for the user program? 
 	// may be stored in pcb
 	// TODO
-	printf("sys vidmap page fault?\n");
 	return 0;
 }

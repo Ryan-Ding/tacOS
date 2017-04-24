@@ -13,6 +13,7 @@ volatile int* cursor_y;
 //flags
 int curr_case = 0;
 int ctrl_on = 0;
+int alt_on = 0;
 
 // test function vars
 int file_idx = FS_IDX;
@@ -250,6 +251,26 @@ keyboard_interrupt(void){
         case CTRL_RELEASED:
             ctrl_on = 0;
             break;
+        case ALT_PRESSED:
+            alt_on = 1;
+            break;
+        case ALT_RELEASED:
+            alt_on = 0;
+        case F1:
+            if(alt_on){
+              switch_term(0);
+            }
+            break;
+        case F2:
+            if(alt_on){
+             switch_term(1);
+            }
+            break;
+        case F3:
+           if(alt_on){
+             switch_term(2);
+           }
+           break;
         default:
             handle_press(scancode);
             break;

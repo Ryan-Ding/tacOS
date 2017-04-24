@@ -249,7 +249,7 @@ int32_t fs_open(uint8_t* file_name){
     curr_process->file_desc_table[fd].file_position = 0;
 
     // printf("File size: %d      ",length );
-    // printf("File name: %s\n", search_for_dir_entry.filename);
+    //printf("File name: %s\n", search_for_dir_entry.filename);
 
     // attach appropriate operation table based on file type
     switch (search_for_dir_entry.filetype) {

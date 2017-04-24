@@ -10,7 +10,9 @@
 #define VIDEO 0xB8000
 #define NUM_COLS 80
 #define NUM_ROWS 25
-#define ATTRIB 0x7
+#define ATTRIB_0 0x7
+#define ATTRIB_1 0xF //white
+#define ATTRIB_2 0xE //yellow
 #define LOW_PORT 0x3D4
 #define HIGH_PORT 0x3D5
 #define FOUR_BIT_MASK 0x0F

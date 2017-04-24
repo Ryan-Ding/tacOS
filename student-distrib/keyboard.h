@@ -26,14 +26,18 @@
 #define RIGHT_CURSOR 0x4D
 #define UP_CURSOR 0x48
 #define DOWN_CURSOR 0x50
-
+#define F1 0x3B
+#define F2 0x3C
+#define F3 0x3D
 #define LEFT_SHIFT_PRESSED 0x2A
 #define RIGHT_SHIFT_PRESSED 0x36
 #define CTRL_PRESSED 0x1D
-
+#define ALT_PRESSED 0x38
 #define LEFT_SHIFT_RELEASED 0xAA
 #define RIGHT_SHIFT_RELEASED 0xB6
 #define CTRL_RELEASED 0x9D
+#define ALT_RELEASED 0xB8
+
 
 #define RTC_INI_FRQ 2
 #define FS_IDX 1

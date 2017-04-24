@@ -3,7 +3,7 @@
  */
 
 #include "lib.h"
-
+#include "terminal.h"
 
 static int screen_x;
 static int screen_y;
@@ -22,7 +22,13 @@ clear(void)
     int32_t i;
     for(i=0; i<NUM_ROWS*NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        if (curr_term ==0) {
+            *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+        } else if (curr_term ==1){
+            *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+        }else {
+            *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+        }
     }
 }
 
@@ -37,7 +43,13 @@ void delete_content(void){
     if(!(screen_y==0 && screen_x ==0)) { i = NUM_COLS * screen_y + screen_x - 1; }
 
     *(uint8_t *)(video_mem + (i << 1)) = ' ';
-    *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+    if (curr_term ==0) {
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+    } else if (curr_term ==1){
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+    }else {
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+    }
     if (screen_x == 0)
         set_cursor(NUM_COLS - 1, --screen_y);
     else
@@ -264,12 +276,19 @@ puts(int8_t* s)
 void
 putc(uint8_t c)
 {
+  int i = (NUM_COLS*screen_y + screen_x);
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x=0;
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + (i << 1)) = c;
+        if (curr_term ==0) {
+            *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+        } else if (curr_term ==1){
+            *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+        }else {
+            *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+        }
         screen_x++;
         screen_y = (screen_y + (screen_x / NUM_COLS));
         screen_x %= NUM_COLS;

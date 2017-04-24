@@ -12,6 +12,7 @@
 #define _4KB 0x1000
 #define BUFFER_SIZE 128
 #define PID_SIZE 6
+#define TERM_NUM 3
 #define SHELL_LENGTH 7
 #define OUR_SHELL_LENGTH 8
 typedef struct {
@@ -22,10 +23,17 @@ typedef struct {
     unsigned char buffer_key[BUFFER_SIZE];
     int * mem_video;
     int num_process;
+    int tid ;
     int pid_array[PID_SIZE];
 }terminal_t;
+extern int curr_term;
 
 extern void init_terminal();
+extern void switch_term(int term);
+
+void save_term(int term);
+void restore_term(int term);
+
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t terminal_write(int32_t fd,const void* buf, int32_t nbytes);
 int32_t terminal_open(const uint8_t* filename);

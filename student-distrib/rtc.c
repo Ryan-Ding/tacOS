@@ -12,6 +12,8 @@
 # include "isr_wrappers.h"
 # include "idt.h"
 
+volatile int rtc_service;
+
 /*
  * rtc_init
  * input: NONE
@@ -59,7 +61,7 @@ int
 rtc_open(void)
 {
 
-
+    sti();
     unsigned char rate = OPEN_FLAG;
     cli();
     outb(STATUS_REGISTER_A,NMI_PORT);
@@ -100,6 +102,7 @@ int
 rtc_close(int32_t fd)
 {
 
+curr_process->file_desc_table[fd].flag = 0;
 return 0;
 
 }
@@ -113,11 +116,10 @@ Return value: 0 - success
 Side Effect: Wait until last rtc interrupt ends
 */
 
-int rtc_read()
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes)
 {
-    cli();
-    rtc_service = 1;
     sti();
+    rtc_service = 1;
     while (rtc_service)
     {}
     return 0;
@@ -139,7 +141,7 @@ int
 rtc_write(unsigned int frequency)
 {
     unsigned char rate = 0;
-    if (frequency > HIGHEST_BIT_MASK)   //check if the frequency exceed the max value
+    if (frequency > HIGHEST_FREQUENCY)   //check if the frequency exceed the max value
     {
         //printf("Invalid frequency\n");
         return -1;
@@ -226,7 +228,6 @@ int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes)
 void
 rtc_interrupt(void){
     cli();
-    rtc_service = 1;
     outb(STATUS_REGISTER_C,NMI_PORT); // select register c
     inb(CMOS_PORT); // throw away contents
 
