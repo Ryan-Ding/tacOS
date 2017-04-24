@@ -141,7 +141,7 @@ int
 rtc_write(unsigned int frequency)
 {
     unsigned char rate = 0;
-    if (frequency > HIGHEST_BIT_MASK)   //check if the frequency exceed the max value
+    if (frequency > HIGHEST_FREQUENCY)   //check if the frequency exceed the max value
     {
         //printf("Invalid frequency\n");
         return -1;
