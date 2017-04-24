@@ -179,8 +179,6 @@ entry (unsigned long magic, unsigned long addr)
 	// init the terminal
 	init_terminal();
 
-	// stop rtc
-	rtc_stop();
 
 	// init file system
 	init_file_system();

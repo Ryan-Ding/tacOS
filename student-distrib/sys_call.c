@@ -437,25 +437,24 @@ int32_t system_open(const uint8_t* filename){
 
 int32_t system_close (int32_t fd){
 	// printf("fd %d about to be closed\n", fd);
-	int retval;
 	file_desc_entry_t* current_file = &(curr_process->file_desc_table[fd]);
 	// error if file is not in use
 	if (current_file->flag == 0 || fd <= FD_STDOUT || fd > FD_MAX) {
 		return -1;
 	}
-	retval = current_file->file_ops_table_ptr->close(fd);
-	// asm volatile("call  *%0;"
-	// 			 :
-	// 			 : "g" (current_file->file_ops_table_ptr->close));
-	// save return value
-	// asm volatile("movl %%eax, %0":"=g"(i));
-	// clear file info
-	current_file->file_ops_table_ptr = NULL;
-	current_file->inode = 0;
-	current_file->file_position = 0;
-	current_file->flag = 0;
-	return  retval;
+	return current_file->file_ops_table_ptr->close(fd);
+
 }
+
+/*
+ * system_getargs
+ * input: buf -- the user space buffer
+ 		  nbytes -- number of bytes to be copied 
+ * description: copy the arguments to user space buffer
+ * return value: 0 on success -1 failure
+ * side effect :none
+ */
+
 
 int32_t system_getargs (uint8_t* buf, int32_t nbytes){
 	if (buf == NULL || nbytes < 0 || curr_process->args == NULL)
