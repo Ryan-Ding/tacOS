@@ -75,6 +75,9 @@ void switch_term(int term){
 int32_t
 terminal_read(int32_t fd, void* buf, int32_t nbytes){
     int i = 0;
+    uint8_t* buff = (uint8_t*)buf;
+    if(fd == FD_STDOUT)	//can't read from stdout
+		return -1;
     sti();
     uint8_t* buff = (uint8_t*)buf;
     while (!terminal[curr_term].read_flag);
@@ -96,9 +99,10 @@ int32_t
 terminal_write(int32_t fd,const void* buf, int32_t nbytes){
     int i ;
     int count = 0;
-    cli();
     uint8_t* buff = (uint8_t*)buf;
-    for (i = 0; i < nbytes;i++)
+    if (fd == STDIN  || buf == NULL || buff[0] == '\0') { return -1; }
+    cli();
+    for (i = 0; i < nbytes; i++)
     {
         if (buff == NULL)
             break;
