@@ -135,6 +135,41 @@ uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arg
 
 }
 
+
+
+void remap_video(uint32_t new_terminal_id) {
+	uint32_t pid = curr_process->pid;
+	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
+	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
+	// first map the vidmap of current terminal to back up
+	uint32_t backup_vid_offset = (1 + curr_process->terminal_id) * PAGE_SIZE;
+	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	// then map the vidmap of the new terminal to the actual phys video mem
+	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
  * system_halt
  * input: status - status that is returned from previous progress
@@ -293,6 +328,7 @@ int32_t system_execute (const uint8_t* command)
 	new_pcb.old_cr3 = old_cr3;
 	new_pcb.old_esp0 = tss.esp0;
 	new_pcb.old_kernel_stack_top = kernel_stack_top;
+	new_pcb.terminal_id = curr_term;
 	strncpy_uint(new_pcb.args,arguments,j);
 
 	if (new_pid != PID_PD_OFFSET) {
@@ -485,6 +521,7 @@ int32_t system_getargs (uint8_t* buf, int32_t nbytes){
  */
 int32_t system_vidmap (uint8_t** screen_start) {
 	// check address validity
+	uint32_t backup_vid_offset;
 	uint32_t pid = curr_process->pid;	
 	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
 	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
@@ -496,7 +533,20 @@ int32_t system_vidmap (uint8_t** screen_start) {
 
 	// set up paging entry
 	(*page_directory)[USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET] = 	((uint32_t) (&((*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET])) )  | ( SMALL_PAGE_DIRECTORY_ENTRY_MASK  | SUPERVISOR_MASK);
-	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	
+	// //depending whether the terminal is focused, map the video memory to back up or screen
+	// 	if(is_terminal_focused())
+	// 		p->pages->pgt[VIDMAP_PGT_IDX] = VID_PHY_MEM | PRESENT | READ_WRITE_ENABLE | USER_ACCESS;
+	// 	else
+	// 		p->pages->pgt[VIDMAP_PGT_IDX] = ( VID_PHY_START + (get_terminal_index() * PAGE_4KB) )   | PRESENT | READ_WRITE_ENABLE | USER_ACCESS;
+		
+	if (is_terminal_active()) {
+		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	} else {
+		backup_vid_offset = (1 + curr_process->terminal_id) * PAGE_SIZE;
+		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	}
+	
 	
 	// update screen_start
 	*screen_start = (uint8_t*) VIDEO_MEM_USER_ADDR;

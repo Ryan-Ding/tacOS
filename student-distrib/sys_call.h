@@ -4,6 +4,7 @@
 #include "paging.h"
 #include "pcb.h"
 #include "filesys.h"
+#include "terminal.h"
 #include "x86_desc.h"
 
 #define PROGRAM_IMAGE_ADDR 0x08048000
@@ -45,6 +46,8 @@ extern int32_t system_open (const uint8_t* filename);
 extern int32_t system_close (int32_t fd);
 extern int32_t system_getargs (uint8_t* buf, int32_t nbytes);
 extern int32_t system_vidmap (uint8_t** screen_start);
+
+extern void remap_video(uint32_t new_terminal_id);
 
 extern pcb_t* curr_process;
 extern uint32_t kernel_stack_top;

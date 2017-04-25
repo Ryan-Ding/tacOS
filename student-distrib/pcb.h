@@ -50,6 +50,8 @@ typedef struct pcb_t {
     uint32_t old_esp0;
     uint32_t old_ss;
     uint32_t old_kernel_stack_top;
+    uint32_t terminal_id;
+    uint32_t is_vid_mapped;
     uint8_t args[ARG_SIZE];
     struct pcb_t* parent;
 } pcb_t;

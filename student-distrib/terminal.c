@@ -148,3 +148,8 @@ void close_process(){
     terminal.num_process--;
 }
 */
+
+int32_t is_terminal_active() {
+    return (curr_process->terminal_id == curr_term );
+}
+
