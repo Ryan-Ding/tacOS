@@ -139,7 +139,8 @@ uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arg
 
 void remap_video(uint32_t new_terminal_id) {
 	uint32_t pid = terminal[curr_display_term].curr_process->pid; // NULL checking? TODO
-	uint32_t new_pid = terminal[new_terminal_id].curr_process->pid; // curr process of newly open term might be null
+	uint32_t is_new_term_initialized = terminal[new_terminal_id].curr_process != NULL;
+	uint32_t new_pid;
 	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
 	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
 	// first map the vidmap of current terminal to back up
@@ -153,17 +154,21 @@ void remap_video(uint32_t new_terminal_id) {
 
 	clear();
 	// then map the vidmap of the new terminal to the actual phys video mem
-	page_directory = &(page_directory_list[new_pid + 1 + PID_PD_OFFSET]);
-	page_table = &(page_table_list[new_pid + 1 + PID_PD_OFFSET]);
-	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
-	if (terminal[new_terminal_id].curr_process->is_user_vid_mapped == 1) {
-		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	if (is_new_term_initialized) {
+		new_pid = terminal[new_terminal_id].curr_process->pid; // curr process of newly open term might be null
+	  	page_directory = &(page_directory_list[new_pid + 1 + PID_PD_OFFSET]);
+	  	page_table = &(page_table_list[new_pid + 1 + PID_PD_OFFSET]);
+		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
+		if (terminal[new_terminal_id].curr_process->is_user_vid_mapped == 1) {
+			(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+		}
+		(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
 	}
+	
 
 	// restore backup video to physical video memory
 	backup_vid_offset = (1 + new_terminal_id) * PAGE_SIZE;
 	memcpy((void*) VIDEO_MEM_PHYS_ADDR, (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, PAGE_SIZE); //store to back upo
-	(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
 
 	/* 
 	
@@ -182,8 +187,8 @@ void remap_video(uint32_t new_terminal_id) {
 
 
 	// reload CR3
-	add_video_memory(new_pid, VIDEO_PAGE_TABLE_IDX);	//set up video memory
-	load_page_directory(new_pid);
+	//add_video_memory(new_pid, VIDEO_PAGE_TABLE_IDX);	//set up video memory
+	load_page_directory(pid + 1);
 }
 
 
@@ -387,7 +392,6 @@ int32_t system_execute (const uint8_t* command)
 		curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
 		// update terminal curr proces pointer
 		terminal[curr_term].curr_process = curr_process;
-		switch_term(curr_term); // MUST BE AFTER the above line
 	} else {
 		curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
 		// update terminal curr proces pointer

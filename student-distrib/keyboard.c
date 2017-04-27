@@ -269,6 +269,7 @@ keyboard_interrupt(void){
                 if (terminal[0].curr_process == NULL) {
                     curr_term = 0;
                     //curr_display_term = 0;
+                    switch_term(0);
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
@@ -282,6 +283,7 @@ keyboard_interrupt(void){
                 if (terminal[1].curr_process == NULL) {
                     curr_term = 1;
                     //curr_display_term = 1;
+                    switch_term(1);
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
@@ -294,6 +296,7 @@ keyboard_interrupt(void){
                 if (terminal[2].curr_process == NULL) {
                     curr_term = 2;
                     // curr_display_term = 2;
+                    switch_term(2);
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
