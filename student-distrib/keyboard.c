@@ -266,17 +266,39 @@ keyboard_interrupt(void){
             alt_on = 0;
         case F1:
             if(alt_on){
-              switch_term(0);
+                if (terminal[0].curr_process == NULL) {
+                    curr_term = 0;
+                    //curr_display_term = 0;
+                    curr_process = NULL;
+                    send_eoi(KEYBOARD_IRQ);
+                    system_execute("shell");
+                }   else {
+                    switch_term(0);
+                }  
             }
             break;
         case F2:
             if(alt_on){
-             switch_term(1);
+                if (terminal[1].curr_process == NULL) {
+                    curr_term = 1;
+                    //curr_display_term = 1;
+                    curr_process = NULL;
+                    send_eoi(KEYBOARD_IRQ);
+                    system_execute("shell");
+                }    
+                switch_term(1);
             }
             break;
         case F3:
            if(alt_on){
-             switch_term(2);
+                if (terminal[2].curr_process == NULL) {
+                    curr_term = 2;
+                    // curr_display_term = 2;
+                    curr_process = NULL;
+                    send_eoi(KEYBOARD_IRQ);
+                    system_execute("shell");
+                }    
+                switch_term(2);
            }
            break;
         default:

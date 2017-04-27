@@ -22,9 +22,9 @@ clear(void)
     int32_t i;
     for(i=0; i<NUM_ROWS*NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        if (curr_term ==0) {
+        if (curr_display_term ==0) {
             *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
-        } else if (curr_term ==1){
+        } else if (curr_display_term ==1){
             *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
         }else {
             *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
@@ -43,9 +43,9 @@ void delete_content(void){
     if(!(screen_y==0 && screen_x ==0)) { i = NUM_COLS * screen_y + screen_x - 1; }
 
     *(uint8_t *)(video_mem + (i << 1)) = ' ';
-    if (curr_term ==0) {
+    if (curr_display_term == 0) {
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
-    } else if (curr_term ==1){
+    } else if (curr_display_term ==1){
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
     }else {
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
@@ -282,9 +282,9 @@ putc(uint8_t c)
         screen_x=0;
     } else {
         *(uint8_t *)(video_mem + (i << 1)) = c;
-        if (curr_term ==0) {
+        if (curr_display_term == 0) {
             *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
-        } else if (curr_term ==1){
+        } else if (curr_display_term ==1){
             *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
         }else {
             *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;

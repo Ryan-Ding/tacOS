@@ -4,6 +4,9 @@
 volatile terminal_t terminal[TERM_NUM];
 
 int curr_term = 0;
+
+uint8_t curr_display_term = 0;
+
 /*
  * init_terminal
  * input: NONE
@@ -30,6 +33,7 @@ void init_terminal(){
     }
     restore_term(0);
     curr_term = 0;
+    curr_display_term = 0;
 
 }
 
@@ -57,12 +61,21 @@ void restore_term(int term){
 
 }
 
-void switch_term(int term){
-  if (curr_term == term)
-    return;
-    save_term(curr_term);
+void switch_term(int term) {
+    if (curr_display_term == term) {
+        printf("same terminal! \n");
+        return;
+    }
+    save_term(curr_display_term);
+    remap_video(term);
     restore_term(term);
-    curr_term = term;
+    // curr_term = term;
+    printf("curr process spawn in terminal %d\n", curr_process->terminal_id );
+    printf("current active terminal: %d\n", curr_term);
+    printf("current displayed terminal: %d\n", curr_display_term);
+    printf("want to be spawn in terminal %d\n", term );
+ 
+    curr_display_term = term;
 }
 /*
  * terminal_read
@@ -150,6 +163,6 @@ void close_process(){
 */
 
 int32_t is_terminal_active() {
-    return (curr_process->terminal_id == curr_term );
+    return (curr_process->terminal_id == curr_display_term );
 }
 

@@ -25,9 +25,12 @@ typedef struct {
     int num_process;
     int tid ;
     int pid_array[PID_SIZE];
-    pcb_t* current_process;
+    pcb_t* curr_process;
 } terminal_t;
+
 extern int curr_term;
+extern uint8_t curr_display_term;
+extern volatile terminal_t terminal[TERM_NUM];
 
 extern void init_terminal();
 extern void switch_term(int term);

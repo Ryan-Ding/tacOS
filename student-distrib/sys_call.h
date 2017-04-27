@@ -49,7 +49,7 @@ extern int32_t system_vidmap (uint8_t** screen_start);
 
 extern void remap_video(uint32_t new_terminal_id);
 
-extern pcb_t* curr_process;
+
 extern uint32_t kernel_stack_top;
 
 

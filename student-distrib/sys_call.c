@@ -1,7 +1,7 @@
 #include "sys_call.h"
 
 boot_block_t* boot_block_ptr;
-pcb_t* curr_process;
+
 uint32_t kernel_stack_top;
 
 /*
@@ -138,17 +138,54 @@ uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arg
 
 
 void remap_video(uint32_t new_terminal_id) {
-	uint32_t pid = curr_process->pid;
+	uint32_t pid = terminal[curr_display_term].curr_process->pid; // NULL checking? TODO
+	uint32_t new_pid = terminal[new_terminal_id].curr_process->pid; // curr process of newly open term might be null
 	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
 	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
 	// first map the vidmap of current terminal to back up
-	uint32_t backup_vid_offset = (1 + curr_process->terminal_id) * PAGE_SIZE;
-	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	uint32_t backup_vid_offset = (1 + curr_display_term) * PAGE_SIZE;
+	if (terminal[curr_display_term].curr_process->is_user_vid_mapped == 1) {
+		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	}
+	
+	memcpy( (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, (void*) VIDEO_MEM_PHYS_ADDR, PAGE_SIZE); //store to back upo
+	(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
+
+	clear();
 	// then map the vidmap of the new terminal to the actual phys video mem
-	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	page_directory = &(page_directory_list[new_pid + 1 + PID_PD_OFFSET]);
+	page_table = &(page_table_list[new_pid + 1 + PID_PD_OFFSET]);
+	(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
+	if (terminal[new_terminal_id].curr_process->is_user_vid_mapped == 1) {
+		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
+	}
+
+	// restore backup video to physical video memory
+	backup_vid_offset = (1 + new_terminal_id) * PAGE_SIZE;
+	memcpy((void*) VIDEO_MEM_PHYS_ADDR, (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, PAGE_SIZE); //store to back upo
+	(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
+
+	/* 
+	
+		int i;	
+	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
+	// (*page_table)[page_table_idx] = ((unsigned int) ((*page_table)[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
+	(*page_table)[page_table_idx] = ((unsigned int) VIDEO_MEM_PHYS_ADDR ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
+	// set up video memory back up 
+	for (i = 0; i < TERM_NUM; ++i) {
+		(*page_table)[page_table_idx + (i + 1)] = (VIDEO_MEM_PHYS_ADDR + (i + 1) * PAGE_SIZE) | PAGE_TABLE_ENTRY_MASK;
+	}
+	
+	
+	
+	*/
 
 
+	// reload CR3
+	add_video_memory(new_pid, VIDEO_PAGE_TABLE_IDX);	//set up video memory
+	load_page_directory(new_pid);
 }
+
 
 
 
@@ -200,16 +237,16 @@ int32_t system_halt (uint8_t status)
 
 	paging_init(parent_pcb->pid + 1);
 
-	// restore cr3
-	asm volatile (
-		"pushl %%eax;"
-		"movl %0, %%eax;"
-		"movl %%eax, %%cr3;"
-		"popl %%eax;"
-		:
-		: "r"(curr_process->old_cr3)
-		: "%eax", "cc"
-	);
+	// // restore cr3
+	// asm volatile (
+	// 	"pushl %%eax;"
+	// 	"movl %0, %%eax;"
+	// 	"movl %%eax, %%cr3;"
+	// 	"popl %%eax;"
+	// 	:
+	// 	: "r"(curr_process->old_cr3)
+	// 	: "%eax", "cc"
+	// );
 
     uint32_t ret_status = status;
 	// should be parent's
@@ -244,7 +281,7 @@ int32_t system_halt (uint8_t status)
 		j = 0;
 	}*/
 	curr_process = curr_process->parent;
-
+	terminal[curr_term].curr_process = curr_process;
 
 
 
@@ -270,29 +307,25 @@ int32_t system_execute (const uint8_t* command)
 	pcb_t new_pcb;
 	uint32_t old_ebp = 0, old_esp = 0, old_cr3=0;
 	/* Parse Command Arguments */
+	if(!command) {
+		printf("command must be valid\n");
+	}
+	//printf("%s\n",strchr(command,' '));
 
-		if(!command)
-		{
-			printf("command must be valid\n");
-		}
-		//printf("%s\n",strchr(command,' '));
+	uint8_t file_name[FILE_NAME_BUFFER_SIZE] = {0};
+	uint8_t arguments[ARG_BUFFER_SIZE] = {0};
 
-
-		uint8_t file_name[FILE_NAME_BUFFER_SIZE] = {0};
-		uint8_t arguments[ARG_BUFFER_SIZE] = {0};
-
-
-		j = parse_argument(command, file_name, arguments);
+	j = parse_argument(command, file_name, arguments);
 	/* Check for executable */
 	dentry_t search_for_dir_entry;
     //printf("The size of inode is: %d\n",sizeof(dentry_t));
 
 	//check file validity
-    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1){
+    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {
         return -1;
     }
 
-	   if (check_if_executable(&search_for_dir_entry)!=0){
+	if (check_if_executable(&search_for_dir_entry)!= 0) {
 		printf("Not executable!\n");
 		return -1;
 	}
@@ -329,13 +362,12 @@ int32_t system_execute (const uint8_t* command)
 	new_pcb.old_esp0 = tss.esp0;
 	new_pcb.old_kernel_stack_top = kernel_stack_top;
 	new_pcb.terminal_id = curr_term;
+	new_pcb.is_user_vid_mapped = 0;
 	strncpy_uint(new_pcb.args,arguments,j);
 
-	if (new_pid != PID_PD_OFFSET) {
-		new_pcb.parent = (pcb_t*) curr_process;
-	} else {
-		new_pcb.parent = NULL;
-	}
+
+	new_pcb.parent = terminal[curr_term].curr_process;
+
 
 	asm volatile(
 		"movl  %%ss, %0;"
@@ -349,7 +381,19 @@ int32_t system_execute (const uint8_t* command)
 
 	//put pcb in corresponding location in memory
 	memcpy((void*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE), (void*) &new_pcb, sizeof(typeof(pcb_t)));
-	curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
+	
+
+	if (curr_process == NULL) {
+		curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
+		// update terminal curr proces pointer
+		terminal[curr_term].curr_process = curr_process;
+		switch_term(curr_term); // MUST BE AFTER the above line
+	} else {
+		curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
+		// update terminal curr proces pointer
+		terminal[curr_term].curr_process = curr_process;
+	}
+
 	kernel_stack_top -= KERNEL_STACK_ENTRY_SIZE;
 
 	// initialize file descriptor table
@@ -358,7 +402,8 @@ int32_t system_execute (const uint8_t* command)
 
 	/* Prepare for Context Switch; tss.esp0/ebp */
 	tss.ss0 = KERNEL_DS;
-	tss.esp0 = kernel_stack_top-4;
+	tss.esp0 = kernel_stack_top - 4;
+	curr_process->curr_esp0 = kernel_stack_top - 4;
 
 	/* Prepare for fake iret */
 
@@ -385,6 +430,7 @@ int32_t system_execute (const uint8_t* command)
      "pushl %2;"
      //push eip
      "pushl %3;"
+	 "sti;"
      "iret;"
      :
      : "g"(USER_DS), "g"(IRET_ESP), "g"(USER_CS), "g"(new_instruction)
@@ -393,7 +439,7 @@ int32_t system_execute (const uint8_t* command)
 
 //leave and return
 
-  sti();
+//   sti();
   asm volatile (
 	"return_from_halt: "
 	"leave;"
@@ -533,7 +579,7 @@ int32_t system_vidmap (uint8_t** screen_start) {
 
 	// set up paging entry
 	(*page_directory)[USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET] = 	((uint32_t) (&((*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET])) )  | ( SMALL_PAGE_DIRECTORY_ENTRY_MASK  | SUPERVISOR_MASK);
-	
+
 	// //depending whether the terminal is focused, map the video memory to back up or screen
 	// 	if(is_terminal_focused())
 	// 		p->pages->pgt[VIDMAP_PGT_IDX] = VID_PHY_MEM | PRESENT | READ_WRITE_ENABLE | USER_ACCESS;
@@ -547,7 +593,7 @@ int32_t system_vidmap (uint8_t** screen_start) {
 		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
 	}
 	
-	
+	curr_process->is_user_vid_mapped = 1;
 	// update screen_start
 	*screen_start = (uint8_t*) VIDEO_MEM_USER_ADDR;
 	// need a way to represent that the video memory is mapped for the user program? 
@@ -555,3 +601,12 @@ int32_t system_vidmap (uint8_t** screen_start) {
 	// TODO
 	return 0;
 }
+
+
+
+
+
+
+
+
+

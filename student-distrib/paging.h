@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "pcb.h"
+#include "sys_call.h"
 
 #define VIDEO_PAGE_TABLE_IDX 0x000000B8
 
