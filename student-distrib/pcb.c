@@ -57,3 +57,15 @@ int32_t find_available_pid() {
 
   return -1;
 }
+
+int32_t check_available_pid() {
+  int8_t idx, bit_mask = 0x1;
+  // printf("bitmap: %x \n", process_bitmap);
+  for(idx = 0; idx < BITMAP_LENGTH; ++idx ) {
+    if ( ((bit_mask << idx) & process_bitmap) == 0 ) {
+      return 0;
+    }
+  }
+  printf("You cannot open more process. \n");
+  return -1;
+}

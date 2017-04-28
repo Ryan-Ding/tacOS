@@ -264,44 +264,66 @@ keyboard_interrupt(void){
             break;
         case ALT_RELEASED:
             alt_on = 0;
+            break;
         case F1:
             if(alt_on){
                 if (terminal[0].curr_process == NULL) {
+                    if (check_available_pid() < 0) {
+                        break;
+                    }    
                     curr_term = 0;
                     //curr_display_term = 0;
                     switch_term(0);
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
+                    return;
                 }   else {
                     switch_term(0);
+                    send_eoi(KEYBOARD_IRQ);
+                    sti();
+                    return;
                 }  
             }
             break;
         case F2:
             if(alt_on){
                 if (terminal[1].curr_process == NULL) {
+                    if (check_available_pid() < 0) {
+                        break;
+                    }    
                     curr_term = 1;
                     //curr_display_term = 1;
                     switch_term(1);
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
+                    return;
                 }    
                 switch_term(1);
+                    send_eoi(KEYBOARD_IRQ);
+                    sti();
+                    return;
             }
             break;
         case F3:
            if(alt_on){
                 if (terminal[2].curr_process == NULL) {
+                    if (check_available_pid() < 0) {
+                        break;
+                    }
                     curr_term = 2;
                     // curr_display_term = 2;
                     switch_term(2);
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
+                    return;
                 }    
                 switch_term(2);
+                send_eoi(KEYBOARD_IRQ);
+                sti();
+                return;
            }
            break;
         default:

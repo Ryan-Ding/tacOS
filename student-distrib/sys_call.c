@@ -138,57 +138,42 @@ uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arg
 
 
 void remap_video(uint32_t new_terminal_id) {
-	uint32_t pid = terminal[curr_display_term].curr_process->pid; // NULL checking? TODO
+	uint32_t pid = terminal[curr_display_term].curr_process->pid; // current displayed terminal active process pid
 	uint32_t is_new_term_initialized = terminal[new_terminal_id].curr_process != NULL;
 	uint32_t new_pid;
 	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
 	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
-	// first map the vidmap of current terminal to back up
+	// save video memory to back up
 	uint32_t backup_vid_offset = (1 + curr_display_term) * PAGE_SIZE;
-	if (terminal[curr_display_term].curr_process->is_user_vid_mapped == 1) {
-		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
-	}
-	
 	memcpy( (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, (void*) VIDEO_MEM_PHYS_ADDR, PAGE_SIZE); //store to back upo
-	(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
 
-	clear();
 	// then map the vidmap of the new terminal to the actual phys video mem
 	if (is_new_term_initialized) {
 		new_pid = terminal[new_terminal_id].curr_process->pid; // curr process of newly open term might be null
 	  	page_directory = &(page_directory_list[new_pid + 1 + PID_PD_OFFSET]);
 	  	page_table = &(page_table_list[new_pid + 1 + PID_PD_OFFSET]);
-		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
+		(*page_table)[VIDEO_PAGE_TABLE_IDX] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
 		if (terminal[new_terminal_id].curr_process->is_user_vid_mapped == 1) {
 			(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
 		}
-		(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
+		// load_page_directory(new_pid + 1); // assign page table address and mark as present
+		// load_page_directory(pid + 1);
 	}
-	
 
+	page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
+	page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);	
 	// restore backup video to physical video memory
 	backup_vid_offset = (1 + new_terminal_id) * PAGE_SIZE;
 	memcpy((void*) VIDEO_MEM_PHYS_ADDR, (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, PAGE_SIZE); //store to back upo
-
-	/* 
 	
-		int i;	
-	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
-	// (*page_table)[page_table_idx] = ((unsigned int) ((*page_table)[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
-	(*page_table)[page_table_idx] = ((unsigned int) VIDEO_MEM_PHYS_ADDR ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
-	// set up video memory back up 
-	for (i = 0; i < TERM_NUM; ++i) {
-		(*page_table)[page_table_idx + (i + 1)] = (VIDEO_MEM_PHYS_ADDR + (i + 1) * PAGE_SIZE) | PAGE_TABLE_ENTRY_MASK;
+	// lastly, map the vidmap of current terminal to back up
+	backup_vid_offset = (1 + curr_display_term) * PAGE_SIZE; // TODO
+	if (terminal[curr_display_term].curr_process->is_user_vid_mapped == 1) {
+		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
 	}
-	
-	
-	
-	*/
-
-
-	// reload CR3
-	//add_video_memory(new_pid, VIDEO_PAGE_TABLE_IDX);	//set up video memory
+	(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
 	load_page_directory(pid + 1);
+
 }
 
 
@@ -222,6 +207,7 @@ void remap_video(uint32_t new_terminal_id) {
 
 int32_t system_halt (uint8_t status)
 {
+	cli();
 	//printf("system halt");
 	uint32_t i;
 	if(curr_process->parent == NULL)
@@ -288,7 +274,7 @@ int32_t system_halt (uint8_t status)
 	curr_process = curr_process->parent;
 	terminal[curr_term].curr_process = curr_process;
 
-
+	sti();
 
 	asm volatile("popl %eax");
     asm volatile("jmp return_from_halt");
@@ -441,9 +427,9 @@ int32_t system_execute (const uint8_t* command)
      : "cc","memory"
      );
 
-//leave and return
 
-//   sti();
+//leave and return
+  sti();
   asm volatile (
 	"return_from_halt: "
 	"leave;"

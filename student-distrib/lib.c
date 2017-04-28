@@ -697,5 +697,9 @@ test_interrupts(void)
 
 uint32_t max(uint32_t a, uint32_t b) { return a >= b ? a : b;}
 
-
 uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
+
+int get_screenx() { return screen_x; }
+int get_screeny() { return screen_y; }
+
+

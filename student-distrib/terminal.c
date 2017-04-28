@@ -70,10 +70,10 @@ void switch_term(int term) {
     remap_video(term);
     restore_term(term);
     // curr_term = term;
-    printf("curr process spawn in terminal %d\n", curr_process->terminal_id );
-    printf("current active terminal: %d\n", curr_term);
-    printf("current displayed terminal: %d\n", curr_display_term);
-    printf("want to be spawn in terminal %d\n", term );
+    // printf("curr process spawn in terminal %d\n", curr_process->terminal_id );
+    // printf("current active terminal: %d\n", curr_term);
+    // printf("current displayed terminal: %d\n", curr_display_term);
+    // printf("want to be spawn in terminal %d\n", term );
  
     curr_display_term = term;
 }
@@ -122,6 +122,8 @@ terminal_write(int32_t fd,const void* buf, int32_t nbytes){
         buff++;
         count++;
     }
+    *cursor_x = get_screenx(); // update cursorx and cursor y based on the 
+    *cursor_y = get_screeny(); // newest cursor pos updated by write
     sti();
     return count;
 }

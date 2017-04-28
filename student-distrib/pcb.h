@@ -61,6 +61,7 @@ typedef struct pcb_t {
 
 
 extern int32_t find_available_pid();
+extern int32_t check_available_pid();
 
 extern pcb_t* curr_process;
 
