@@ -12,7 +12,7 @@
 #include "paging.h"
 #include "filesys.h"
 #include "terminal.h"
-
+#include "pit.h"
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
 #define CHECK_FLAG(flags,bit)   ((flags) & (1 << (bit)))
@@ -169,6 +169,7 @@ entry (unsigned long magic, unsigned long addr)
 	pit_init();
 
 
+
     /* init the keyboard */
 	keyboard_init();
 
@@ -188,8 +189,13 @@ entry (unsigned long magic, unsigned long addr)
 	//program_loader(filename);
 
 	clear();
-	
+
+
 	system_execute(filename);
+
+
+	// system_execute(filename);
+
 	//system_execute(filename);
 
 	//testing_open_func();

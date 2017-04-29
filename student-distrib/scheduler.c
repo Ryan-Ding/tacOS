@@ -16,7 +16,6 @@ void switch_task() {
   curr_process->ebp = ebp;
   curr_process->esp = esp;
 
-
   if (curr_process->is_blocked_by_new_terminal > 0) {
         uint8_t shell_program[] = "shell";
         curr_process->is_blocked_by_new_terminal = 0;
@@ -61,6 +60,7 @@ void switch_task() {
   // switch to the page of next process
   // TO DO
   load_page_directory(next_process->pid + 1);
+
   asm volatile("movl %0, %%esp;"
                "movl %1, %%ebp;"
                :

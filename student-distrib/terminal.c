@@ -36,7 +36,7 @@ void init_terminal(){
     curr_display_term = 0;
 
 }
-
+/*
 void save_term(int term){
   int i;
   for (i=0; i< BUFFER_SIZE; i++){
@@ -49,7 +49,7 @@ void save_term(int term){
   terminal[term].pos_y = *cursor_y;
 
 }
-
+*/
 void restore_term(int term){
   buffer_key = terminal[term].buffer_key;
 
@@ -66,16 +66,16 @@ void switch_term(int term) {
         printf("same terminal! \n");
         return;
     }
-    save_term(curr_display_term);
+    //save_term(curr_display_term);
     remap_video(term);
     //restore_term(term);
-    
+
     // curr_term = term;
     // printf("curr process spawn in terminal %d\n", curr_process->terminal_id );
     // printf("current active terminal: %d\n", curr_term);
     // printf("current displayed terminal: %d\n", curr_display_term);
     // printf("want to be spawn in terminal %d\n", term );
- 
+
     curr_display_term = term;
 }
 /*
@@ -93,11 +93,11 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
     if(fd == FD_STDOUT)	//can't read from stdout
 		return -1;
     sti();
-    while (!terminal[curr_term].read_flag);
-    terminal[curr_term].read_flag = 0;
-    for (i = 0; i<nbytes && i<BUFFER_SIZE && buffer_key[i] != KEY_EMPTY;i++ ) {
-        buff[i] = buffer_key[i];
-        buffer_key[i] = KEY_EMPTY;
+    while (!terminal[curr_display_term].read_flag);
+    terminal[curr_display_term].read_flag = 0;
+    for (i = 0; i<nbytes && i<BUFFER_SIZE && terminal[curr_display_term].buffer_key[i] != KEY_EMPTY;i++ ) {
+        buff[i] = terminal[curr_display_term].buffer_key[i];
+        terminal[curr_display_term].buffer_key[i] = KEY_EMPTY;
     }
     cli();
     return i;
@@ -119,12 +119,12 @@ terminal_write(int32_t fd,const void* buf, int32_t nbytes){
     {
         if (buff == NULL)
             break;
-        putc(*buff);
+        terminal_putc(*buff);
         buff++;
         count++;
     }
-    *cursor_x = get_screenx(); // update cursorx and cursor y based on the 
-    *cursor_y = get_screeny(); // newest cursor pos updated by write
+    // *cursor_x = get_screenx(); // update cursorx and cursor y based on the
+    // *cursor_y = get_screeny(); // newest cursor pos updated by write
     sti();
     return count;
 }
@@ -168,4 +168,3 @@ void close_process(){
 int32_t is_terminal_active() {
     return (curr_process->terminal_id == curr_display_term );
 }
-

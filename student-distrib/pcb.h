@@ -5,7 +5,7 @@
 #include "lib.h"
 
 #define PID_PD_OFFSET 0 // TODO needs verification
-#define MAX_PROCESS_NUM 12
+#define MAX_PROCESS_NUM 10
 #define PROGRAM_IMAGE_PAGE_OFFSET 0x20
 #define FIRST_PROGRAM_IMAGE_ADDRESS (0x8 << 20) // 8MB
 #define KERNEL_END_ADDR FIRST_PROGRAM_IMAGE_ADDRESS
@@ -13,7 +13,7 @@
 #define PROGRAM_IMAGE_START_ADDRESS(pid) ( (1 + pid) << 22 )
 #define KERNEL_STACK_ENTRY_SIZE (0x8 << 10)
 #define ARG_SIZE 40
-#define BITMAP_LENGTH MAX_PROCESS_NUM - 3
+#define BITMAP_LENGTH MAX_PROCESS_NUM -2
 
 #define FDT_SIZE 8
 #define STDIN 0
@@ -60,6 +60,7 @@ typedef struct pcb_t {
     uint32_t fake_ebp;
     uint32_t fake_esp;
     uint8_t is_blocked_by_new_terminal;
+
 } pcb_t;
 
 

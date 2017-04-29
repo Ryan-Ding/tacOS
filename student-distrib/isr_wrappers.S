@@ -17,7 +17,7 @@
 
 /*  keyboard_interrupt_handler
     description: assembly wrapper to call c function to deal with the interrupt
-    side effect: save all the registers before calling interrupt 
+    side effect: save all the registers before calling interrupt
  */
 
 keyboard_interrupt_handler:
@@ -50,5 +50,3 @@ pit_interrupt_handler:
     call pit_interrupt
     popal
     iret
-
-    
