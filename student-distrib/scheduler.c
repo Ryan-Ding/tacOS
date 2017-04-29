@@ -60,11 +60,15 @@ void switch_task() {
   // switch to the page of next process
   // TO DO
   load_page_directory(next_process->pid + 1);
-
+  
   asm volatile("movl %0, %%esp;"
                "movl %1, %%ebp;"
                :
                :"r"(esp),"r"(ebp)
                : "memory","cc","ebp","esp"
   );
+
+  asm("leave;");
+  asm("ret;");
+
 }
