@@ -45,6 +45,8 @@ typedef struct pcb_t {
     file_desc_entry_t file_desc_table[FDT_SIZE];
     uint32_t pid;
     uint32_t curr_esp0;
+    uint32_t ebp;
+    uint32_t esp;
     uint32_t old_cr3;
     uint32_t old_ebp;
     uint32_t old_esp;

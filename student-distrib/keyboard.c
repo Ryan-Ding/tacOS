@@ -145,14 +145,14 @@ handle_press(unsigned char scancode){
           putc(key_pressed);
           *cursor_x = 0;
           if ((*cursor_y)<NUM_ROWS-1 ) {  (*cursor_y)++; }
-          //else{ scroll_line();}
+          else{ scroll_line();}
         }
         else{
-          (*cursor_x)++;
+        //  (*cursor_x)++;
           putc(key_pressed);
         }
       }
-      
+
 
 
 
@@ -209,19 +209,10 @@ keyboard_interrupt(void){
                 curr_case = CASE_CAPS;
             break;
         case BACKSPACE:
-            if(!(*cursor_y==0 && *cursor_x ==0)) { 
+            if(!(*cursor_y==0 && *cursor_x ==0)) {
                 if (*buffer_idx > 0) {
-                    delete_content(); 
+                    delete_content();
                 }
-            }
-            if((*cursor_x) == 0) {
-                if (*cursor_y > 0) {
-                  *cursor_x = NUM_COLS - 1;
-                  (*cursor_y)--;
-                }
-            }
-            else {
-              (*cursor_x)--;
             }
 
             if (*buffer_idx > 0) {
@@ -237,8 +228,8 @@ keyboard_interrupt(void){
             (*buffer_idx)=0;
             change_line();
             (*cursor_x) = 0;
-            if((*cursor_y)<NUM_ROWS-1)
-              (*cursor_y)++;
+            /*if((*cursor_y)<NUM_ROWS-1)
+              (*cursor_y)++;*/
             break;
 
         case LEFT_SHIFT_PRESSED:
@@ -270,7 +261,7 @@ keyboard_interrupt(void){
                 if (terminal[0].curr_process == NULL) {
                     if (check_available_pid() < 0) {
                         break;
-                    }    
+                    }
                     //curr_display_term = 0;
                     switch_term(0);
                     restore_term(0);
@@ -284,7 +275,7 @@ keyboard_interrupt(void){
                     send_eoi(KEYBOARD_IRQ);
                     sti();
                     return;
-                }  
+                }
             }
             break;
         case F2:
@@ -292,7 +283,7 @@ keyboard_interrupt(void){
                 if (terminal[1].curr_process == NULL) {
                     if (check_available_pid() < 0) {
                         break;
-                    }    
+                    }
                     //curr_display_term = 1;
                     switch_term(1);
                     restore_term(1);
@@ -301,7 +292,7 @@ keyboard_interrupt(void){
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
                     return;
-                }    
+                }
                 switch_term(1);
                     send_eoi(KEYBOARD_IRQ);
                     sti();
@@ -322,7 +313,7 @@ keyboard_interrupt(void){
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
                     return;
-                }    
+                }
                 switch_term(2);
                 send_eoi(KEYBOARD_IRQ);
                 sti();

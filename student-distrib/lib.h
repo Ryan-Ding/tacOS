@@ -30,7 +30,7 @@ void delete_content(void);
 void change_line(void);
 void scroll_line(void);
 void set_cursor(int32_t x, int32_t y);
-
+void terminal_putc(uint8_t c);
 void* memset(void* s, int32_t c, uint32_t n);
 void* memset_word(void* s, int32_t c, uint32_t n);
 void* memset_dword(void* s, int32_t c, uint32_t n);
@@ -51,8 +51,8 @@ uint32_t max(uint32_t a, uint32_t b);
 
 uint32_t min(uint32_t a, uint32_t b);
 
-int get_screenx();
-int get_screeny();
+// int get_screenx();
+// int get_screeny();
 
 
 

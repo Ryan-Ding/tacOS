@@ -5,8 +5,8 @@
 #include "lib.h"
 #include "terminal.h"
 
-static int screen_x;
-static int screen_y;
+//static int screen_x;
+//static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
 /*
@@ -40,7 +40,7 @@ clear(void)
 // TODO edge case for screen_y = 0
 void delete_content(void){
     int32_t i;
-    if(!(screen_y==0 && screen_x ==0)) { i = NUM_COLS * screen_y + screen_x - 1; }
+    if(!((*cursor_y)==0 && (*cursor_x) ==0)) { i = NUM_COLS * (*cursor_y) + (*cursor_x) - 1; }
 
     *(uint8_t *)(video_mem + (i << 1)) = ' ';
     if (curr_display_term == 0) {
@@ -50,10 +50,10 @@ void delete_content(void){
     }else {
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
     }
-    if (screen_x == 0)
-        set_cursor(NUM_COLS - 1, --screen_y);
+    if ((*cursor_x) == 0)
+        set_cursor(NUM_COLS - 1, --(*cursor_y));
     else
-        set_cursor(--screen_x, screen_y);
+        set_cursor(--(*cursor_x), (*cursor_y));
 
 }
 
@@ -64,11 +64,11 @@ void delete_content(void){
  */
 
 void change_line(void){
-    if (screen_y+1 >= NUM_ROWS) {
+    if ((*cursor_y)+1 >= NUM_ROWS) {
         scroll_line();
-        set_cursor(0,screen_y);
+        set_cursor(0,(*cursor_y));
     }else
-        set_cursor(0,++screen_y);
+        set_cursor(0,++(*cursor_y));
 }
 
 /* void scroll_line
@@ -96,6 +96,38 @@ void scroll_line(void){
 }
 
 
+void
+terminal_putc(uint8_t c)
+{
+  //terminal_t back_struct = terminal[curr_term];
+  int i = (NUM_COLS*terminal[curr_term].pos_y + terminal[curr_term].pos_x);
+    if(c == '\n' || c == '\r') {
+        terminal[curr_term].pos_y++;
+        terminal[curr_term].pos_x=0;
+    } else {
+        *(uint8_t *)(video_mem/* + (1 + curr_term) * FOUR_KB */+ (i << 1)) = c;
+        if (curr_display_term == 0) {
+            *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
+        } else if (curr_display_term ==1){
+            *(uint8_t *)(video_mem/* +  (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_1;
+        }else {
+            *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
+        }
+        terminal[curr_term].pos_x++;
+        terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));
+        terminal[curr_term].pos_x %= NUM_COLS;
+    }
+    if (terminal[curr_term].pos_y == NUM_ROWS) {
+      scroll_line();
+      terminal[curr_term].pos_y--;
+    }
+    if (curr_display_term== curr_term) {
+      set_cursor(terminal[curr_term].pos_x,terminal[curr_term].pos_y);
+    }
+
+}
+
+
 /* void set_cursor
  * input: position x and y to set the cursor
  * return value: none
@@ -105,11 +137,12 @@ void scroll_line(void){
 
 void set_cursor(int32_t x, int32_t y){
     // the following is just sanity check, edge cases should be taken care of when calling
-    if (x< NUM_COLS && y< NUM_ROWS) {
-        screen_x = x;
-        screen_y = y;
-    }
-    unsigned short position = NUM_COLS*screen_y+screen_x;
+    // if (x< NUM_COLS && y< NUM_ROWS) {
+    //     (*cursor_x) = x;
+    //     (*cursor_y) = y;
+    // }
+
+    unsigned short position = NUM_COLS* y + x;
     // cursor LOW port to vga INDEX register
     outb(FOUR_BIT_MASK,LOW_PORT);
     outb((unsigned char)(position&EIGHT_BIT_MASK),HIGH_PORT);
@@ -276,10 +309,10 @@ puts(int8_t* s)
 void
 putc(uint8_t c)
 {
-  int i = (NUM_COLS*screen_y + screen_x);
+  int i = (NUM_COLS*(*cursor_y) + (*cursor_x));
     if(c == '\n' || c == '\r') {
-        screen_y++;
-        screen_x=0;
+        (*cursor_y)++;
+        (*cursor_x)=0;
     } else {
         *(uint8_t *)(video_mem + (i << 1)) = c;
         if (curr_display_term == 0) {
@@ -289,15 +322,15 @@ putc(uint8_t c)
         }else {
             *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
         }
-        screen_x++;
-        screen_y = (screen_y + (screen_x / NUM_COLS));
-        screen_x %= NUM_COLS;
+        (*cursor_x)++;
+        (*cursor_y) = ((*cursor_y) + ((*cursor_x) / NUM_COLS));
+        (*cursor_x) %= NUM_COLS;
     }
-    if (screen_y == NUM_ROWS) {
+    if ((*cursor_y) == NUM_ROWS) {
       scroll_line();
-      screen_y--;
+      (*cursor_y)--;
     }
-    set_cursor(screen_x,screen_y);
+    set_cursor((*cursor_x),(*cursor_y));
 }
 
 /*
@@ -699,7 +732,5 @@ uint32_t max(uint32_t a, uint32_t b) { return a >= b ? a : b;}
 
 uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
 
-int get_screenx() { return screen_x; }
-int get_screeny() { return screen_y; }
-
-
+// int get_screenx() { return (*cursor_x); }
+// int get_screeny() { return (*cursor_y); }
