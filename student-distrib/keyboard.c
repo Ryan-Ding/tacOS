@@ -264,71 +264,22 @@ keyboard_interrupt(void){
             break;
         case ALT_RELEASED:
             alt_on = 0;
-            // break;
+            break;
         case F1:
             if(alt_on){
-                if (terminal[0].curr_process == NULL) {
-                    if (check_available_pid() < 0) {
-                        break;
-                    }    
-                    //curr_display_term = 0;
-                    switch_term(0);
-                    restore_term(0);
-                    curr_term = 0;
-                    curr_process = NULL;
-                    send_eoi(KEYBOARD_IRQ);
-                    system_execute("shell");
-                    return;
-                }   else {
-                    switch_term(0);
-                    send_eoi(KEYBOARD_IRQ);
-                    sti();
-                    return;
-                }  
+                return switch_terminal(0);
             }
             break;
         case F2:
             if(alt_on){
-                if (terminal[1].curr_process == NULL) {
-                    if (check_available_pid() < 0) {
-                        break;
-                    }    
-                    //curr_display_term = 1;
-                    switch_term(1);
-                    restore_term(1);
-                    curr_term = 1;
-                    curr_process = NULL;
-                    send_eoi(KEYBOARD_IRQ);
-                    system_execute("shell");
-                    return;
-                }    
-                switch_term(1);
-                    send_eoi(KEYBOARD_IRQ);
-                    sti();
-                    return;
+                return switch_terminal(1);
             }
             break;
         case F3:
-           if(alt_on){
-                if (terminal[2].curr_process == NULL) {
-                    if (check_available_pid() < 0) {
-                        break;
-                    }
-                    // curr_display_term = 2;
-                    switch_term(2);
-                    restore_term(2);
-                    curr_term = 2;
-                    curr_process = NULL;
-                    send_eoi(KEYBOARD_IRQ);
-                    system_execute("shell");
-                    return;
-                }    
-                switch_term(2);
-                send_eoi(KEYBOARD_IRQ);
-                sti();
-                return;
-           }
-           break;
+            if(alt_on){
+                return switch_terminal(2);
+            }
+            break;
         default:
             handle_press(scancode);
             break;
@@ -342,3 +293,27 @@ keyboard_interrupt(void){
     sti();
 
 }
+
+
+void switch_terminal(uint32_t new_terminal_id) {
+    uint8_t shell_program[] = "shell";
+    if (terminal[new_terminal_id].curr_process == NULL) {
+        if (check_available_pid() < 0) {
+            send_eoi(KEYBOARD_IRQ);
+            sti();
+            return;
+        }    
+        switch_term(new_terminal_id);
+        restore_term(new_terminal_id);
+        curr_term = new_terminal_id;
+        curr_process = NULL;
+        send_eoi(KEYBOARD_IRQ);
+        system_execute(shell_program);
+    } else {
+        switch_term(new_terminal_id);
+        send_eoi(KEYBOARD_IRQ);
+        sti();
+    }  
+    return;
+}
+

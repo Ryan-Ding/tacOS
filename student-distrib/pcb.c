@@ -50,7 +50,14 @@ int32_t find_available_pid() {
   }
 
   if (curr_process->parent == NULL) {
-    return MAX_PROCESS_NUM - 2;
+    if ( ((bit_mask << BITMAP_LENGTH) & process_bitmap) == 0 ) {
+        // first reserved bit not in use, render
+        process_bitmap |= (bit_mask << BITMAP_LENGTH);
+        return BITMAP_LENGTH;
+    } else if ( ((bit_mask << (BITMAP_LENGTH + 1)) & process_bitmap) == 0) {
+        process_bitmap |= (bit_mask << (BITMAP_LENGTH + 1));
+        return (BITMAP_LENGTH + 1);
+    }
   }
 
   printf("You cannot open more process.\n");

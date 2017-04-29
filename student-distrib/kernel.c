@@ -189,7 +189,7 @@ entry (unsigned long magic, unsigned long addr)
 
 	clear();
 	
-	system_execute(filename);
+	// system_execute(filename);
 	//system_execute(filename);
 
 	//testing_open_func();
