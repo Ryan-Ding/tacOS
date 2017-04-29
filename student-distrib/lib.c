@@ -54,26 +54,11 @@ void delete_content(void){
     *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
   }
   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
-  if ((*cursor_x) == 0)
-  set_cursor(NUM_COLS - 1, --(*cursor_y));
-  else
-  set_cursor(--(*cursor_x), (*cursor_y));
+
 
 }
 
-/* void change_line
-* input: void
-* return value: none
-* function: change line for the terminal display
-*/
 
-void change_line(void){
-  if ((*cursor_y)+1 >= NUM_ROWS) {
-    scroll_line();
-    set_cursor(0,(*cursor_y));
-  }else
-  set_cursor(0,++(*cursor_y));
-}
 
 /* void scroll_line
 * input: void
@@ -98,7 +83,7 @@ void scroll_line(void){
     j = NUM_COLS*(NUM_ROWS-1)+i;
     *(uint8_t *)(video_mem + (j << 1)) = ' ';
   }
-    //load_page_directory(terminal[curr_term].curr_process->pid + 1);
+  //load_page_directory(terminal[curr_term].curr_process->pid + 1);
 }
 
 
@@ -111,7 +96,7 @@ terminal_putc(uint8_t c)
     terminal[curr_term].pos_y++;
     terminal[curr_term].pos_x=0;
   } else {
-
+  //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
     *(uint8_t *)(video_mem/* + (1 + curr_term) * FOUR_KB */+ (i << 1)) = c;
     if (curr_term == 0) {
       *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
@@ -120,7 +105,7 @@ terminal_putc(uint8_t c)
     }else {
       *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
     }
-
+//load_page_directory(terminal[curr_term].curr_process->pid + 1);
     terminal[curr_term].pos_x++;
     terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));
     terminal[curr_term].pos_x %= NUM_COLS;
@@ -133,6 +118,36 @@ terminal_putc(uint8_t c)
     set_cursor(terminal[curr_term].pos_x,terminal[curr_term].pos_y);
   }
 
+}
+
+
+void
+keyboard_putc(uint8_t c)
+{
+  int i = (NUM_COLS*(*cursor_y) + (*cursor_x));
+  if(c == '\n' || c == '\r') {
+    (*cursor_y)++;
+    (*cursor_x)=0;
+  } else {
+
+    *(uint8_t *)(video_mem + (i << 1)) = c;
+    if (curr_display_term == 0) {
+      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+    } else if (curr_display_term ==1){
+      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+    }else {
+      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+    }
+
+    //   (*cursor_x)++;
+    //   (*cursor_y) = ((*cursor_y) + ((*cursor_x) / NUM_COLS));
+    //   (*cursor_x) %= NUM_COLS;
+    // }
+    // // if ((*cursor_y) == NUM_ROWS) {
+    // //   scroll_line();
+    // //   (*cursor_y)--;
+    // // }
+  }
 }
 
 
@@ -153,12 +168,23 @@ void set_cursor(int32_t x, int32_t y){
   unsigned short position = NUM_COLS* y + x;
   // cursor LOW port to vga INDEX register
   outb(FOUR_BIT_MASK,LOW_PORT);
-  outb((unsigned char)(position&EIGHT_BIT_MASK),HIGH_PORT);
+  outb((unsigned char)(position & EIGHT_BIT_MASK),HIGH_PORT);
   // cursor HIGH port to vga INDEX register
-  outb(FOUR_BIT_MASK-1,LOW_PORT);
-  outb((unsigned char )((position>>ONE_BYTE)&EIGHT_BIT_MASK),HIGH_PORT);
+  outb(FOUR_BIT_MASK - 1,LOW_PORT);
+  outb((unsigned char )((position >> ONE_BYTE) & EIGHT_BIT_MASK),HIGH_PORT);
 }
 
+
+void correct_cursor(){
+  (*cursor_y) =(*cursor_y) + ((*cursor_x) / NUM_COLS);
+  (*cursor_x) %= NUM_COLS;
+
+  if ((*cursor_y) == NUM_ROWS) {
+    scroll_line();
+    (*cursor_y)--;
+  }
+  set_cursor((*cursor_x),(*cursor_y));
+}
 /* Standard printf().
 * Only supports the following format strings:
 * %%  - print a literal '%' character
@@ -317,30 +343,31 @@ puts(int8_t* s)
 void
 putc(uint8_t c)
 {
-  int i = (NUM_COLS*(*cursor_y) + (*cursor_x));
-  if(c == '\n' || c == '\r') {
-    (*cursor_y)++;
-    (*cursor_x)=0;
-  } else {
-    //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
-    *(uint8_t *)(video_mem + (i << 1)) = c;
-    if (curr_display_term == 0) {
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
-    } else if (curr_display_term ==1){
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
-    }else {
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
-    }
-    //load_page_directory(terminal[curr_term].curr_process->pid + 1);
-    (*cursor_x)++;
-    (*cursor_y) = ((*cursor_y) + ((*cursor_x) / NUM_COLS));
-    (*cursor_x) %= NUM_COLS;
-  }
-  // if ((*cursor_y) == NUM_ROWS) {
-  //   scroll_line();
-  //   (*cursor_y)--;
+  // int i = (NUM_COLS*(*cursor_y) + (*cursor_x));
+  // if(c == '\n' || c == '\r') {
+  //   (*cursor_y)++;
+  //   (*cursor_x)=0;
+  // } else {
+  //   //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
+  //   *(uint8_t *)(video_mem + (i << 1)) = c;
+  //   if (curr_display_term == 0) {
+  //     *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+  //   } else if (curr_display_term ==1){
+  //     *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+  //   }else {
+  //     *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+  //   }
+  //   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
+  //   (*cursor_x)++;
+  //   (*cursor_y) = ((*cursor_y) + ((*cursor_x) / NUM_COLS));
+  //   (*cursor_x) %= NUM_COLS;
   // }
-  set_cursor((*cursor_x),(*cursor_y));
+  // // if ((*cursor_y) == NUM_ROWS) {
+  // //   scroll_line();
+  // //   (*cursor_y)--;
+  // // }
+  // set_cursor((*cursor_x),(*cursor_y));
+  terminal_putc(c);
 }
 
 /*

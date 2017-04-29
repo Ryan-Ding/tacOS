@@ -151,18 +151,22 @@ handle_press(unsigned char scancode){
 
 
     buffer_key[*buffer_idx]=key_pressed;
+    keyboard_putc(key_pressed);
     (*buffer_idx)++;
-    if((*cursor_x)==NUM_COLS-1) { // edge cases when changing lines and scrolling is needed
-      *cursor_x = 0;
-      if ((*cursor_y)<NUM_ROWS-1 ) {  (*cursor_y)++; }
-      else{ scroll_line();}
-      putc(key_pressed);
+    (*cursor_x)++;
+    correct_cursor();
 
-    }
-    else{
-      //  (*cursor_x)++;
-      putc(key_pressed);
-    }
+    // if((*cursor_x)==NUM_COLS-1) { // edge cases when changing lines and scrolling is needed
+    //   *cursor_x = 0;
+    //   if ((*cursor_y)<NUM_ROWS-1 ) {  (*cursor_y)++; }
+    //   else{ scroll_line();}
+    //   putc(key_pressed);
+    //
+    // }
+    // else{
+    //   //  (*cursor_x)++;
+    //   putc(key_pressed);
+    // }
   }
 
 
@@ -221,15 +225,17 @@ keyboard_interrupt(void){
     curr_case = CASE_CAPS;
     break;
     case BACKSPACE:
-    if(!(*cursor_y==0 && *cursor_x ==0)) {
-      if (*buffer_idx > 0) {
-        delete_content();
-      }
-    }
-
+    // if(!(*cursor_y==0 && *cursor_x ==0)) {
+    //   if (*buffer_idx > 0) {
+    //     delete_content();
+    //   }
+    // }
     if (*buffer_idx > 0) {
       (*buffer_idx)--;
       buffer_key[*buffer_idx]= KEY_EMPTY;
+      delete_content();
+      (*cursor_x)--;
+      correct_cursor();
 
     }
     break;
@@ -238,10 +244,13 @@ keyboard_interrupt(void){
     *enter_flag = 1;
     buffer_key[*buffer_idx]=LINE_END;
     (*buffer_idx)=0;
-    change_line();
+    //change_line();
     (*cursor_x) = 0;
+    (*cursor_y)++;
+
+    correct_cursor();
     /*if((*cursor_y)<NUM_ROWS-1)
-    (*cursor_y)++;*/
+    */
     break;
 
     case LEFT_SHIFT_PRESSED:
