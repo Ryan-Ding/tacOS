@@ -138,14 +138,20 @@ uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arg
 
 
 void remap_video(uint32_t new_terminal_id) {
-	uint32_t pid = terminal[curr_display_term].curr_process->pid; // current displayed terminal active process pid
+	uint32_t curr_displayed_pid = terminal[curr_display_term].curr_process->pid; // current displayed terminal active process pid
 	uint32_t is_new_term_initialized = terminal[new_terminal_id].curr_process != NULL;
 	uint32_t new_pid;
-	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
-	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
+	
+	// the first thing we do is to set up the paging frame at the standpoint of the curr_displayed process
+	load_page_directory(1 + curr_displayed_pid);
+
+	page_directory_t * page_directory = &(page_directory_list[curr_displayed_pid + 1 + PID_PD_OFFSET]);
+	page_table_t * page_table = &(page_table_list[curr_displayed_pid + 1 + PID_PD_OFFSET]);
 	// save video memory to back up
 	uint32_t backup_vid_offset = (1 + curr_display_term) * PAGE_SIZE;
 	memcpy( (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, (void*) VIDEO_MEM_PHYS_ADDR, PAGE_SIZE); //store to back upo
+	backup_vid_offset = (1 + new_terminal_id) * PAGE_SIZE;
+	memcpy((void*) VIDEO_MEM_PHYS_ADDR, (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, PAGE_SIZE); // restore backup of new term to screen
 
 	// then map the vidmap of the new terminal to the actual phys video mem
 	if (is_new_term_initialized) {
@@ -156,15 +162,12 @@ void remap_video(uint32_t new_terminal_id) {
 		if (terminal[new_terminal_id].curr_process->is_user_vid_mapped == 1) {
 			(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
 		}
-		// load_page_directory(new_pid + 1); // assign page table address and mark as present
-		// load_page_directory(pid + 1);
+		load_page_directory(new_pid + 1); // assign page table address and mark as present
 	}
 
-	page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
-	page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);	
+	page_directory = &(page_directory_list[curr_displayed_pid + 1 + PID_PD_OFFSET]);
+	page_table = &(page_table_list[curr_displayed_pid + 1 + PID_PD_OFFSET]);	
 	// restore backup video to physical video memory
-	backup_vid_offset = (1 + new_terminal_id) * PAGE_SIZE;
-	memcpy((void*) VIDEO_MEM_PHYS_ADDR, (void*) VIDEO_MEM_PHYS_ADDR + backup_vid_offset, PAGE_SIZE); //store to back upo
 	
 	// lastly, map the vidmap of current terminal to back up
 	backup_vid_offset = (1 + curr_display_term) * PAGE_SIZE; // TODO
@@ -172,8 +175,10 @@ void remap_video(uint32_t new_terminal_id) {
 		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
 	}
 	(*page_table)[VIDEO_PAGE_TABLE_IDX] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
-	load_page_directory(pid + 1);
+	load_page_directory(curr_displayed_pid + 1);
 
+	// finally, restore the paging frame of the current terminal pid
+	load_page_directory( terminal[curr_term].curr_process->pid + 1 );
 }
 
 
@@ -569,6 +574,7 @@ int32_t system_vidmap (uint8_t** screen_start) {
 
 	// set up paging entry
 	(*page_directory)[USER_VIDEO_MEM_PAGE_DIRECTORY_OFFSET] = 	((uint32_t) (&((*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET])) )  | ( SMALL_PAGE_DIRECTORY_ENTRY_MASK  | SUPERVISOR_MASK);
+
 
 	// //depending whether the terminal is focused, map the video memory to back up or screen
 	// 	if(is_terminal_focused())

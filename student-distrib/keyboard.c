@@ -264,16 +264,17 @@ keyboard_interrupt(void){
             break;
         case ALT_RELEASED:
             alt_on = 0;
-            break;
+            // break;
         case F1:
             if(alt_on){
                 if (terminal[0].curr_process == NULL) {
                     if (check_available_pid() < 0) {
                         break;
                     }    
-                    curr_term = 0;
                     //curr_display_term = 0;
                     switch_term(0);
+                    restore_term(0);
+                    curr_term = 0;
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
@@ -292,9 +293,10 @@ keyboard_interrupt(void){
                     if (check_available_pid() < 0) {
                         break;
                     }    
-                    curr_term = 1;
                     //curr_display_term = 1;
                     switch_term(1);
+                    restore_term(1);
+                    curr_term = 1;
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");
@@ -312,9 +314,10 @@ keyboard_interrupt(void){
                     if (check_available_pid() < 0) {
                         break;
                     }
-                    curr_term = 2;
                     // curr_display_term = 2;
                     switch_term(2);
+                    restore_term(2);
+                    curr_term = 2;
                     curr_process = NULL;
                     send_eoi(KEYBOARD_IRQ);
                     system_execute("shell");

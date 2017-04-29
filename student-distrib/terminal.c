@@ -68,7 +68,8 @@ void switch_term(int term) {
     }
     save_term(curr_display_term);
     remap_video(term);
-    restore_term(term);
+    //restore_term(term);
+    
     // curr_term = term;
     // printf("curr process spawn in terminal %d\n", curr_process->terminal_id );
     // printf("current active terminal: %d\n", curr_term);
