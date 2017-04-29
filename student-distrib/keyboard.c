@@ -101,14 +101,25 @@ handle_press(unsigned char scancode){
   if (scancode >=KEY_NUM)
   return;
   unsigned char key_pressed = scancode_set[curr_case][scancode];
-
+  int i ;
   if (ctrl_on && (key_pressed == 'l'|| key_pressed == 'L') ) {
     clear(); // clear video memory
-    set_cursor(0,0);
+    for (i = 0; i < BUFFER_SIZE; i++) {
+      buffer_key[i]=KEY_EMPTY;
+    }
+    (*buffer_idx)=0;
+    *cursor_x = 0;
+    *cursor_y = 0;
+    set_cursor(*cursor_x,*cursor_y);
   }
   else if (ctrl_on && key_pressed == 'c') {
     send_eoi(KEYBOARD_IRQ);
     sti();
+    for ( i = 0; i < *buffer_idx; i++) {
+      buffer_key[i]=KEY_EMPTY;
+
+    }
+    *buffer_idx = 0;
     system_halt(-1);
   }
   else if (ctrl_on && key_pressed == '1'){ // test read file
@@ -142,10 +153,11 @@ handle_press(unsigned char scancode){
     buffer_key[*buffer_idx]=key_pressed;
     (*buffer_idx)++;
     if((*cursor_x)==NUM_COLS-1) { // edge cases when changing lines and scrolling is needed
-      putc(key_pressed);
       *cursor_x = 0;
       if ((*cursor_y)<NUM_ROWS-1 ) {  (*cursor_y)++; }
       else{ scroll_line();}
+      putc(key_pressed);
+
     }
     else{
       //  (*cursor_x)++;
@@ -305,6 +317,7 @@ void switch_terminal(uint32_t new_terminal_id) {
     system_execute(shell_program);
   } else {
     switch_term(new_terminal_id);
+    restore_term(new_terminal_id);
     send_eoi(KEYBOARD_IRQ);
     sti();
   }

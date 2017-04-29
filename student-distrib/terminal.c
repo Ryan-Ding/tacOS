@@ -36,7 +36,7 @@ void init_terminal(){
     curr_display_term = 0;
 
 }
-
+/*
 void save_term(int term){
   int i;
   for (i=0; i< BUFFER_SIZE; i++){
@@ -49,7 +49,7 @@ void save_term(int term){
   terminal[term].pos_y = *cursor_y;
 
 }
-
+*/
 void restore_term(int term){
   buffer_key = terminal[term].buffer_key;
 
@@ -66,7 +66,7 @@ void switch_term(int term) {
         printf("same terminal! \n");
         return;
     }
-    save_term(curr_display_term);
+    //save_term(curr_display_term);
     remap_video(term);
     //restore_term(term);
 
