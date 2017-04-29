@@ -359,6 +359,10 @@ int32_t system_execute (const uint8_t* command)
 	new_pcb.old_kernel_stack_top = kernel_stack_top;
 	new_pcb.terminal_id = curr_term;
 	new_pcb.is_user_vid_mapped = 0;
+    new_pcb.fake_ebp = 0;
+    new_pcb.fake_esp = 0;
+    new_pcb.is_blocked_by_new_terminal = 0;
+
 	strncpy_uint(new_pcb.args,arguments,j);
 
 

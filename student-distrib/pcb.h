@@ -57,6 +57,10 @@ typedef struct pcb_t {
     uint32_t is_user_vid_mapped;
     uint8_t args[ARG_SIZE];
     struct pcb_t* parent;
+    uint32_t fake_ebp;
+    uint32_t fake_esp;
+    uint8_t is_blocked_by_new_terminal;
+
 } pcb_t;
 
 

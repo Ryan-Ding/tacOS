@@ -19,7 +19,8 @@ void switch_task(){
 // get the next process
 for (i = 0; i < TERM_NUM; i++) {
   tmp_term = (tmp_term+1)%3;
-  if(terminal[tmp_term].curr_process != NULL&& terminal[tmp_term].curr_process->parent != NULL ){
+
+  if(terminal[tmp_term].curr_process != NULL && terminal[tmp_term].curr_process->parent != NULL ){
     next_process = terminal[tmp_term].curr_process;
    break;
   }
@@ -37,10 +38,12 @@ curr_term = tmp_term;
 
   // not sure for this tss.esp0 =
   tss.esp0 = next_process->curr_esp0;
- //tss.ebp = next_process->ebp;
+
+ tss.ebp = next_process->ebp;
   // switch to the page of next process
   // TO DO
-load_page_directory(next_process->pid+1);
+ load_page_directory(next_process->pid+1);
+
   asm volatile("movl %0, %%esp;"
                "movl %1, %%ebp;"
                "leave;"

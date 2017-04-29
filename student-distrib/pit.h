@@ -6,10 +6,12 @@
 #include "isr_wrappers.h"
 #include "scheduler.h"
 
+
 #define PIT_SCALE 1193180
 #define PIT_CHANNEL0 0x40
 #define PIT_MODE 0x43
 #define PIT_SET 0x36
+
 #define MASK_LOWER 0xFF
 
 

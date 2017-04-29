@@ -3,13 +3,13 @@
 
 void pit_init(){
     int hz = 1;
-    cli();
-    set_intr_gate(PIT_IRQ + MASTER_IDT_OFFSET,pit_interrupt_handler);
-    outb(PIT_SET,PIT_MODE);
+
+    enable_irq(PIT_IRQ);
+    set_intr_gate(PIT_IRQ + MASTER_IDT_OFFSET, (void*) pit_interrupt_handler);
+    outb(0x36,PIT_MODE);
     outb((PIT_SCALE / hz) & MASK_LOWER,PIT_CHANNEL0);
     outb(((PIT_SCALE / hz) >> ONE_BYTE) & MASK_LOWER,PIT_CHANNEL0);
-    enable_irq(PIT_IRQ);
-    sti();
+
 
 }
 

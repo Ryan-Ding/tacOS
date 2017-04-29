@@ -58,6 +58,7 @@ extern void keyboard_interrupt(void);
 // handle different keyboard functionality
 void handle_press(unsigned char scancode);
 
+void switch_terminal(uint32_t new_terminal_id);
 
 
 

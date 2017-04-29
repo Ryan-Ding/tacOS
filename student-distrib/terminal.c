@@ -113,7 +113,7 @@ terminal_write(int32_t fd,const void* buf, int32_t nbytes){
     int i ;
     int count = 0;
     uint8_t* buff = (uint8_t*)buf;
-    if (fd == STDIN  || buf == NULL || buff[0] == '\0') { return -1; }
+    if (fd == STDIN  || buf == NULL) { return -1; }
     cli();
     for (i = 0; i < nbytes; i++)
     {
