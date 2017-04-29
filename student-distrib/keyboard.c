@@ -302,13 +302,19 @@ void switch_terminal(uint32_t new_terminal_id) {
             send_eoi(KEYBOARD_IRQ);
             sti();
             return;
-        }    
+        }
+        curr_process->is_blocked_by_new_terminal = 1; // remind pit to open new terminal on its behalf
         switch_term(new_terminal_id);
         restore_term(new_terminal_id);
-        curr_term = new_terminal_id;
-        curr_process = NULL;
         send_eoi(KEYBOARD_IRQ);
-        system_execute(shell_program);
+        // asm volatile("movl %%esp, %0;"
+        //              "movl %%ebp, %1;"
+        //              : "=g"(curr_process->fake_esp), "=g"(curr_process->fake_ebp)
+        //              : 
+        //              : "memory", "cc"
+        // );
+        sti();
+        // printf("Reached here");
     } else {
         switch_term(new_terminal_id);
         send_eoi(KEYBOARD_IRQ);

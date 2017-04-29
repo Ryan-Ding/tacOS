@@ -165,8 +165,8 @@ entry (unsigned long magic, unsigned long addr)
     /* init the rtc */
 	rtc_init();
 
-
-
+	/* init the pit */
+	pit_init();
 
 
     /* init the keyboard */
@@ -189,7 +189,7 @@ entry (unsigned long magic, unsigned long addr)
 
 	clear();
 	
-	// system_execute(filename);
+	system_execute(filename);
 	//system_execute(filename);
 
 	//testing_open_func();

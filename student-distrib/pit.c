@@ -14,17 +14,15 @@ void pit_init(){
 
 void pit_interrupt(){
   cli();
-  // asm volatile("pushal;"
-  //              "pushfl;"
-  //              :::"memory", "cc"
-  //            );
-  //
+  asm volatile("pushal;"
+               :::"memory", "cc"
+             );
+  
   switch_task();
-  //
-  // asm volatile("popal;"
-  //              "popfl;"
-  //              :::"memory", "cc"
-  //            );
+  
+  asm volatile("popal;"
+               :::"memory", "cc"
+             );
   send_eoi(PIT_IRQ);
   sti();
 
