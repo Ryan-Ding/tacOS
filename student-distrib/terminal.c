@@ -23,6 +23,7 @@ void init_terminal(){
       terminal[j].read_flag = 0;
       terminal[j].curr_idx = 0;
       terminal[j].num_process = 0;
+      terminal[j].curr_process = NULL;
       for (i=0; i< BUFFER_SIZE; i++){
         terminal[j].buffer_key[i] = KEY_EMPTY;
       }

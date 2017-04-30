@@ -141,7 +141,7 @@ void remap_video(uint32_t new_terminal_id) {
 	uint32_t curr_displayed_pid = terminal[curr_display_term].curr_process->pid; // current displayed terminal active process pid
 	uint32_t is_new_term_initialized = terminal[new_terminal_id].curr_process != NULL;
 	uint32_t new_pid;
-	
+
 	// the first thing we do is to set up the paging frame at the standpoint of the curr_displayed process
 	load_page_directory(1 + curr_displayed_pid);
 
@@ -166,9 +166,9 @@ void remap_video(uint32_t new_terminal_id) {
 	}
 
 	page_directory = &(page_directory_list[curr_displayed_pid + 1 + PID_PD_OFFSET]);
-	page_table = &(page_table_list[curr_displayed_pid + 1 + PID_PD_OFFSET]);	
+	page_table = &(page_table_list[curr_displayed_pid + 1 + PID_PD_OFFSET]);
 	// restore backup video to physical video memory
-	
+
 	// lastly, map the vidmap of current terminal to back up
 	backup_vid_offset = (1 + curr_display_term) * PAGE_SIZE; // TODO
 	if (terminal[curr_display_term].curr_process->is_user_vid_mapped == 1) {
@@ -277,7 +277,7 @@ int32_t system_halt (uint8_t status)
 		j = 0;
 	}*/
 	curr_process = curr_process->parent;
-	terminal[curr_term].curr_process = curr_process;
+	terminal[curr_term].curr_process = (pcb_t*)curr_process;
 
 	sti();
 
@@ -381,16 +381,16 @@ int32_t system_execute (const uint8_t* command)
 
 	//put pcb in corresponding location in memory
 	memcpy((void*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE), (void*) &new_pcb, sizeof(typeof(pcb_t)));
-	
+
 
 	if (curr_process == NULL) {
 		curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
 		// update terminal curr proces pointer
-		terminal[curr_term].curr_process = curr_process;
+		terminal[curr_term].curr_process = (pcb_t*)curr_process;
 	} else {
 		curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
 		// update terminal curr proces pointer
-		terminal[curr_term].curr_process = curr_process;
+		terminal[curr_term].curr_process = (pcb_t*)curr_process;
 	}
 
 	kernel_stack_top -= KERNEL_STACK_ENTRY_SIZE;
@@ -472,7 +472,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes)
  * system_write
  * input:
  * fd- fd number
- * buf - pointer to the buffer to be written 
+ * buf - pointer to the buffer to be written
  * nbytes - num of bytes to be written
  * description: write to the given buffer
  * return value: bytes written
@@ -506,7 +506,7 @@ int32_t system_open(const uint8_t* filename){
 	// 	printf("%c",filename[i]);
 	// }
 	// printf("\n");
-	
+
 	// check if it is null string
 	if (*filename == '\0') { return -1; }
 
@@ -529,7 +529,7 @@ int32_t system_open(const uint8_t* filename){
 
 int32_t system_close (int32_t fd){
 	// printf("fd %d about to be closed\n", fd);
-	file_desc_entry_t* current_file = &(curr_process->file_desc_table[fd]);
+	file_desc_entry_t* current_file = (file_desc_entry_t*) &(curr_process->file_desc_table[fd]);
 	// error if file is not in use
 	if (current_file->flag == 0 || fd <= FD_STDOUT || fd > FD_MAX) {
 		return -1;
@@ -541,7 +541,7 @@ int32_t system_close (int32_t fd){
 /*
  * system_getargs
  * input: buf -- the user space buffer
- 		  nbytes -- number of bytes to be copied 
+ 		  nbytes -- number of bytes to be copied
  * description: copy the arguments to user space buffer
  * return value: 0 on success -1 failure
  * side effect :none
@@ -552,13 +552,13 @@ int32_t system_getargs (uint8_t* buf, int32_t nbytes){
 	if (buf == NULL || nbytes < 0 || curr_process->args == NULL)
 		return -1;
 
-	strncpy_uint(buf,curr_process->args,nbytes);
+	strncpy_uint(buf,(uint8_t* )curr_process->args,nbytes);
 	return 0;
 }
 
 /*
  * system_vidmap
- * input: address where video memory will be stored at 
+ * input: address where video memory will be stored at
  * description: maps the text mode video memory into user space at a preset
  				virtual address
  * return value: 0 on success and otherwise
@@ -567,7 +567,7 @@ int32_t system_getargs (uint8_t* buf, int32_t nbytes){
 int32_t system_vidmap (uint8_t** screen_start) {
 	// check address validity
 	uint32_t backup_vid_offset;
-	uint32_t pid = curr_process->pid;	
+	uint32_t pid = curr_process->pid;
 	page_directory_t * page_directory = &(page_directory_list[pid + 1 + PID_PD_OFFSET]);
 	page_table_t * page_table = &(page_table_list[pid + 1 + PID_PD_OFFSET]);
 	void* base_addr = (void*) (PROGRAM_IMAGE_ADDR & PROGRAM_IMG_BASE_ADDR_MASK);
@@ -585,28 +585,19 @@ int32_t system_vidmap (uint8_t** screen_start) {
 	// 		p->pages->pgt[VIDMAP_PGT_IDX] = VID_PHY_MEM | PRESENT | READ_WRITE_ENABLE | USER_ACCESS;
 	// 	else
 	// 		p->pages->pgt[VIDMAP_PGT_IDX] = ( VID_PHY_START + (get_terminal_index() * PAGE_4KB) )   | PRESENT | READ_WRITE_ENABLE | USER_ACCESS;
-		
+
 	if (is_terminal_active()) {
 		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
 	} else {
 		backup_vid_offset = (1 + curr_process->terminal_id) * PAGE_SIZE;
 		(*page_table)[USER_VIDEO_MEM_PAGE_TABLE_OFFSET] = (VIDEO_MEM_PHYS_ADDR + backup_vid_offset) | PAGE_TABLE_ENTRY_MASK | SUPERVISOR_MASK;
 	}
-	
+
 	curr_process->is_user_vid_mapped = 1;
 	// update screen_start
 	*screen_start = (uint8_t*) VIDEO_MEM_USER_ADDR;
-	// need a way to represent that the video memory is mapped for the user program? 
+	// need a way to represent that the video memory is mapped for the user program?
 	// may be stored in pcb
 	// TODO
 	return 0;
 }
-
-
-
-
-
-
-
-
-
