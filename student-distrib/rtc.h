@@ -38,6 +38,6 @@ int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes);
 int rtc_open();
 int rtc_open_syscall(const uint8_t* filename);
 
-extern pcb_t* curr_process;
+extern volatile pcb_t* curr_process;
 
 #endif

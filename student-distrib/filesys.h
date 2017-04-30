@@ -87,6 +87,6 @@ boot_block_t* get_boot_block_info();
 
 extern void fetch_boot_block_info (module_t* module_ptr);
 
-extern pcb_t* curr_process;
+extern volatile pcb_t* curr_process;
 
 #endif

@@ -25,7 +25,6 @@ void switch_task() {
         return; // TODO wether we need this or not
   }
 
-  
   // get the next process
   for (i = 0; i < TERM_NUM; i++) {
     tmp_term = (tmp_term + 1) % 3;
@@ -59,6 +58,7 @@ void switch_task() {
   tss.ebp = ebp;
   // switch to the page of next process
   // TO DO
+  curr_process = next_process;
   load_page_directory(next_process->pid + 1);
   
   asm volatile("movl %0, %%esp;"

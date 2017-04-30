@@ -1,6 +1,6 @@
 #include "pcb.h"
 uint32_t process_bitmap = 0;
-pcb_t* curr_process;
+volatile pcb_t* curr_process;
 /*
 typedef struct {
    int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);

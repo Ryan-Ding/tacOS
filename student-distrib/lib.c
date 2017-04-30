@@ -22,13 +22,13 @@ clear(void)
   int32_t i;
   //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
   for(i=0; i<NUM_ROWS*NUM_COLS; i++) {
-    *(uint8_t *)(video_mem + (i << 1)) = ' ';
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = ' ';
     if (curr_display_term ==0) {
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
     } else if (curr_display_term ==1){
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_1;
     }else {
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
     }
   }
   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
@@ -45,13 +45,13 @@ void delete_content(void){
   if(!((*cursor_y)==0 && (*cursor_x) ==0)) { i = NUM_COLS * (*cursor_y) + (*cursor_x) - 1; }
   //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
 
-  *(uint8_t *)(video_mem + (i << 1)) = ' ';
+  *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = ' ';
   if (curr_display_term == 0) {
-    *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
   } else if (curr_display_term ==1){
-    *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_1;
   }else {
-    *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
   }
   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
 
@@ -125,18 +125,18 @@ void
 keyboard_putc(uint8_t c)
 {
   int i = (NUM_COLS*(*cursor_y) + (*cursor_x));
-  if(c == '\n' || c == '\r') {
-    (*cursor_y)++;
-    (*cursor_x)=0;
-  } else {
+  // if(c == '\n' || c == '\r') {
+   // (*cursor_y)++;
+    //(*cursor_x)=0;
+  // } else {
 
-    *(uint8_t *)(video_mem + (i << 1)) = c;
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = c;
     if (curr_display_term == 0) {
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_0;
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
     } else if (curr_display_term ==1){
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_1;
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_1;
     }else {
-      *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB_2;
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
     }
 
     //   (*cursor_x)++;
@@ -147,7 +147,7 @@ keyboard_putc(uint8_t c)
     // //   scroll_line();
     // //   (*cursor_y)--;
     // // }
-  }
+  //}
 }
 
 

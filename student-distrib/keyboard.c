@@ -115,6 +115,9 @@ handle_press(unsigned char scancode){
   else if (ctrl_on && key_pressed == 'c') {
     send_eoi(KEYBOARD_IRQ);
     sti();
+    // wait until it is within the display terminal's process execution
+    while (curr_process->terminal_id != curr_display_term) ;
+
     for ( i = 0; i < *buffer_idx; i++) {
       buffer_key[i]=KEY_EMPTY;
 
@@ -122,31 +125,31 @@ handle_press(unsigned char scancode){
     *buffer_idx = 0;
     system_halt(-1);
   }
-  else if (ctrl_on && key_pressed == '1'){ // test read file
-    clear();
-    set_cursor(0,0);
-    test_dir_read();
-  }
-  else if (ctrl_on && key_pressed == '2'){ // test read file
-    clear();
-    set_cursor(0,0);
-    test_reg_read();
-  }
-  else if (ctrl_on && key_pressed == '3'){ // test read file by idx
-    clear();
-    set_cursor(0,0);
-    test_read_file_by_index(file_idx++);
-  } else if (ctrl_on && key_pressed == '4'){ // rtc test
-    clear();
-    set_cursor(0,0);
-    rtc_write(rtc_frq);
-    rtc_frq = rtc_frq<<1;
-  } else if (ctrl_on && key_pressed == '5'){ // stop rtc
-    clear();
-    set_cursor(0,0);
-    rtc_frq = RTC_INI_FRQ;
-    rtc_stop();
-  }
+//   else if (ctrl_on && key_pressed == '1'){ // test read file
+//     clear();
+//     set_cursor(0,0);
+//     test_dir_read();
+//   }
+//   else if (ctrl_on && key_pressed == '2'){ // test read file
+//     clear();
+//     set_cursor(0,0);
+//     test_reg_read();
+//   }
+//   else if (ctrl_on && key_pressed == '3'){ // test read file by idx
+//     clear();
+//     set_cursor(0,0);
+//     test_read_file_by_index(file_idx++);
+//   } else if (ctrl_on && key_pressed == '4'){ // rtc test
+//     clear();
+//     set_cursor(0,0);
+//     rtc_write(rtc_frq);
+//     rtc_frq = rtc_frq<<1;
+//   } else if (ctrl_on && key_pressed == '5'){ // stop rtc
+//     clear();
+//     set_cursor(0,0);
+//     rtc_frq = RTC_INI_FRQ;
+//     rtc_stop();
+//   }
   else if (*buffer_idx<BUFFER_SIZE) {
 
 
@@ -242,7 +245,7 @@ keyboard_interrupt(void){
 
     case ENTER:
     *enter_flag = 1;
-    buffer_key[*buffer_idx]=LINE_END;
+    buffer_key[*buffer_idx] = LINE_END;
     (*buffer_idx)=0;
     //change_line();
     (*cursor_x) = 0;
@@ -332,6 +335,7 @@ void switch_terminal(uint32_t new_terminal_id) {
         // printf("Reached here");
     } else {
         switch_term(new_terminal_id);
+        restore_term(new_terminal_id);
         send_eoi(KEYBOARD_IRQ);
         sti();
     }  

@@ -73,6 +73,10 @@ void add_video_memory(uint32_t pid, uint32_t page_table_idx) {
 	for (i = 0; i < TERM_NUM; ++i) {
 		(*page_table)[page_table_idx + (i + 1)] = (VIDEO_MEM_PHYS_ADDR + (i + 1) * PAGE_SIZE) | PAGE_TABLE_ENTRY_MASK;
 	}
+
+	// set up permanently valid VIDEO_MEM_PHYS_ADDR
+	(*page_table)[PERMANENT_PHYS_ADDR >> 12] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
+	
 }
 
 /*
