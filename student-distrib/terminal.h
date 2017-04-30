@@ -28,7 +28,7 @@ typedef struct {
     pcb_t* curr_process;
 } terminal_t;
 
-extern int curr_term;
+extern volatile int curr_term;
 extern uint8_t curr_display_term;
 extern volatile terminal_t terminal[TERM_NUM];
 

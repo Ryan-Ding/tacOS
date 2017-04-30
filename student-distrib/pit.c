@@ -2,7 +2,7 @@
 
 
 void pit_init(){
-    int hz = 1;
+    int hz = 100;
 
     enable_irq(PIT_IRQ);
     set_intr_gate(PIT_IRQ + MASTER_IDT_OFFSET, (void*) pit_interrupt);

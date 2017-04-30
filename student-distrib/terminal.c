@@ -3,7 +3,7 @@
 
 volatile terminal_t terminal[TERM_NUM];
 
-int curr_term = 0;
+volatile int curr_term = 0;
 
 uint8_t curr_display_term = 0;
 

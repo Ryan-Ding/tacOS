@@ -13,10 +13,11 @@ void switch_task() {
   if (curr_process == NULL) { return; }
 
   // store curr ebp esp of the process in the pit handler
-  curr_process->ebp = ebp;
-  curr_process->esp = esp;
+ 
 
   if (curr_process->is_blocked_by_new_terminal > 0) {
+        curr_process->ebp = ebp;
+        curr_process->esp = esp;
         uint8_t shell_program[] = "shell";
         curr_process->is_blocked_by_new_terminal = 0;
         curr_term = curr_display_term;
@@ -24,6 +25,8 @@ void switch_task() {
         system_execute(shell_program);
         return; // TODO wether we need this or not
   }
+
+
 
   // get the next process
   for (i = 0; i < TERM_NUM; i++) {
@@ -37,6 +40,16 @@ void switch_task() {
       break;
     }
   }
+
+
+  if (curr_process->is_blocked_by_new_terminal == 0){
+  if ((next_process->parent == NULL) && (curr_display_term == curr_term)) {return;}
+  }
+
+
+  curr_process->ebp = ebp;
+  curr_process->esp = esp;
+
 
   if (next_process == NULL) { return; }
   esp = next_process->esp;

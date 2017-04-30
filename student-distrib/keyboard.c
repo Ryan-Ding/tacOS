@@ -150,7 +150,7 @@ handle_press(unsigned char scancode){
 //     rtc_frq = RTC_INI_FRQ;
 //     rtc_stop();
 //   }
-  else if (*buffer_idx<BUFFER_SIZE) {
+  else if (*buffer_idx<(BUFFER_SIZE-1)) {
 
 
     buffer_key[*buffer_idx]=key_pressed;
@@ -246,7 +246,7 @@ keyboard_interrupt(void){
 
     case ENTER:
     *enter_flag = 1;
-  //  buffer_key[*buffer_idx]=LINE_END;
+    buffer_key[*buffer_idx]=LINE_END;
     for (i = *buffer_idx + 1; i < BUFFER_SIZE; i++) {
       buffer_key[i] = KEY_EMPTY;
     }
