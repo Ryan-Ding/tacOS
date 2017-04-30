@@ -96,7 +96,7 @@ terminal_putc(uint8_t c)
     terminal[curr_term].pos_y++;
     terminal[curr_term].pos_x=0;
   } else {
-  //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
+  //load_page_directory(terminal[curr_term].curr_process->pid + 1);
     *(uint8_t *)(video_mem/* + (1 + curr_term) * FOUR_KB */+ (i << 1)) = c;
     if (curr_term == 0) {
       *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
@@ -105,12 +105,12 @@ terminal_putc(uint8_t c)
     }else {
       *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
     }
-//load_page_directory(terminal[curr_term].curr_process->pid + 1);
+//load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
     terminal[curr_term].pos_x++;
     terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));
     terminal[curr_term].pos_x %= NUM_COLS;
   }
-  if (terminal[curr_term].pos_y == NUM_ROWS) {
+  while (terminal[curr_term].pos_y >= NUM_ROWS) {
     scroll_line();
     terminal[curr_term].pos_y--;
   }
@@ -176,13 +176,21 @@ void set_cursor(int32_t x, int32_t y){
 
 
 void correct_cursor(){
-  (*cursor_y) =(*cursor_y) + ((*cursor_x) / NUM_COLS);
-  (*cursor_x) %= NUM_COLS;
-
-  if ((*cursor_y) == NUM_ROWS) {
-    scroll_line();
-    (*cursor_y)--;
+  if (*cursor_x < 0) {
+    if(*cursor_y ==0){*cursor_x = 0;}
+    else {(*cursor_y)--; *cursor_x = NUM_ROWS-1;}
   }
+  else if( *cursor_x == NUM_COLS){
+    if((*cursor_y) ==NUM_ROWS-1){
+      scroll_line();
+    }
+    else {(*cursor_y)++;}
+    (*cursor_x) = 0;
+  }
+ while (*cursor_y >= NUM_ROWS){
+   scroll_line();
+   (*cursor_y)--;
+ }
   set_cursor((*cursor_x),(*cursor_y));
 }
 /* Standard printf().

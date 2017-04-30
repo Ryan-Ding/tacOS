@@ -13,4 +13,3 @@ struct mp1_blink_struct {
   unsigned short status;
   struct mp1_blink_struct* next;
 } __attribute((packed)); 
-//comment

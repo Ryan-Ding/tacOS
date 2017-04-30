@@ -12,7 +12,7 @@
 # include "isr_wrappers.h"
 # include "idt.h"
 
-volatile int rtc_service;
+static volatile int rtc_service[TERM_NUM] = {0,0,0};
 
 /*
  * rtc_init
@@ -44,7 +44,7 @@ rtc_init(void){
     outb(prev|BIT_SIX_MASK,CMOS_PORT);
 
     enable_irq(RTC_IRQ);
-    rtc_service = 0;
+    //rtc_service = 0;
     sti();
 }
 
@@ -119,9 +119,9 @@ Side Effect: Wait until last rtc interrupt ends
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes)
 {
     sti();
-    rtc_service = 1;
-    while (rtc_service)
-    {}
+    rtc_service[curr_term] = 0;
+
+    while (rtc_service[curr_term]!=1){};
     return 0;
 }
 
@@ -227,13 +227,17 @@ int rtc_write_syscall(int32_t fd, const void* buf, int32_t nbytes)
 
 void
 rtc_interrupt(void){
+  int i;
     cli();
+    for(i = 0;i<3;i++){
+      rtc_service[i] = 1;
+    }
     outb(STATUS_REGISTER_C,NMI_PORT); // select register c
     inb(CMOS_PORT); // throw away contents
 
     // printf("1");
     //test_interrupts();
     send_eoi(RTC_IRQ);
-    rtc_service = 0;
+
     sti();
 }
