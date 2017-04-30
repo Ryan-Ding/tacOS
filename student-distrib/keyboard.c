@@ -207,6 +207,7 @@ keyboard_interrupt(void){
   cli();
 
   unsigned char scancode;
+  int i;
 
   // get input from keyboard
   while (1) {
@@ -245,15 +246,17 @@ keyboard_interrupt(void){
 
     case ENTER:
     *enter_flag = 1;
-    buffer_key[*buffer_idx] = LINE_END;
+  //  buffer_key[*buffer_idx]=LINE_END;
+    for (i = *buffer_idx + 1; i < BUFFER_SIZE; i++) {
+      buffer_key[i] = KEY_EMPTY;
+    }
+
     (*buffer_idx)=0;
     //change_line();
     (*cursor_x) = 0;
     (*cursor_y)++;
 
     correct_cursor();
-    /*if((*cursor_y)<NUM_ROWS-1)
-    */
     break;
 
     case LEFT_SHIFT_PRESSED:
@@ -328,7 +331,7 @@ void switch_terminal(uint32_t new_terminal_id) {
         // asm volatile("movl %%esp, %0;"
         //              "movl %%ebp, %1;"
         //              : "=g"(curr_process->fake_esp), "=g"(curr_process->fake_ebp)
-        //              : 
+        //              :
         //              : "memory", "cc"
         // );
         sti();
@@ -338,7 +341,7 @@ void switch_terminal(uint32_t new_terminal_id) {
         restore_term(new_terminal_id);
         send_eoi(KEYBOARD_IRQ);
         sti();
-    }  
+    }
     return;
 //   uint8_t shell_program[] = "shell";
 //   if (terminal[new_terminal_id].curr_process == NULL) {

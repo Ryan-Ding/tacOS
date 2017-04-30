@@ -89,6 +89,7 @@ void switch_term(int term) {
 int32_t
 terminal_read(int32_t fd, void* buf, int32_t nbytes){
     int i = 0;
+    int j;
     uint8_t* buff = (uint8_t*)buf;
     if(fd == FD_STDOUT)	//can't read from stdout
 		return -1;
@@ -98,6 +99,9 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
     for (i = 0; i<nbytes && i<BUFFER_SIZE && terminal[curr_display_term].buffer_key[i] != KEY_EMPTY;i++ ) {
         buff[i] = terminal[curr_display_term].buffer_key[i];
         terminal[curr_display_term].buffer_key[i] = KEY_EMPTY;
+    }
+    for (j = i+1;j<nbytes;j++ ){
+      buff[j] = KEY_EMPTY;
     }
     cli();
     return i;
