@@ -323,7 +323,7 @@ int32_t reg_read(int32_t fd, void* buf, int32_t nbytes)
     if (curr_process->file_desc_table[fd].flag == 0)
         return 0;
 
-    file_desc_entry_t* fdd = & (curr_process->file_desc_table[fd]);
+    file_desc_entry_t* fdd =(file_desc_entry_t*)(&(curr_process->file_desc_table[fd]));
     uint32_t inode = fdd->inode;
     uint32_t offset = fdd->file_position;
 
@@ -413,7 +413,7 @@ Side Effect: The info of file inside the directory is printed
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
 
-    file_desc_entry_t* fde = &(curr_process->file_desc_table[fd]);
+    file_desc_entry_t* fde = (file_desc_entry_t*)(&(curr_process->file_desc_table[fd]));
     int position = fde->file_position;
     uint8_t* name_ptr = boot_block_ptr->dir_entries[position].filename;
     uint8_t* buf_ptr = (uint8_t*)buf;

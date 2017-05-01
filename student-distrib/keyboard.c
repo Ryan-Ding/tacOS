@@ -317,7 +317,7 @@ keyboard_interrupt(void){
 
 
 void switch_terminal(uint32_t new_terminal_id) {
-    uint8_t shell_program[] = "shell";
+    //uint8_t shell_program[] = "shell";
     if (terminal[new_terminal_id].curr_process == NULL) {
         if (check_available_pid() < 0) {
             send_eoi(KEYBOARD_IRQ);

@@ -35,7 +35,7 @@ void switch_task() {
       if (tmp_term != curr_term) {
          next_process = terminal[tmp_term].curr_process;
       } else {
-        next_process = curr_process;
+        next_process = (pcb_t*)curr_process;
       }
       break;
     }
