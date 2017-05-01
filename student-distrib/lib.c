@@ -113,13 +113,13 @@ terminal_putc(uint8_t c)
     }
 
 
-    // if (curr_term == 0) {
-    //   *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
-    // } else if (curr_term ==1){
-    //   *(uint8_t *)(video_mem/* +  (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_1;
-    // }else {
-    //   *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
-    // }
+    if (curr_term == 0) {
+      *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
+    } else if (curr_term ==1){
+      *(uint8_t *)(video_mem/* +  (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_1;
+    }else {
+      *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
+    }
 //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
     terminal[curr_term].pos_x++;
     terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));
