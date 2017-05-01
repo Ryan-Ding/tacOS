@@ -248,21 +248,24 @@ void set_cursor(int32_t x, int32_t y){
 
 void correct_cursor(){
   if (*cursor_x < 0) {
-    if(*cursor_y ==0){*cursor_x = 0;}
-    else {(*cursor_y)--; *cursor_x = NUM_ROWS-1;}
+    if(*cursor_y ==0) { *cursor_x = 0; }
+    else {
+      (*cursor_y)--;
+      *cursor_x = NUM_ROWS-1;
+    }
   }
-  else if( *cursor_x == NUM_COLS){
-    if((*cursor_y) ==NUM_ROWS-1){
-      scroll_line();
+  else if( *cursor_x == NUM_COLS) {
+    if((*cursor_y) ==NUM_ROWS-1) {
+      keyboard_scroll_line();
     }
     else {(*cursor_y)++;}
     (*cursor_x) = 0;
   }
- while (*cursor_y >= NUM_ROWS){
-   scroll_line();
-   (*cursor_y)--;
- }
-  set_cursor((*cursor_x),(*cursor_y));
+while (*cursor_y >= NUM_ROWS) {
+  keyboard_scroll_line();
+  (*cursor_y)--;
+}
+set_cursor((*cursor_x),(*cursor_y));
 }
 /* Standard printf().
 * Only supports the following format strings:

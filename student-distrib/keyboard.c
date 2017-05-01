@@ -256,26 +256,8 @@ keyboard_interrupt(void){
       //change_line();
       (*cursor_x) = 0;
       (*cursor_y)++;
-      // correct_cursor();
-      if (*cursor_x < 0) {
-        if(*cursor_y ==0) { *cursor_x = 0; }
-        else {
-          (*cursor_y)--; 
-          *cursor_x = NUM_ROWS-1;
-        }
-      }
-      else if( *cursor_x == NUM_COLS) {
-        if((*cursor_y) ==NUM_ROWS-1) {
-          keyboard_scroll_line();
-        }
-        else {(*cursor_y)++;}
-        (*cursor_x) = 0;
-      }
-    while (*cursor_y >= NUM_ROWS) {
-      keyboard_scroll_line();
-      (*cursor_y)--;
-    }
-    set_cursor((*cursor_x),(*cursor_y));
+       correct_cursor();
+
 
 
     // terminal[curr_display_term].read_flag = 1;
@@ -287,7 +269,7 @@ keyboard_interrupt(void){
     // terminal[curr_display_term].curr_idx = 0;
     // terminal[curr_display_term].pos_x = 0;
     // terminal[curr_display_term].pos_y += 1;
- 
+
     // while (terminal[curr_display_term].pos_y  >= NUM_ROWS){
     //   scroll_line();
     //   terminal[curr_display_term].pos_y -= 1;
@@ -356,7 +338,7 @@ keyboard_interrupt(void){
 * switch_terminal
 * input: the new terinal to be switched to
 * description: This function switch to the new terminal requested by the user
-* side effect : store and restore current terminal info 
+* side effect : store and restore current terminal info
 */
 void switch_terminal(uint32_t new_terminal_id) {
     //uint8_t shell_program[] = "shell";
