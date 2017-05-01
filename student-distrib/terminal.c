@@ -116,18 +116,20 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
 		return -1;
     sti();
     wait_to_read[calller_term] = 1;
-    while (!terminal[calller_term].read_flag);
-    terminal[calller_term].read_flag = 0;
-    for (i = 0; i<nbytes && i<BUFFER_SIZE && terminal[calller_term].buffer_key[i] != KEY_EMPTY;i++ ) {
-        buff[i] = terminal[calller_term].buffer_key[i];
-        terminal[calller_term].buffer_key[i] = KEY_EMPTY;
-    }
-    for (j = i+1;j<nbytes;j++ ){
-      buff[j] = KEY_EMPTY;
-    }
-    wait_to_read[calller_term] = 0;
-    cli();
-    return i;
+   while (!terminal[calller_term].read_flag);
+   terminal[calller_term].read_flag = 0;
+   for (j = 0;j < BUFFER_SIZE; j++ ){
+     buff[j] = KEY_EMPTY;
+   }
+   for (i = 0; i<nbytes && i<BUFFER_SIZE && terminal[calller_term].buffer_key[i] != KEY_EMPTY;i++ ) {
+       buff[i] = terminal[calller_term].buffer_key[i];
+       terminal[calller_term].buffer_key[i] = KEY_EMPTY;
+   }
+
+   wait_to_read[calller_term] = 0;
+   cli();
+   return i;
+
 }
 /*
  * terminal_write
@@ -139,9 +141,15 @@ int32_t
 terminal_write(int32_t fd,const void* buf, int32_t nbytes){
     int i ;
     int count = 0;
+    uint8_t shell_name[] = "391OS> ";
     uint8_t* buff = (uint8_t*)buf;
     if (fd == STDIN  || buf == NULL) { return -1; }
     cli();
+
+    // check if enter has been pressed while running fish
+    if(terminal[curr_display_term].pos_x== SHELL_LENGTH && !strncmp((int8_t*) (buff), (int8_t*) (shell_name), SHELL_LENGTH)){
+      terminal_putc('\n');
+    }
     for (i = 0; i < nbytes; i++)
     {
         if (buff == NULL)
