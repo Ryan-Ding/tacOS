@@ -251,7 +251,7 @@ void correct_cursor(){
     if(*cursor_y ==0) { *cursor_x = 0; }
     else {
       (*cursor_y)--;
-      *cursor_x = NUM_ROWS-1;
+      *cursor_x = NUM_COLS-1;
     }
   }
   else if( *cursor_x == NUM_COLS) {
