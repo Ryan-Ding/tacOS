@@ -12,6 +12,7 @@
 # include "isr_wrappers.h"
 # include "idt.h"
 
+// var for rtc ready signals (wait for interupt)
 static volatile int rtc_service[TERM_NUM] = {0,0,0};
 
 /*

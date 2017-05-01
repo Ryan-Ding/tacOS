@@ -37,7 +37,9 @@
 #define RIGHT_SHIFT_RELEASED 0xB6
 #define CTRL_RELEASED 0x9D
 #define ALT_RELEASED 0xB8
-
+#define FIRST_TERM 0
+#define SECOND_TERM 1
+#define THIRD_TERM 2
 
 #define RTC_INI_FRQ 2
 #define FS_IDX 1

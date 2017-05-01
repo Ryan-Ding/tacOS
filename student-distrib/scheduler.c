@@ -1,6 +1,13 @@
 #include "scheduler.h"
 
 
+/*
+ * switch_task
+ * input: none
+ * description: round robin scheduling
+ * return value:none
+ * side effect : return next process 
+ */
 void switch_task() {
   int32_t esp,ebp;
   // the following store esp and ebp information so it can be used in the future
@@ -13,7 +20,7 @@ void switch_task() {
   if (curr_process == NULL) { return; }
 
   // store curr ebp esp of the process in the pit handler
- 
+
 
   if (curr_process->is_blocked_by_new_terminal > 0) {
         curr_process->ebp = ebp;
@@ -58,7 +65,7 @@ void switch_task() {
   if (ebp == 0 || esp == 0) { return; } // remove for debug purpose
 
   curr_term = tmp_term;
-  
+
   // if (next_process->is_blocked_by_new_terminal == 1) {
   //   esp = next_process->fake_esp;
   //   ebp = next_process->fake_ebp;
@@ -73,7 +80,7 @@ void switch_task() {
   // TO DO
   curr_process = next_process;
   load_page_directory(next_process->pid + 1);
-  
+
   asm volatile("movl %0, %%esp;"
                "movl %1, %%ebp;"
                :

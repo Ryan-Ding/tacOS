@@ -136,7 +136,13 @@ uint32_t parse_argument(const uint8_t* command, uint8_t* file_name, uint8_t* arg
 }
 
 
-
+/*
+ * remap_video
+ * input: new terminal to be switched to
+ * description: remap the video memory for terminal switching
+ * return value: none
+ * side effect : none
+ */
 void remap_video(uint32_t new_terminal_id) {
 	uint32_t curr_displayed_pid = terminal[curr_display_term].curr_process->pid; // current displayed terminal active process pid
 	uint32_t is_new_term_initialized = terminal[new_terminal_id].curr_process != NULL;
@@ -180,26 +186,6 @@ void remap_video(uint32_t new_terminal_id) {
 	// finally, restore the paging frame of the current terminal pid
 	load_page_directory( terminal[curr_term].curr_process->pid + 1 );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*

@@ -86,7 +86,13 @@ void scroll_line(void){
   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
 }
 
-
+/*
+ * terminal_putc
+ * input:  character to be printed
+ * description: the print function for terminal_write
+ * return value: none
+ * side effect : print c to terminal, correct position if needed
+ */
 void
 terminal_putc(uint8_t c)
 {
@@ -120,7 +126,13 @@ terminal_putc(uint8_t c)
 
 }
 
-
+/*
+ * keyboard_putc
+ * input:  character to be printed
+ * description: the print function for keyboard input
+ * return value: none
+ * side effect : print c to display terminal, correct position if needed
+ */
 void
 keyboard_putc(uint8_t c)
 {
@@ -174,6 +186,12 @@ void set_cursor(int32_t x, int32_t y){
   outb((unsigned char )((position >> ONE_BYTE) & EIGHT_BIT_MASK),HIGH_PORT);
 }
 
+/* void correct_cursor
+* input: none
+* return value: none
+* function: correct cursor position if they're out of bound
+* the function handles edge cases where x.y positions are illegal
+*/
 
 void correct_cursor(){
   if (*cursor_x < 0) {

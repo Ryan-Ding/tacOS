@@ -9,8 +9,8 @@
 /* Interrupt masks to determine which interrupts
  * are enabled and disabled */
 
-uint8_t master_mask = 0xFF; /* IRQs 0-7 */
-uint8_t slave_mask = 0xFF; /* IRQs 8-15 */
+uint8_t master_mask =EIGHT_BIT_MASK; /* IRQs 0-7 */
+uint8_t slave_mask = EIGHT_BIT_MASK; /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 /*

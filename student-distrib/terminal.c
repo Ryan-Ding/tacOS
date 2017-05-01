@@ -53,6 +53,14 @@ void save_term(int term){
 
 }
 */
+
+/*
+* restore_term
+* input: the new terinal to be restored
+* description: restore the information from term
+* side effect : none 
+*/
+
 void restore_term(int term){
   buffer_key = terminal[term].buffer_key;
 
@@ -63,7 +71,12 @@ void restore_term(int term){
   set_cursor(*cursor_x,*cursor_y);
 
 }
-
+/*
+* switch_term
+* input: the new terinal to be switched to
+* description: This function switch to the new terminal requested by the user
+* side effect : change paging
+*/
 void switch_term(int term) {
     if (curr_display_term == term) {
         printf("same terminal! \n");

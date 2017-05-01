@@ -1,6 +1,13 @@
 #include "pit.h"
 
 
+/*
+ * pit_init
+ * input: none
+ * description: initialize pit
+ * return value: none
+ * side effect : set hz to 100
+ */
 void pit_init(){
     int hz = 100;
 
@@ -14,6 +21,14 @@ void pit_init(){
 }
 
 
+
+/*
+ * pit_interrupt
+ * input: none
+ * description: pit interrupt handler
+ * return value: none
+ * side effect : call scheduling function
+ */
 void pit_interrupt(){
   // cli();
   // send_eoi(PIT_IRQ);

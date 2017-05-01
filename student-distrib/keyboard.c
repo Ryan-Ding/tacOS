@@ -285,18 +285,18 @@ keyboard_interrupt(void){
     break;
     case F1:
     if(alt_on){
-      return switch_terminal(0);
+      return switch_terminal(FIRST_TERM);
     }
     break;
     case F2:
     if(alt_on){
-      return switch_terminal(1);
+      return switch_terminal(SECOND_TERM);
     }
     break;
 
     case F3:
     if(alt_on){
-      return switch_terminal(2);
+      return switch_terminal(THIRD_TERM);
     }
     break;
 
@@ -315,7 +315,12 @@ keyboard_interrupt(void){
 
 }
 
-
+/*
+* switch_terminal
+* input: the new terinal to be switched to
+* description: This function switch to the new terminal requested by the user
+* side effect : store and restore current terminal info 
+*/
 void switch_terminal(uint32_t new_terminal_id) {
     //uint8_t shell_program[] = "shell";
     if (terminal[new_terminal_id].curr_process == NULL) {
