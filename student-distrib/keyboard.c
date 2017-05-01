@@ -246,7 +246,7 @@ keyboard_interrupt(void){
 
     case ENTER:
     *enter_flag = 1;
-    buffer_key[*buffer_idx]=LINE_END;
+    buffer_key[*buffer_idx]= LINE_END;
     for (i = *buffer_idx + 1; i < BUFFER_SIZE; i++) {
       buffer_key[i] = KEY_EMPTY;
     }

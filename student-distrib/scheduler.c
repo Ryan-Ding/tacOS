@@ -50,7 +50,7 @@ void switch_task() {
 
 
   if (curr_process->is_blocked_by_new_terminal == 0){
-  if ((wait_to_read[tmp_term] == 1) && (curr_display_term == curr_term)) {return;}
+  // if ((wait_to_read[tmp_term] == 1) && (curr_display_term == curr_term)) {return;}
   }
 
 
