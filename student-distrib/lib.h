@@ -28,6 +28,8 @@ uint32_t strlen(const int8_t* s);
 void clear(void);
 void delete_content(void);
 void scroll_line(void);
+void keyboard_scroll_line(void);
+
 void set_cursor(int32_t x, int32_t y);
 void correct_cursor();
 void terminal_putc(uint8_t c);

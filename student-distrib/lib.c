@@ -86,6 +86,42 @@ void scroll_line(void){
   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
 }
 
+/* void keyboard_scroll_line
+* input: void
+* return value: none
+* function: scroll up so the content fit in the screen
+* this will effectively remove the first line in phsycial video memoryand clear the bottom line
+*/
+void keyboard_scroll_line(void){
+  int i,j;
+  int old_position, new_position;
+  //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
+  for (j = 1; j<NUM_ROWS; j++) {
+    for (i = 0; i<NUM_COLS; i++) {
+      new_position = NUM_COLS*(j-1) + i;
+      old_position = NUM_COLS*j + i;
+      *(uint8_t *)(PERMANENT_PHYS_ADDR +(new_position<<1)) = *(uint8_t *)(PERMANENT_PHYS_ADDR +(old_position<<1));
+      *(uint8_t *)(PERMANENT_PHYS_ADDR +(new_position<<1)+1) = *(uint8_t *)(PERMANENT_PHYS_ADDR +(old_position<<1)+1);
+    }
+  }
+  for (i =0; i<NUM_COLS; i++) {
+    j = NUM_COLS*(NUM_ROWS-1)+i;
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (j << 1)) = ' ';
+  }
+  //load_page_directory(terminal[curr_term].curr_process->pid + 1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 /*
  * terminal_putc
  * input:  character to be printed
@@ -107,12 +143,6 @@ terminal_putc(uint8_t c)
     {
     //*(uint8_t *)(video_mem + (1 + curr_term) * 4096 + (i << 1)) = c;
     *(uint8_t *)(video_mem + (i << 1)) = c;
-    }
-    else{
-      *(uint8_t *)(video_mem + (1 + curr_term) * 4096 + (i << 1)) = c;
-    }
-
-
     if (curr_term == 0) {
       *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
     } else if (curr_term ==1){
@@ -120,6 +150,20 @@ terminal_putc(uint8_t c)
     }else {
       *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
     }
+    }
+    else{
+      *(uint8_t *)(video_mem + (1 + curr_term) * PAGE_SIZE + (i << 1)) = c;
+
+      if (curr_term == 0) {
+        *(uint8_t *)(video_mem + (1 + curr_term) * PAGE_SIZE + (i << 1) + 1) = ATTRIB_0;
+      } else if (curr_term ==1){
+        *(uint8_t *)(video_mem + (1 + curr_term) * PAGE_SIZE + (i << 1) + 1) = ATTRIB_1;
+      }else {
+        *(uint8_t *)(video_mem + (1 + curr_term) * PAGE_SIZE + (i << 1) + 1) = ATTRIB_2;
+      }
+    }
+
+
 //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
     terminal[curr_term].pos_x++;
     terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));

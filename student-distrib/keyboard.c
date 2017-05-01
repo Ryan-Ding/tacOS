@@ -245,6 +245,7 @@ keyboard_interrupt(void){
     break;
 
     case ENTER:
+if(curr_term == curr_display_term) {
     *enter_flag = 1;
     buffer_key[*buffer_idx]= LINE_END;
     for (i = *buffer_idx + 1; i < BUFFER_SIZE; i++) {
@@ -255,8 +256,56 @@ keyboard_interrupt(void){
     //change_line();
     (*cursor_x) = 0;
     (*cursor_y)++;
-
     correct_cursor();
+} else {
+      *enter_flag = 1;
+    buffer_key[*buffer_idx]= LINE_END;
+    for (i = *buffer_idx + 1; i < BUFFER_SIZE; i++) {
+      buffer_key[i] = KEY_EMPTY;
+    }
+
+    (*buffer_idx)=0;
+    //change_line();
+    (*cursor_x) = 0;
+    (*cursor_y)++;
+    // correct_cursor();
+    if (*cursor_x < 0) {
+      if(*cursor_y ==0) { *cursor_x = 0; }
+      else {
+        (*cursor_y)--; 
+        *cursor_x = NUM_ROWS-1;
+      }
+    }
+    else if( *cursor_x == NUM_COLS) {
+      if((*cursor_y) ==NUM_ROWS-1) {
+        keyboard_scroll_line();
+      }
+      else {(*cursor_y)++;}
+      (*cursor_x) = 0;
+    }
+  while (*cursor_y >= NUM_ROWS) {
+    keyboard_scroll_line();
+    (*cursor_y)--;
+  }
+  set_cursor((*cursor_x),(*cursor_y));
+}
+
+    // terminal[curr_display_term].read_flag = 1;
+    // terminal[curr_display_term].buffer_key[terminal[curr_display_term].curr_idx] = LINE_END;
+    // for (i = terminal[curr_display_term].buffer_key + 1; i < BUFFER_SIZE; i++) {
+    //   terminal[curr_display_term].buffer_key[i] = KEY_EMPTY;
+    // }
+
+    // terminal[curr_display_term].curr_idx = 0;
+    // terminal[curr_display_term].pos_x = 0;
+    // terminal[curr_display_term].pos_y += 1;
+ 
+    // while (terminal[curr_display_term].pos_y  >= NUM_ROWS){
+    //   scroll_line();
+    //   terminal[curr_display_term].pos_y -= 1;
+    // }
+    //   set_cursor(terminal[curr_display_term].pos_x, terminal[curr_display_term].pos_y );
+
     break;
 
     case LEFT_SHIFT_PRESSED:
@@ -331,7 +380,7 @@ void switch_terminal(uint32_t new_terminal_id) {
         }
         curr_process->is_blocked_by_new_terminal = 1; // remind pit to open new terminal on its behalf
         switch_term(new_terminal_id);
-        restore_term(new_terminal_id);
+        // restore_term(new_terminal_id);
         send_eoi(KEYBOARD_IRQ);
         // asm volatile("movl %%esp, %0;"
         //              "movl %%ebp, %1;"
@@ -343,7 +392,7 @@ void switch_terminal(uint32_t new_terminal_id) {
         // printf("Reached here");
     } else {
         switch_term(new_terminal_id);
-        restore_term(new_terminal_id);
+        // restore_term(new_terminal_id);
         send_eoi(KEYBOARD_IRQ);
         sti();
     }
