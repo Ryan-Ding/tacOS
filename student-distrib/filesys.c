@@ -17,12 +17,12 @@ fetch_boot_block_info
 */
 void fetch_boot_block_info (module_t* module_ptr) {
     uint32_t filesys_start_addr = module_ptr->mod_start;
-    uint32_t filesys_end_addr = module_ptr->mod_end;
-    printf("filesys size is: %d \n", (filesys_end_addr - filesys_start_addr) / FILE_SYS_BLOCK_SIZE );
+    //uint32_t filesys_end_addr = module_ptr->mod_end;
+    //printf("filesys size is: %d \n", (filesys_end_addr - filesys_start_addr) / FILE_SYS_BLOCK_SIZE );
     boot_block_ptr = (boot_block_t*)filesys_start_addr;
-    printf("inode number is: %d \n", boot_block_ptr->num_inodes );
-    printf("data block number is: %d \n", boot_block_ptr->num_data_blocks );
-    printf("matched? %d, \n", (boot_block_ptr->num_inodes + boot_block_ptr->num_data_blocks + 1 ) == (filesys_end_addr - filesys_start_addr) / FILE_SYS_BLOCK_SIZE );
+    //printf("inode number is: %d \n", boot_block_ptr->num_inodes );
+    //printf("data block number is: %d \n", boot_block_ptr->num_data_blocks );
+    //printf("matched? %d, \n", (boot_block_ptr->num_inodes + boot_block_ptr->num_data_blocks + 1 ) == (filesys_end_addr - filesys_start_addr) / FILE_SYS_BLOCK_SIZE );
 
 }
 
@@ -466,40 +466,41 @@ Return value: None
 Side Effect: corresponding file is read
 */
 void test_read_file_by_index(uint32_t index){
-    int j;
-    dentry_t search_for_dir_entry;
-    //printf("The size of inode is: %d\n",sizeof(dentry_t));
-
-    if(read_dentry_by_index(index, &search_for_dir_entry) == -1){
-        return;
-    }
-
-uint32_t inode = search_for_dir_entry.inode_num;
-inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
-uint32_t length = inode_ptr->length;
-
-//printf("Length %d \n", length);
-uint8_t buf[length];
-
-int n = read_data(inode,0,buf,length);
-//int i ;
-// for (i = 0; i< n; i++)
-//     {
-//         printf("%c",buf[i]);
+  // NOT USED ANYMORE
+//     int j;
+//     dentry_t search_for_dir_entry;
+//     //printf("The size of inode is: %d\n",sizeof(dentry_t));
+//
+//     if(read_dentry_by_index(index, &search_for_dir_entry) == -1){
+//         return;
 //     }
-terminal_write(0,buf,n);
+//
+// uint32_t inode = search_for_dir_entry.inode_num;
+// inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+// uint32_t length = inode_ptr->length;
+//
+// //printf("Length %d \n", length);
+// uint8_t buf[length];
+//
+// int n = read_data(inode,0,buf,length);
+// //int i ;
+// // for (i = 0; i< n; i++)
+// //     {
+// //         printf("%c",buf[i]);
+// //     }
+// terminal_write(0,buf,n);
+//
+//
+// //printf("filename: %s", search_for_dir_entry.filename);
+//
+// for (j=0 ; j<FILENAME_SIZE ; j++)
+// {
+//     if (search_for_dir_entry.filename[j] == '\0')
+//         break;
+//
+//     printf("%c",search_for_dir_entry.filename[j]);
 
-
-//printf("filename: %s", search_for_dir_entry.filename);
-
-for (j=0 ; j<FILENAME_SIZE ; j++)
-{
-    if (search_for_dir_entry.filename[j] == '\0')
-        break;
-
-    printf("%c",search_for_dir_entry.filename[j]);
-
-}
+//}
 
 }
 
@@ -571,23 +572,24 @@ Side Effect: The file is read
 
 void test_reg_read()
 {
-    int i;
-    // dentry_t search_for_dir_entry;
-    uint8_t file_name[FILENAME_SIZE] = "frame0.txt";
-    // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
-    int32_t fd = reg_open(file_name);
-
-    uint32_t inode = curr_process->file_desc_table[fd].inode;
-    inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
-    uint32_t length = inode_ptr->length;
-    uint8_t buf[length];
-
-    int n = reg_read(fd,buf,length);
-    for (i = 0; i< n; i++)
-    {
-        printf("%c",buf[i]);
-    }
-
-    printf("filename: %s", file_name);
+  // NOT USED ANYMORE
+    // int i;
+    // // dentry_t search_for_dir_entry;
+    // uint8_t file_name[FILENAME_SIZE] = "frame0.txt";
+    // // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
+    // int32_t fd = reg_open(file_name);
+    //
+    // uint32_t inode = curr_process->file_desc_table[fd].inode;
+    // inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+    // uint32_t length = inode_ptr->length;
+    // uint8_t buf[length];
+    //
+    // int n = reg_read(fd,buf,length);
+    // for (i = 0; i< n; i++)
+    // {
+    //     printf("%c",buf[i]);
+    // }
+    //
+    // printf("filename: %s", file_name);
 
 }

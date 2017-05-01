@@ -4,7 +4,7 @@
 
 void (* exception_handler[NUM_EXCEPTION]) = {
 	Divide_Error_Exception,
-	Debug_Exception, 
+	Debug_Exception,
  	NMI_Interupt,
  	Breakpoint_Exception,
  	Overflow_Exception,
@@ -25,7 +25,7 @@ void (* exception_handler[NUM_EXCEPTION]) = {
 	SIMD_Floating
 };
 
-/* 
+/*
  * SIMD_Floating
  * input: NONE
  * description: Print the blue screen
@@ -39,7 +39,7 @@ void SIMD_Floating()
 	{}
 }
 
-/* 
+/*
  * Machine_Check_Exception
  * input: NONE
  * description: Print the blue screen
@@ -54,7 +54,7 @@ void Machine_Check_Exception()
 	{}
 }
 
-/* 
+/*
  * Alignment_Check
  * input: NONE
  * description: Print the blue screen
@@ -68,7 +68,7 @@ void Alignment_Check()
 	{}
 }
 
-/* 
+/*
  * Floating Point
  * input: NONE
  * description: Print the blue screen
@@ -82,7 +82,7 @@ void Floating_Point()
 	{}
 }
 
-/* 
+/*
  * Reserved Int
  * input: NONE
  * description: Print the blue screen
@@ -95,7 +95,7 @@ void Reserved_Int()
 
 }
 
-/* 
+/*
  * System Call Interrupt
  * input: NONE
  * description: Print the blue screen
@@ -109,7 +109,7 @@ void System_Call_Interrupt()
 	{}
 }
 
-/* 
+/*
  * Divide Error Exception
  * input: NONE
  * description: Print the blue screen
@@ -124,7 +124,7 @@ void Divide_Error_Exception()
 	 {}
 }
 
-/* 
+/*
  * Debug Exception
  * input: NONE
  * description: Print the blue screen
@@ -138,7 +138,7 @@ void Debug_Exception ()
 	 {}
 }
 
-/* 
+/*
  * NMI Interrupt
  * input: NONE
  * description: Print the blue screen
@@ -152,7 +152,7 @@ void NMI_Interupt()
 	 {}
 }
 
-/* 
+/*
  * Breakpoint Exception
  * input: NONE
  * description: Print the blue screen
@@ -166,7 +166,7 @@ void Breakpoint_Exception()
 	 {}
 }
 
-/* 
+/*
  * Overflow Exception
  * input: NONE
  * description: Print the blue screen
@@ -180,7 +180,7 @@ void Overflow_Exception()
 	 {}
 }
 
-/* 
+/*
  * Bound
  * input: NONE
  * description: Print the blue screen
@@ -194,7 +194,7 @@ void BOUND()
 	 {}
 }
 
-/* 
+/*
  * Invalid Opcode
  * input: NONE
  * description: Print the blue screen
@@ -208,7 +208,7 @@ void Invalid_Opcode()
 	 {}
 }
 
-/* 
+/*
  * Device Not Available
  * input: NONE
  * description: Print the blue screen
@@ -222,7 +222,7 @@ void Device_Not_Available()
 	 {}
 }
 
-/* 
+/*
  * Double Fault
  * input: NONE
  * description: Print the blue screen
@@ -236,7 +236,7 @@ void Double_Fault()
 	 {}
 }
 
-/* 
+/*
  * Coprocessor Segment
  * input: NONE
  * description: Print the blue screen
@@ -250,7 +250,7 @@ void Coprocessor_Segment()
 	 {}
 }
 
-/* 
+/*
  * Invalid TSS
  * input: NONE
  * description: Print the blue screen
@@ -264,7 +264,7 @@ void Invalid_TSS()
 	 {}
 }
 
-/* 
+/*
  * Segment Not Present
  * input: NONE
  * description: Print the blue screen
@@ -278,7 +278,7 @@ void Segment_Not_Present()
 	 {}
 }
 
-/* 
+/*
  * Stack Fault
  * input: NONE
  * description: Print the blue screen
@@ -292,7 +292,7 @@ void Stack_Fault()
 	 {}
 }
 
-/* 
+/*
  * General Protection
  * input: NONE
  * description: Print the blue screen
@@ -306,7 +306,7 @@ void General_Protection()
 	 {}
 }
 
-/* 
+/*
  * Page Fault
  * input: NONE
  * description: Print the blue screen
@@ -329,7 +329,7 @@ void Page_Fault()
 	system_execute(filename);
 }
 //15
-/* 
+/*
  * set_gate
  * input: gate: gate number
  *		  type: gate type
@@ -366,13 +366,13 @@ void set_gate(int gate, unsigned type, void* addr, unsigned dpl, unsigned seg){
 			idt[gate].reserved1 = 1;
 			idt[gate].reserved2 = 1;
 			idt[gate].reserved3 = 1;
-			idt[gate].reserved4 = 0;			
+			idt[gate].reserved4 = 0;
 			break;
 	}
 	SET_IDT_ENTRY(idt[gate], addr);	//set offset of corresponding idt
 }
 
-/* 
+/*
  * set_intr_gate
  * input: n:gate number; addr: handler address
  * description: initialize and set interrupt gate
@@ -382,7 +382,7 @@ void set_intr_gate(unsigned int n, void* addr) {
 	set_gate(n, GATE_INTERRUPT, addr, IDL0, KERNEL_CS);
 }
 
-/* 
+/*
  * set_system_gate
  * input: n:gate number; addr: handler address
  * description: initialize and set system gate
@@ -393,33 +393,33 @@ void set_system_gate(unsigned int n, void* addr) {
 	set_gate(n, GATE_SYSTEM, addr, IDL3, KERNEL_CS);
 }
 
-/* 
+/*
  * set_system_intr_gate
  * input: n:gate number; addr: handler address
  * description: initialize and set system interrupt gate
  * side effect: idt gate will be set to be ready for system interrupt call
  */
 void set_system_intr_gate(unsigned int n, void* addr) {
-	set_gate(n, GATE_SYSTEM, addr, IDL3, KERNEL_CS);	
+	set_gate(n, GATE_SYSTEM, addr, IDL3, KERNEL_CS);
 }
 
-/* 
+/*
  * set_trap_gate
  * input: n:gate number; addr: handler address
  * description: initialize and set system gate
  * side effect: idt gate will be set to be ready for system call
  */
 void set_trap_gate(unsigned int n, void* addr) {
-	set_gate(n, GATE_TRAP, addr, IDL3, KERNEL_CS);		
+	set_gate(n, GATE_TRAP, addr, IDL3, KERNEL_CS);
 }
 
-/* 
+/*
  * idt_init
  * description: initialize interrupt descriptor table
  * side effect: this function will handle the initializatio of different kinds of idts
  */
 void idt_init() {
-	int i; 
+	int i;
 	for (i = 0; i < NUM_EXCEPTION; ++i ) {
 		if (i != RESERVE_EXC) //Ignore the reserved exception
 			set_trap_gate(i, exception_handler[i]);

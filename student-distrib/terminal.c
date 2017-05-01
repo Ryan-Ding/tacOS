@@ -82,7 +82,7 @@ void restore_term(int term){
 */
 void switch_term(int term) {
     if (curr_display_term == term) {
-        printf("same terminal! \n");
+        //printf("same terminal! \n");
         return;
     }
     //save_term(curr_display_term);

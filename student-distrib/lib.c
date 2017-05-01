@@ -83,7 +83,7 @@ void scroll_line(void){
     j = NUM_COLS*(NUM_ROWS-1)+i;
     *(uint8_t *)(video_mem + (j << 1)) = ' ';
   }
-  
+
 }
 
 /* void keyboard_scroll_line
@@ -419,7 +419,7 @@ puts(int8_t* s)
 * void putc(uint8_t c);
 *   Inputs: uint_8* c = character to print
 *   Return Value: void
-*	Function: Output a character to the console
+*	Function: Output a character to the console, CALL terminal_write
 */
 
 void
