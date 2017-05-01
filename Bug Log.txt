@@ -184,3 +184,8 @@ Bug 31
 	Solved by: Kaidong Peng
 	Time used: 1 Hour
 
+Bug 32	
+	Description: giving input length longer than next command input would led to no such command error
+	Solution: Clear buffer in terminal read before storing new input
+	Solved by: Yu Sun
+	Time used: 1.5 Hour
