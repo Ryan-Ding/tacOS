@@ -230,7 +230,7 @@ void
 rtc_interrupt(void){
   int i;
     cli();
-    for(i = 0;i<3;i++){
+    for(i = 0; i < RTC_NUM; i++){
       rtc_service[i] = 1;
     }
     outb(STATUS_REGISTER_C,NMI_PORT); // select register c

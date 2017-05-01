@@ -26,6 +26,9 @@ void init_terminal(){
       terminal[j].curr_idx = 0;
       terminal[j].num_process = 0;
       terminal[j].curr_process = NULL;
+      terminal[j].alt_on = 0;
+      terminal[j].ctrl_on = 0;
+      terminal[j].curr_case =0;
       for (i=0; i< BUFFER_SIZE; i++){
         terminal[j].buffer_key[i] = KEY_EMPTY;
       }
@@ -58,7 +61,7 @@ void save_term(int term){
 * restore_term
 * input: the new terinal to be restored
 * description: restore the information from term
-* side effect : none 
+* side effect : none
 */
 
 void restore_term(int term){

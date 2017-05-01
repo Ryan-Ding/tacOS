@@ -1,7 +1,7 @@
 #include "filesys.h"
 
 static boot_block_t* boot_block_ptr = NULL;
-
+// file operations table
 file_ops_table_t rtc_ops_table;
 file_ops_table_t dir_ops_table;
 file_ops_table_t reg_ops_table;
@@ -423,7 +423,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
     if (name_ptr[0] == '\0')
         return 0;
 
-    
+
     for (i = 0; (i< nbytes) &&(i< FILENAME_SIZE); i++)
     {
 
@@ -514,30 +514,32 @@ Side Effect: corresponding file is read
 
 void test_read_file_by_name()
 {
-    int j;
-    dentry_t search_for_dir_entry;
 
-    uint8_t file_name[FILENAME_SIZE] = "frame1.txt";
-
-    if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
-    uint32_t inode = search_for_dir_entry.inode_num;
-    inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
-    uint32_t length = inode_ptr->length;
-    uint8_t buf[length];
-    int n = read_data(inode,2,buf,length);
-    int i ;
-    for (i = 0; i< n; i++)
-    {
-        printf("(%c,%d)",buf[i],i);
-    }
-    //printf("filename: %s", search_for_dir_entry.filename);
-    for (j=0 ; j<FILENAME_SIZE ; j++)
-    {
-        if (search_for_dir_entry.filename[j] == '\0')
-            break;
-
-        printf("%c",search_for_dir_entry.filename[j]);
-    }
+  // NOT USED ANYMORE
+    // int j;
+    // dentry_t search_for_dir_entry;
+    //
+    // uint8_t file_name[FILENAME_SIZE] = "frame1.txt";
+    //
+    // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
+    // uint32_t inode = search_for_dir_entry.inode_num;
+    // inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+    // uint32_t length = inode_ptr->length;
+    // uint8_t buf[length];
+    // int n = read_data(inode,2,buf,length);
+    // int i ;
+    // for (i = 0; i< n; i++)
+    // {
+    //     printf("(%c,%d)",buf[i],i);
+    // }
+    // //printf("filename: %s", search_for_dir_entry.filename);
+    // for (j=0 ; j<FILENAME_SIZE ; j++)
+    // {
+    //     if (search_for_dir_entry.filename[j] == '\0')
+    //         break;
+    //
+    //     printf("%c",search_for_dir_entry.filename[j]);
+    // }
 
 }
 

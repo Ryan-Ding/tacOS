@@ -50,7 +50,7 @@ int32_t find_available_pid() {
   }
 
   if (curr_process->parent == NULL) {
-    return MAX_PROCESS_NUM - 2;
+    return BITMAP_LENGTH;
   }
 
   printf("You cannot open more process.\n");

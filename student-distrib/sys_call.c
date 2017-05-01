@@ -1,7 +1,8 @@
 #include "sys_call.h"
-
+// pointe to boot block
 boot_block_t* boot_block_ptr;
 
+// keeping track top of stack
 uint32_t kernel_stack_top;
 
 /*
@@ -52,13 +53,13 @@ void program_loader(const uint8_t* filename){
  * side effect : none
  */
 int32_t check_if_executable(dentry_t* search_for_dir_entry){
-	uint8_t buf[4];
-	if(read_data(search_for_dir_entry->inode_num, 0, buf, 4 )!=4)
+	uint8_t buf[LENGTH];
+	if(read_data(search_for_dir_entry->inode_num, 0, buf, LENGTH )!=LENGTH)
 		return -1;
 	// read_data(search_for_dir_entry->inode_num, 0, buf, 4 );
 
 	//check if the file executable bytes match elf requirement
-	if (buf[0]==CHECK_ELF_1 && buf[1]==CHECK_ELF_2 && buf[2]== CHECK_ELF_3 && buf[3] == CHECK_ELF_4)
+	if (buf[LENGTH_HALF-1]==CHECK_ELF_1 && buf[LENGTH_HALF]==CHECK_ELF_2 && buf[LENGTH_HALF+1]== CHECK_ELF_3 && buf[LENGTH-1] == CHECK_ELF_4)
 		return 0;
 
 	return -1;
@@ -72,12 +73,12 @@ int32_t check_if_executable(dentry_t* search_for_dir_entry){
  */
 
 uint32_t get_first_instruction(dentry_t* dir_entry){
-	uint8_t buf[4];
+	uint8_t buf[LENGTH];
 	//get the starting point instruction from executable
-	read_data(dir_entry->inode_num, EXECUTABLE_STARTING_ADDR, buf, 4);
+	read_data(dir_entry->inode_num, EXECUTABLE_STARTING_ADDR, buf, LENGTH);
 
 	//comply to little endian rule
-	return ((uint32_t)((buf[3]<<THREE_BYTES_SHIFT) | (buf[2]<<TWO_BYTES_SHIFT) | (buf[1]<<ONE_BYTE_SHIFT) | buf[0]));
+	return ((uint32_t)((buf[LENGTH-1]<<THREE_BYTES_SHIFT) | (buf[LENGTH_HALF+1]<<TWO_BYTES_SHIFT) | (buf[LENGTH_HALF]<<ONE_BYTE_SHIFT) | buf[LENGTH_HALF-1]));
 }
 
 
@@ -389,8 +390,8 @@ int32_t system_execute (const uint8_t* command)
 
 	/* Prepare for Context Switch; tss.esp0/ebp */
 	tss.ss0 = KERNEL_DS;
-	tss.esp0 = kernel_stack_top - 4;
-	curr_process->curr_esp0 = kernel_stack_top - 4;
+	tss.esp0 = kernel_stack_top - LENGTH;
+	curr_process->curr_esp0 = kernel_stack_top - LENGTH;
 
 	/* Prepare for fake iret */
 

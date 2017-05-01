@@ -9,7 +9,7 @@
  * side effect : set hz to 100
  */
 void pit_init(){
-    int hz = 100;
+    int hz = INPUT_FREQ;
 
     enable_irq(PIT_IRQ);
     set_intr_gate(PIT_IRQ + MASTER_IDT_OFFSET, (void*) pit_interrupt);

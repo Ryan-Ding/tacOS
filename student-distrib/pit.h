@@ -11,7 +11,7 @@
 #define PIT_CHANNEL0 0x40
 #define PIT_MODE 0x43
 #define PIT_SET 0x36
-
+#define INPUT_FREQ 100
 #define MASK_LOWER 0xFF
 
 

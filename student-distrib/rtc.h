@@ -20,7 +20,7 @@
 #define HIGHEST_BIT_MASK 8192
 #define HIGHEST_FREQUENCY 1024
 #define MIN_FREQUENCY 3
-
+#define RTC_NUM 3
 
 // initialize rtc
 void rtc_init(void);

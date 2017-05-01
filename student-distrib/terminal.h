@@ -25,6 +25,9 @@ typedef struct {
     int num_process;
     int tid ;
     int pid_array[PID_SIZE];
+    int curr_case ;
+    int ctrl_on ;
+    int alt_on ;
     pcb_t* curr_process;
 } terminal_t;
 
