@@ -20,7 +20,7 @@ void
 clear(void)
 {
   int32_t i;
-  //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
+  //clear the screen
   for(i=0; i<NUM_ROWS*NUM_COLS; i++) {
     *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = ' ';
     if (curr_display_term ==0) {
@@ -39,12 +39,11 @@ clear(void)
 * return value: none
 * function: clear one character in the video memory
 */
-// TODO edge case for screen_y = 0
 void delete_content(void){
   int32_t i;
   if(!((*cursor_y)==0 && (*cursor_x) ==0)) { i = NUM_COLS * (*cursor_y) + (*cursor_x) - 1; }
-  //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
 
+// mark last char printed as empty
   *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = ' ';
   if (curr_display_term == 0) {
     *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
@@ -75,10 +74,11 @@ void scroll_line(void){
     for (i = 0; i<NUM_COLS; i++) {
       new_position = NUM_COLS*(j-1) + i;
       old_position = NUM_COLS*j + i;
-      *(uint8_t *)(video_mem +(new_position<<1)) = *(uint8_t *)(video_mem +(old_position<<1));
+      *(uint8_t *)(video_mem +(new_position<<1)) = *(uint8_t *)(video_mem +(old_position<<1)); // copy the buffer from lower line to upper
       *(uint8_t *)(video_mem +(new_position<<1)+1) = *(uint8_t *)(video_mem +(old_position<<1)+1);
     }
   }
+  // empty the last line
   for (i =0; i<NUM_COLS; i++) {
     j = NUM_COLS*(NUM_ROWS-1)+i;
     *(uint8_t *)(video_mem + (j << 1)) = ' ';
@@ -100,10 +100,12 @@ void keyboard_scroll_line(void){
     for (i = 0; i<NUM_COLS; i++) {
       new_position = NUM_COLS*(j-1) + i;
       old_position = NUM_COLS*j + i;
+      // copy the buffer from lower line to upper
       *(uint8_t *)(PERMANENT_PHYS_ADDR +(new_position<<1)) = *(uint8_t *)(PERMANENT_PHYS_ADDR +(old_position<<1));
       *(uint8_t *)(PERMANENT_PHYS_ADDR +(new_position<<1)+1) = *(uint8_t *)(PERMANENT_PHYS_ADDR +(old_position<<1)+1);
     }
   }
+  // empty the last line
   for (i =0; i<NUM_COLS; i++) {
     j = NUM_COLS*(NUM_ROWS-1)+i;
     *(uint8_t *)(PERMANENT_PHYS_ADDR + (j << 1)) = ' ';
@@ -138,10 +140,10 @@ terminal_putc(uint8_t c)
     terminal[curr_term].pos_y++;
     terminal[curr_term].pos_x=0;
   } else {
-    // load_page_directory(terminal[curr_term].curr_process->pid + 1);
+    // use different mapping address for scheduling_term and display term
     if(curr_term==curr_display_term)
     {
-    //*(uint8_t *)(video_mem + (1 + curr_term) * 4096 + (i << 1)) = c;
+    // display the input  with specific color
     *(uint8_t *)(video_mem + (i << 1)) = c;
     if (curr_term == 0) {
       *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
@@ -164,11 +166,12 @@ terminal_putc(uint8_t c)
     }
 
 
-//load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
+//increase the cursor
     terminal[curr_term].pos_x++;
     terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));
     terminal[curr_term].pos_x %= NUM_COLS;
   }
+  // fix position
   while (terminal[curr_term].pos_y >= NUM_ROWS) {
     scroll_line();
     terminal[curr_term].pos_y--;
@@ -190,11 +193,8 @@ void
 keyboard_putc(uint8_t c)
 {
   int i = (NUM_COLS*(*cursor_y) + (*cursor_x));
-  // if(c == '\n' || c == '\r') {
-   // (*cursor_y)++;
-    //(*cursor_x)=0;
-  // } else {
 
+// keyboard always print to physical location
     *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = c;
     if (curr_display_term == 0) {
       *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
@@ -204,15 +204,7 @@ keyboard_putc(uint8_t c)
       *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
     }
 
-    //   (*cursor_x)++;
-    //   (*cursor_y) = ((*cursor_y) + ((*cursor_x) / NUM_COLS));
-    //   (*cursor_x) %= NUM_COLS;
-    // }
-    // // if ((*cursor_y) == NUM_ROWS) {
-    // //   scroll_line();
-    // //   (*cursor_y)--;
-    // // }
-  //}
+
 }
 
 
@@ -224,13 +216,9 @@ keyboard_putc(uint8_t c)
 */
 
 void set_cursor(int32_t x, int32_t y){
-  // the following is just sanity check, edge cases should be taken care of when calling
-  // if (x< NUM_COLS && y< NUM_ROWS) {
-  //     (*cursor_x) = x;
-  //     (*cursor_y) = y;
-  // }
+// set the cursor position
 
-  unsigned short position = NUM_COLS* y + x;
+  unsigned short position = NUM_COLS* y + x; //offset
   // cursor LOW port to vga INDEX register
   outb(FOUR_BIT_MASK,LOW_PORT);
   outb((unsigned char)(position & EIGHT_BIT_MASK),HIGH_PORT);
@@ -247,6 +235,8 @@ void set_cursor(int32_t x, int32_t y){
 */
 
 void correct_cursor(){
+
+  // fix cursor position from x--,x++, and y++
   if (*cursor_x < 0) {
     if(*cursor_y ==0) { *cursor_x = 0; }
     else {

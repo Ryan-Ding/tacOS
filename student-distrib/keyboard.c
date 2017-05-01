@@ -109,7 +109,7 @@ handle_press(unsigned char scancode){
     *cursor_y = 0;
     set_cursor(*cursor_x,*cursor_y);
   }
-  else if (terminal[curr_display_term].ctrl_on && key_pressed == 'c') {
+  else if (terminal[curr_display_term].ctrl_on && key_pressed == 'c') { // close curr process, for debugging
     send_eoi(KEYBOARD_IRQ);
     sti();
     // wait until it is within the display terminal's process execution
@@ -124,7 +124,7 @@ handle_press(unsigned char scancode){
   }
 
   else if (*buffer_idx<(BUFFER_SIZE-1)) {
-
+// put char into buffer
 
     buffer_key[*buffer_idx]=key_pressed;
     keyboard_putc(key_pressed);
@@ -206,7 +206,7 @@ keyboard_interrupt(void){
     break;
 
     case ENTER:
-
+// enter has been pressed, change_line
       *enter_flag = 1;
       buffer_key[*buffer_idx]= LINE_END;
       for (i = *buffer_idx + 1; i < BUFFER_SIZE; i++) {
@@ -238,7 +238,7 @@ keyboard_interrupt(void){
     //   set_cursor(terminal[curr_display_term].pos_x, terminal[curr_display_term].pos_y );
 
     break;
-
+// case check
     case LEFT_SHIFT_PRESSED:
     terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
     break;
@@ -263,6 +263,7 @@ keyboard_interrupt(void){
     case ALT_RELEASED:
     terminal[curr_display_term].alt_on = 0;
     break;
+    // switch terminal
     case F1:
     if(terminal[curr_display_term].alt_on){
       return switch_terminal(FIRST_TERM);
@@ -303,7 +304,7 @@ keyboard_interrupt(void){
 */
 void switch_terminal(uint32_t new_terminal_id) {
     //uint8_t shell_program[] = "shell";
-    if (terminal[new_terminal_id].curr_process == NULL) {
+    if (terminal[new_terminal_id].curr_process == NULL) { // ghost
         if (check_available_pid() < 0) {
             send_eoi(KEYBOARD_IRQ);
             sti();
@@ -313,14 +314,8 @@ void switch_terminal(uint32_t new_terminal_id) {
         switch_term(new_terminal_id);
         // restore_term(new_terminal_id);
         send_eoi(KEYBOARD_IRQ);
-        // asm volatile("movl %%esp, %0;"
-        //              "movl %%ebp, %1;"
-        //              : "=g"(curr_process->fake_esp), "=g"(curr_process->fake_ebp)
-        //              :
-        //              : "memory", "cc"
-        // );
+
         sti();
-        // printf("Reached here");
     } else {
         switch_term(new_terminal_id);
         // restore_term(new_terminal_id);
@@ -328,24 +323,5 @@ void switch_terminal(uint32_t new_terminal_id) {
         sti();
     }
     return;
-//   uint8_t shell_program[] = "shell";
-//   if (terminal[new_terminal_id].curr_process == NULL) {
-//     if (check_available_pid() < 0) {
-//       send_eoi(KEYBOARD_IRQ);
-//       sti();
-//       return;
-//     }
-//     switch_term(new_terminal_id);
-//     restore_term(new_terminal_id);
-//     curr_term = new_terminal_id;
-//     curr_process = NULL;
-//     send_eoi(KEYBOARD_IRQ);
-//     system_execute(shell_program);
-//   } else {
-//     switch_term(new_terminal_id);
-//     restore_term(new_terminal_id);
-//     send_eoi(KEYBOARD_IRQ);
-//     sti();
-//   }
-//   return;
+
 }
