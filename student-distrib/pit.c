@@ -10,7 +10,7 @@
  */
 void pit_init(){
     int hz = INPUT_FREQ;
-
+// enable pit interupt
     enable_irq(PIT_IRQ);
     set_intr_gate(PIT_IRQ + MASTER_IDT_OFFSET, (void*) pit_interrupt);
     outb(PIT_SET,PIT_MODE);

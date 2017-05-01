@@ -6,7 +6,7 @@
  * input: none
  * description: round robin scheduling
  * return value:none
- * side effect : return next process 
+ * side effect : return next process
  */
 void switch_task() {
   int32_t esp,ebp;
@@ -73,7 +73,7 @@ void switch_task() {
   // }
 
 
-  // not sure for this tss.esp0 =
+  // restore tss
   tss.esp0 = next_process->curr_esp0;
   tss.ebp = ebp;
   // switch to the page of next process
