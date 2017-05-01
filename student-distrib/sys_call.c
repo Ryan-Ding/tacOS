@@ -225,7 +225,9 @@ int32_t system_halt (uint8_t status)
 	}
 	pcb_t * parent_pcb = curr_process->parent;
 
-
+	for(i = STDO+1;i<FDT_SIZE;i++){
+		curr_process-> file_desc_table[i].flag = 0;
+	}
 	i = curr_process->pid;
   	//  mark the current process as not running
 	process_bitmap &= ~((1 << i));
