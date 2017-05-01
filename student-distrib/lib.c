@@ -103,14 +103,23 @@ terminal_putc(uint8_t c)
     terminal[curr_term].pos_x=0;
   } else {
     // load_page_directory(terminal[curr_term].curr_process->pid + 1);
-    *(uint8_t *)(video_mem/* + (1 + curr_term) * FOUR_KB */+ (i << 1)) = c;
-    if (curr_term == 0) {
-      *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
-    } else if (curr_term ==1){
-      *(uint8_t *)(video_mem/* +  (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_1;
-    }else {
-      *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
+    if(curr_term==curr_display_term)
+    {
+    //*(uint8_t *)(video_mem + (1 + curr_term) * 4096 + (i << 1)) = c;
+    *(uint8_t *)(video_mem + (i << 1)) = c;
     }
+    else{
+      *(uint8_t *)(video_mem + (1 + curr_term) * 4096 + (i << 1)) = c;
+    }
+
+
+    // if (curr_term == 0) {
+    //   *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
+    // } else if (curr_term ==1){
+    //   *(uint8_t *)(video_mem/* +  (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_1;
+    // }else {
+    //   *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
+    // }
 //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
     terminal[curr_term].pos_x++;
     terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));
