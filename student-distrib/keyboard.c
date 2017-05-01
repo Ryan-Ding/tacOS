@@ -11,13 +11,10 @@ volatile int* buffer_idx;
 volatile int* cursor_x;
 volatile int* cursor_y;
 //flags
-int curr_case = 0;
-int ctrl_on = 0;
-int alt_on = 0;
+// int curr_case = 0;
+// int ctrl_on = 0;
+// int alt_on = 0;
 
-// test function vars
-int file_idx = FS_IDX;
-int rtc_frq =  RTC_INI_FRQ;
 
 // scancode lookup table used for screen ecoing
 static unsigned char scancode_set[CASE_NUM][KEY_NUM] = {
@@ -100,9 +97,9 @@ handle_press(unsigned char scancode){
   // only handle keys that we've defined
   if (scancode >=KEY_NUM)
   return;
-  unsigned char key_pressed = scancode_set[curr_case][scancode];
+  unsigned char key_pressed = scancode_set[terminal[curr_display_term].curr_case][scancode];
   int i ;
-  if (ctrl_on && (key_pressed == 'l'|| key_pressed == 'L') ) {
+  if (terminal[curr_display_term].ctrl_on && (key_pressed == 'l'|| key_pressed == 'L') ) {
     clear(); // clear video memory
     for (i = 0; i < BUFFER_SIZE; i++) {
       buffer_key[i]=KEY_EMPTY;
@@ -112,7 +109,7 @@ handle_press(unsigned char scancode){
     *cursor_y = 0;
     set_cursor(*cursor_x,*cursor_y);
   }
-  else if (ctrl_on && key_pressed == 'c') {
+  else if (terminal[curr_display_term].ctrl_on && key_pressed == 'c') {
     send_eoi(KEYBOARD_IRQ);
     sti();
     // wait until it is within the display terminal's process execution
@@ -125,31 +122,7 @@ handle_press(unsigned char scancode){
     *buffer_idx = 0;
     system_halt(-1);
   }
-//   else if (ctrl_on && key_pressed == '1'){ // test read file
-//     clear();
-//     set_cursor(0,0);
-//     test_dir_read();
-//   }
-//   else if (ctrl_on && key_pressed == '2'){ // test read file
-//     clear();
-//     set_cursor(0,0);
-//     test_reg_read();
-//   }
-//   else if (ctrl_on && key_pressed == '3'){ // test read file by idx
-//     clear();
-//     set_cursor(0,0);
-//     test_read_file_by_index(file_idx++);
-//   } else if (ctrl_on && key_pressed == '4'){ // rtc test
-//     clear();
-//     set_cursor(0,0);
-//     rtc_write(rtc_frq);
-//     rtc_frq = rtc_frq<<1;
-//   } else if (ctrl_on && key_pressed == '5'){ // stop rtc
-//     clear();
-//     set_cursor(0,0);
-//     rtc_frq = RTC_INI_FRQ;
-//     rtc_stop();
-//   }
+
   else if (*buffer_idx<(BUFFER_SIZE-1)) {
 
 
@@ -158,18 +131,6 @@ handle_press(unsigned char scancode){
     (*buffer_idx)++;
     (*cursor_x)++;
     correct_cursor();
-
-    // if((*cursor_x)==NUM_COLS-1) { // edge cases when changing lines and scrolling is needed
-    //   *cursor_x = 0;
-    //   if ((*cursor_y)<NUM_ROWS-1 ) {  (*cursor_y)++; }
-    //   else{ scroll_line();}
-    //   putc(key_pressed);
-    //
-    // }
-    // else{
-    //   //  (*cursor_x)++;
-    //   putc(key_pressed);
-    // }
   }
 
 
@@ -219,14 +180,14 @@ keyboard_interrupt(void){
   switch (scancode) {
 
     case CAPS:
-    if (curr_case == CASE_CAPS)
-    curr_case = CASE_REG;
-    else if (curr_case == CASE_BOTH)
-    curr_case = CASE_SHIFT;
-    else if (curr_case == CASE_SHIFT)
-    curr_case = CASE_BOTH;
-    else
-    curr_case = CASE_CAPS;
+    if (terminal[curr_display_term].curr_case == CASE_CAPS)
+    terminal[curr_display_term].curr_case = CASE_REG;
+    else if (terminal[curr_display_term].curr_case == CASE_BOTH)
+    terminal[curr_display_term].curr_case = CASE_SHIFT;
+    else if (terminal[curr_display_term].curr_case == CASE_SHIFT)
+    terminal[curr_display_term].curr_case = CASE_BOTH;
+    else if (terminal[curr_display_term].curr_case == CASE_REG)
+    terminal[curr_display_term].curr_case = CASE_CAPS;
     break;
     case BACKSPACE:
     // if(!(*cursor_y==0 && *cursor_x ==0)) {
@@ -279,42 +240,42 @@ keyboard_interrupt(void){
     break;
 
     case LEFT_SHIFT_PRESSED:
-    curr_case = (curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
+    terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
     break;
     case RIGHT_SHIFT_PRESSED:
-    curr_case = (curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
+    terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
     break;
     case CTRL_PRESSED:
-    ctrl_on = 1;
+    terminal[curr_display_term].ctrl_on = 1;
     break;
     case LEFT_SHIFT_RELEASED:
-    curr_case = (curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
+    terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
     break;
     case RIGHT_SHIFT_RELEASED:
-    curr_case = (curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
+    terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
     break;
     case CTRL_RELEASED:
-    ctrl_on = 0;
+    terminal[curr_display_term].ctrl_on = 0;
     break;
     case ALT_PRESSED:
-    alt_on = 1;
+    terminal[curr_display_term].alt_on = 1;
     break;
     case ALT_RELEASED:
-    alt_on = 0;
+    terminal[curr_display_term].alt_on = 0;
     break;
     case F1:
-    if(alt_on){
+    if(terminal[curr_display_term].alt_on){
       return switch_terminal(FIRST_TERM);
     }
     break;
     case F2:
-    if(alt_on){
+    if(terminal[curr_display_term].alt_on){
       return switch_terminal(SECOND_TERM);
     }
     break;
 
     case F3:
-    if(alt_on){
+    if(terminal[curr_display_term].alt_on){
       return switch_terminal(THIRD_TERM);
     }
     break;

@@ -28,7 +28,7 @@ void create_empty_page_table(uint32_t pid) {
 	int i;
 	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
 	for (i = 0; i < PAGE_TABLE_NUM; ++i) {
-		(*page_table)[i] = (i * 0x1000) | NOT_PRESENT_MASK; // leaving trailing 12 bits for starting addresses to be 0
+		(*page_table)[i] = (i * PAGE_SIZE) | NOT_PRESENT_MASK; // leaving trailing 12 bits for starting addresses to be 0
 	}
 }
 
@@ -65,18 +65,18 @@ void init_kernel_page(uint32_t pid) {
  */
 //TODO change to |=
 void add_video_memory(uint32_t pid, uint32_t page_table_idx) {
-	int i;	
+	int i;
 	page_table_t * page_table = &(page_table_list[pid + PID_PD_OFFSET]);
 	// (*page_table)[page_table_idx] = ((unsigned int) ((*page_table)[page_table_idx]) ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
 	(*page_table)[page_table_idx] = ((unsigned int) VIDEO_MEM_PHYS_ADDR ) | PAGE_TABLE_ENTRY_MASK; // assign page table address and mark as present
-	// set up video memory back up 
+	// set up video memory back up
 	for (i = 0; i < TERM_NUM; ++i) {
 		(*page_table)[page_table_idx + (i + 1)] = (VIDEO_MEM_PHYS_ADDR + (i + 1) * PAGE_SIZE) | PAGE_TABLE_ENTRY_MASK;
 	}
 
 	// set up permanently valid VIDEO_MEM_PHYS_ADDR
-	(*page_table)[PERMANENT_PHYS_ADDR >> 12] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
-	
+	(*page_table)[PERMANENT_PHYS_ADDR >> SMALL_PAGE_TABLE_ADDR_OFFSET] = VIDEO_MEM_PHYS_ADDR | PAGE_TABLE_ENTRY_MASK;
+
 }
 
 /*

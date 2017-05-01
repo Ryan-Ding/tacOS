@@ -87,7 +87,7 @@ disable_irq(uint32_t irq_num)
         value = inb(MASTER_DATA) | (1 << irq_num);
         port = MASTER_DATA;
     }
-    else if (irq_num>=8 && irq_num <= SLAVE_SIZE){
+    else if (irq_num>=MASTER_SIZE && irq_num <= SLAVE_SIZE){
         value = inb(SLAVE_DATA) | (1 << (irq_num - MASTER_SIZE));
         port = SLAVE_DATA;
     }

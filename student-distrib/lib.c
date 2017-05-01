@@ -70,7 +70,7 @@ void delete_content(void){
 void scroll_line(void){
   int i,j;
   int old_position, new_position;
-  //load_page_directory(terminal[curr_display_term].curr_process->pid + 1);
+
   for (j = 1; j<NUM_ROWS; j++) {
     for (i = 0; i<NUM_COLS; i++) {
       new_position = NUM_COLS*(j-1) + i;
@@ -83,7 +83,7 @@ void scroll_line(void){
     j = NUM_COLS*(NUM_ROWS-1)+i;
     *(uint8_t *)(video_mem + (j << 1)) = ' ';
   }
-  //load_page_directory(terminal[curr_term].curr_process->pid + 1);
+  
 }
 
 /* void keyboard_scroll_line
