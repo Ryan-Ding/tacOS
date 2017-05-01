@@ -4,6 +4,7 @@
 volatile terminal_t terminal[TERM_NUM];
 
 volatile int curr_term = 0;
+volatile uint32_t wait_to_read[TERM_NUM];
 
 uint8_t curr_display_term = 0;
 
@@ -18,6 +19,7 @@ void init_terminal(){
     int i,j;
 
     for(j = 0;j<TERM_NUM;j++){
+      wait_to_read[j] = 0;
       terminal[j].pos_x = 0;
       terminal[j].pos_y = 0;
       terminal[j].read_flag = 0;
@@ -95,6 +97,7 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
     if(fd == FD_STDOUT)	//can't read from stdout
 		return -1;
     sti();
+    wait_to_read[curr_term] = 1;
     while (!terminal[curr_display_term].read_flag);
     terminal[curr_display_term].read_flag = 0;
     for (i = 0; i<nbytes && i<BUFFER_SIZE && terminal[curr_display_term].buffer_key[i] != KEY_EMPTY;i++ ) {
@@ -104,6 +107,7 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
     for (j = i+1;j<nbytes;j++ ){
       buff[j] = KEY_EMPTY;
     }
+    wait_to_read[curr_term] = 0;
     cli();
     return i;
 }

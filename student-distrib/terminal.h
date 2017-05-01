@@ -31,6 +31,7 @@ typedef struct {
 extern volatile int curr_term;
 extern uint8_t curr_display_term;
 extern volatile terminal_t terminal[TERM_NUM];
+extern volatile uint32_t wait_to_read[TERM_NUM];
 
 extern void init_terminal();
 extern void switch_term(int term);
