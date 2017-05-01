@@ -57,7 +57,13 @@ int32_t find_available_pid() {
 
   return -1;
 }
-
+/*
+ * check_available_pid
+ * input: none
+ * description: check if there are any Available new pid
+ * return value: 0 if found, or -1 if none is found
+ * side effect : none
+ */
 int32_t check_available_pid() {
   int8_t idx, bit_mask = 0x1;
   // printf("bitmap: %x \n", process_bitmap);
