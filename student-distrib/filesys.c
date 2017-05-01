@@ -38,6 +38,7 @@ init_file_system()
 */
 void init_file_system()
 {
+  // fill operation tables
     rtc_ops_table.open = rtc_open_syscall;
     rtc_ops_table.read = rtc_read;
     rtc_ops_table.write = rtc_write_syscall;
@@ -70,6 +71,7 @@ init_new_fdt()
     Side Effect:  fdt table is filled , mark stdin ,stdout as always opened
 */
 void init_new_fdt() {
+  // initialize new fdt and fill in the flags ,
     int i;
     if (curr_process == NULL) { return; }
     for (i=0;i<FDT_SIZE;i++)
@@ -126,7 +128,7 @@ Side Effect: None
 */
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
-
+  //edge case check
      if (index >= MAX_DIR_ENTRY_SIZE)
          return -1;
      if (dentry == NULL)
@@ -213,7 +215,7 @@ int32_t fs_open(uint8_t* file_name){
     int32_t fd;
     int i;
 
-
+// null pointer
     if(!file_name)
         return -1;
 
@@ -223,7 +225,7 @@ int32_t fs_open(uint8_t* file_name){
         return -1;
     }
 
-
+// find file
     for (i = 0; i<FDT_SIZE + 1; i++)
     {
         if (i == FDT_SIZE)
@@ -323,7 +325,7 @@ int32_t reg_read(int32_t fd, void* buf, int32_t nbytes)
     if (curr_process->file_desc_table[fd].flag == 0)
         return 0;
 
-    file_desc_entry_t* fdd =(file_desc_entry_t*)(&(curr_process->file_desc_table[fd]));
+    file_desc_entry_t* fdd =(file_desc_entry_t*)(&(curr_process->file_desc_table[fd])); // get the file directory
     uint32_t inode = fdd->inode;
     uint32_t offset = fdd->file_position;
 
