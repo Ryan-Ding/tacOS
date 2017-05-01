@@ -1,0 +1,186 @@
+Bug 1
+	Description: When keyboard interrupted is generated, General Protection will occur.
+	Solution: Set DPL value for interrupt handler.
+	Solved by: Qihao Wang
+	Time used: 2 Hours
+
+Bug 2
+	Description: PIC does not work
+	Solution: Initial all pins on PIC
+	Solved by: Yu Sun
+	Time used: 1 Hour
+
+Bug 3
+	Description: RTC does not work
+	Solution: Enable IRQ for RTC
+	Solved by: Kaidong Peng
+	Time used: 2 Hours
+	
+Bug 4
+	Description: After setting up paging, the kernel does not start correctly
+	Solution: Check and set all bits on PDE and PTE carefully
+	Solved by: Kaidong Peng, Qihao Wang
+	Time used: 5 hours
+
+Bug 5
+	Description: When the keyboard buffer is full, delete (backspace) does not work. 
+	Solution: Check backspace first.
+	Solved by: Yu Sun
+	Time used: 1 Hour
+
+Bug 6
+	Description: Whenever RTC read is called, the terminal does not response any more.
+	Solution: Stop critical section at the beginning of RTC read.
+	Solved by: Qihao Wang
+	Time used: 1 Hour
+
+Bug 7
+	Description: When the file name is too long (larger than 32 characters), a smile face will be printed at the end of file name.
+	Solution: Use putc to print the file name.
+	Solved by: Qihao Wang
+	Time used: 15 Min
+
+Bug 8
+	Description: Page fault will occur when using inode_t and dentry_t struct.
+	Solution: Cast the variable whenever used.
+	Solved by: Qihao Wang
+	Time used: 1 Hour
+
+Bug 9
+	Description: The offset in read_data will skip more data than expected.
+	Solution: Cast the data type of data block as uint8_t instead of uint32_t.
+	Solved by: Kaidong Peng
+	Time used: 1 Hour
+
+Bug 10
+	Description: When the terminal reached the bottom, the cursor will move randomly.
+	Solution: Change the scroll_line function to get correct x and y coordinate.
+	Solved by: Yu Sun
+	Time used: 2 Hours
+
+Bug 11
+	Description: When something is printed, the cursor does not move to the end of the message.
+	Solution: Modify the putc function to update cursor.
+	Solved by: Yu Sun, Kaidong Peng, Qihao Wang
+	Time used: 1 Hour
+
+Bug 12
+	Description: When the number of bytes exceed the length of message in terminal_write, page fault will occur.
+	Solution: Check the edge cases.
+	Solved by: Yu Sun
+	Time used: 20 min
+
+Bug 13
+	Description: The check_if_executable function does not work.
+	Solution: Change the order of the four characters (little-endian).
+	Solved by: Ruiyang Ding
+	Time used: 1 Hour
+
+Bug 14
+	Description: The argument parsing does not work when there are mulitiple " " in command.
+	Solution: Add more indices to move track the " "
+	Solved by: Qihao Wang
+	Time used: 30 Min
+
+Bug 15
+	Description: When exiting the last shell, the terminal does not response any more.
+	Solution: Start a new terminal when exiting the last shell.
+	Solved by: Qihao Wang
+	Time used: 30 Min
+
+Bug 16
+	Description: When programs halt, Page Fault exception is generated.
+	Solution: Set up the bitmap correctly.
+	Solved by: Kaidong Peng, Qihao Wang, Ruiyang Ding
+	Time used: 30 Min
+
+Bug 17
+	Description: When setting up the paging for new program, page fault will occur.
+	Solution: Add an offset when setting up the paging.
+	Solved by: Kaidong Peng, Qihao Wang, Yu Sun
+	Time used: 1 Hour
+
+Bug 18
+	Description: Halt does not return to correct location.
+	Solution: Using assembly language to jump back to the execute stack frame.
+	Solved by: Kaidong Peng
+	Time used: 2 Hours
+
+Bug 19
+	Description: When using the fake iret, Page Fault exception will be generated.
+	Solution: Move the IRET_ESP upward (4 bytes)
+	Solved by: Ruiyang Ding
+	Time used: 30 Min
+
+Bug 20
+	Description: Page Fault Exception will be generated when input of system_read or system write is incorrect.
+	Solution: Check the input and return when input is invalid.
+	Solved by: Qihao Wang
+	Time used: 1 Hour
+
+Bug 21
+	Description: General Proection exception will be generated when using the vid_map system call.
+	Solution: Set the supervisor bit on paging.
+	Solved by: Kaidong Peng
+	Time used: 30 Min
+
+Bug 22
+	Description: Cat stops abnormally.
+	Solution: In terminal write, do not return when the first character in buffer is '\0'.
+	Solved by: Qihao Wang
+	Time used: 30 Min
+
+Bug 23
+	Description: Video memory map incorrect for terminal write 
+	Solution: Use a permanent physical address mapped to 0xb8000
+	Solved by: Kaidong Peng
+	Time Used: 1 Hour 
+
+Bug 24  
+	Description: Video memory map incorrect for fish
+	Solution: The correct page directory needs to be loaded
+	Solved by:Kaidong Peng
+	Time used: 4 Hours
+
+Bug 25    
+	Description: keyboard output printed to other terminals when displayed term and scheduled term not the same
+	Solution: Use flag to determine whether the correct terminal should read, changed terminal keyboard 
+	Solved by: Kaidong Peng, Yu Sun, Qihao Wang, Ruiyang Ding 
+	Time used: 5 Hours
+
+Bug 26
+	Description: Page fault for PIT while send_eoi is called
+	Solution: PIT INTERRUPT OFFSET is Master instead of Slave, interrupt handler not called correctly
+	Solved by: Ruiyang Ding, Yu Sun
+	Time used: 1 Hour 
+
+Bug 27	
+	Description: PIT leading to page fault, read flag trap for pit
+	Solution: Pushal before calling, no popal, use completely assembly instead of wrapper for handler function
+	Solved by: Kaidong Peng
+	Time used: 2 Hours
+
+Bug 28	
+	Description: Terminal freezes for pingpong
+	Solution: individual rtc flag for each terminal to break while loop
+	Solved by: Yu Sun
+	Time used: 2 hours
+
+Bug 29	
+	Description: Terminal Scrolling would go to wrong terminal
+	Solution: Use permanent physical address while scrolling
+	Solved by: Kaidong Peng
+	Time used: 30 mins
+
+Bug 30	
+	Description: Keyboard manipulation led to incorrect cursor position change
+	Solution: Use single function to check and fix all invalid cursor positions
+	Solved by: Yu Sun
+	Time used: 1 Hour 
+
+Bug 31	
+	Description: Exiting the last shell in last terminal would led to infinite starting shell and exiting shell
+	Solution: Use a reserve bit and extra ghost shell to allow one more ghost shell open and close
+	Solved by: Kaidong Peng
+	Time used: 1 Hour
+
