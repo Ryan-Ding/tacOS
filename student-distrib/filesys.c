@@ -2,8 +2,8 @@
 
 static boot_block_t* boot_block_ptr = NULL;
 
-static uint8_t data_block_flag[50];
-static uint8_t inode_flag[62];
+static uint8_t data_block_flag[AVAILABLE_DATA_BLOCKS];
+static uint8_t inode_flag[MAS_DIR_ENTRY_SIZE];
 
 // file operations table
 file_ops_table_t rtc_ops_table;
@@ -64,12 +64,12 @@ void init_file_system()
     terminal_ops_table.write = terminal_write;
     terminal_ops_table.close = terminal_close;
 
-    for(i=0; i<50; i++)
+    for(i=0; i<AVAILABLE_DATA_BLOCKS; i++)
     {
         data_block_flag[i]=0;
     }
 
-        for(i=0; i<62; i++)
+        for(i=0; i<MAS_DIR_ENTRY_SIZE; i++)
     {
         inode_flag[i]=0;
     }
@@ -213,25 +213,38 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     return count;
 }
 
+/*
+find_available_data_block()
+Description: find available data block
+Input:  none
+Output: none
+Return value: found data block
+Side Effect: None
+*/
+
 int32_t find_available_data_block(){
     int i,j;
 
-    for(i=0; i<63; i++)
+    for(i=0; i<MAX_DIR_ENTRY_SIZE; i++)
     {
+        //get the inode block pointer
         inode_block_t * inode_ptr = (inode_block_t *) LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, i);
         uint32_t inode_length = (uint32_t) inode_ptr->length;
+        //skip this round if empty
         if (inode_length==0) continue;
-        for(j=0; j<inode_length/4096 + 1; j++)
+        for(j=0; j<inode_length/FILE_SYS_BLOCK_SIZE + 1; j++)
         {
             int32_t inode_data_block_num = inode_ptr->data_blocks[j];
+            //set flag as visited
             data_block_flag[inode_data_block_num]=1;
         }
     }
 
-    for(i=0; i<50; i++)
+    for(i=0; i<AVAILABLE_DATA_BLOCKS; i++)
     {
         if(data_block_flag[i]==0)
         {
+            //set flag as visited
             data_block_flag[i]=1;
             return i;
         }
@@ -239,27 +252,40 @@ int32_t find_available_data_block(){
     return -1;
 }
 
+/*
+find_available_inode()
+Description: find available inode
+Input:  none
+Output: none
+Return value: found inode
+Side Effect: None
+*/
+
 int32_t find_available_inode(){
     int i;
 
-    for(i=1; i<62; i++)
+    //loop though all the inodes in directory entry
+    for(i=1; i<MAS_DIR_ENTRY_SIZE; i++)
     {
         if(&(boot_block_ptr->dir_entries[i])==NULL) return -1;
         uint8_t * file_name = boot_block_ptr->dir_entries[i].filename;
 
+        //get the inode block
         inode_block_t * temp_inode_block =(inode_block_t *)LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, boot_block_ptr->dir_entries[i].inode_num);
          uint32_t inode_length = temp_inode_block->length;
-        if(strlen(file_name)!=0 && inode_length!=0)
+        if(strlen((int8_t*)file_name)!=0 && inode_length!=0)
         {
+            //set flag as visited
             inode_flag[boot_block_ptr->dir_entries[i].inode_num]=1;
         }
     }
 
-    for(i=1; i<62; i++)
+    for(i=1; i<MAS_DIR_ENTRY_SIZE; i++)
     {
 
         if(inode_flag[i]==0)
         {
+            //set flag as visited
             inode_flag[i]=1;
             return i;
         }
@@ -267,6 +293,19 @@ int32_t find_available_inode(){
 
     return -1;
 }
+
+/*
+reg_write
+Description: write a regular file
+Input:  fd - file descriptor
+        buf - the buffer to be used
+        nbytes - number of bytes to be written
+Output: A buffer contains the file content
+Return value: Number of bytes that have been successfully read
+Side Effect: None
+
+*/
+
 
 int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes){
     int i=0;
@@ -288,18 +327,33 @@ int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes){
         int32_t data_block_num = find_available_data_block();
         if(data_block_num==-1) return -1;
 
-        copied_bytes = min(nbytes, 4096);
+        //get the safest number of bytes
+        copied_bytes = min(nbytes, FILE_SYS_BLOCK_SIZE);
         copied_bytes = min(copied_bytes, strlen(buf));
 
+        //copy data to the data block
         temp_inode_block->data_blocks[i]=data_block_num;
-        data_ptr = LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr,total_inodes,data_block_num);
+        data_ptr = (int32_t *) LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr,total_inodes,data_block_num);
         memcpy((uint8_t*)data_ptr, (uint8_t *)buf, copied_bytes);
 
-        nbytes-=4096;
+        nbytes-=FILE_SYS_BLOCK_SIZE;
         i++;        
     }
     return 0;
 }
+
+/*
+reg_read
+Description: write a directory file
+Input:  fd - file descriptor
+        buf - the buffer to be used
+        nbytes - number of bytes to be written
+Output: A buffer contains the file content
+Return value: Number of bytes that have been successfully read
+Side Effect: None
+
+*/
+
 
 
 int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
@@ -314,12 +368,15 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
      //dentry_t search_for_dir_entry;
      //read_dentry_by_name((uint8_t*)buf, &search_for_dir_entry);
      int32_t inode_num = find_available_inode();
+
+     //write file name to directory entry
      memcpy((uint8_t*)(boot_block_ptr->dir_entries[dentry_num].filename), (int8_t*)buf, copied_bytes);
      boot_block_ptr->dir_entries[dentry_num].filetype=2;
      boot_block_ptr->dir_entries[dentry_num].inode_num=inode_num;
      dentry_num++;
      *((int32_t *)boot_block_ptr)=dentry_num;
 
+     //store pcb information
      curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
      curr_process->file_desc_table[fd].inode=inode_num;
      return 0;

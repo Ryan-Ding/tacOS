@@ -22,6 +22,8 @@
 
 #define MAX_DIR_ENTRY_SIZE 63
 #define RESERVED_LENGTH 52
+#define AVAILABLE_DATA_BLOCKS 50
+#define MAS_DIR_ENTRY_SIZE 62
 
 #define LOCATE_INODE_BLOCK(base,inode) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode )
 #define LOCATE_DATA_BLOCK(base,inode_all,data_blk) (base + FILE_SYS_BLOCK_SIZE + FILE_SYS_BLOCK_SIZE * inode_all + FILE_SYS_BLOCK_SIZE * data_blk )
