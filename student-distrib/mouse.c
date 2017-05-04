@@ -2,18 +2,18 @@
 #include "mouse.h"
 
 uint8_t cycle = 0;
-uint32_t mouse_packet[3] = {0,0,0};
+uint32_t mouse_packet[TERM_NUM] = {0,0,0};
 
-int32_t mouse_x[3] = {0,0,0};
-int32_t mouse_y[3] = {0,0,0};
+int32_t mouse_x[TERM_NUM] = {0,0,0};
+int32_t mouse_y[TERM_NUM] = {0,0,0};
 int32_t delta_x = 0;
 int32_t delta_y = 0;
 int32_t last_x = 0;
 int32_t last_y = 0;
-volatile uint8_t first_start_flag[3]  = {1,1,1};
+volatile uint8_t first_start_flag[TERM_NUM]  = {1,1,1};
 
 void mouse_wait(uint8_t type ){
-  uint32_t time = 100000; // time out length
+  uint32_t time = TIME_OUT; // time out length
   if(type==0)
   {
     while( time--) //Data
@@ -39,7 +39,7 @@ uint8_t mouse_read(void){
 
 void mouse_write(uint8_t word){
   mouse_wait(1);
-  outb(0xD4,MOUSE_STATUS_PORT); //Preced before sending data/command
+  outb(BEFORE_FLAG,MOUSE_STATUS_PORT); //Preced before sending data/command
   mouse_wait(1);
   outb(word,MOUSE_SCANCODE_PORT);
 }
@@ -50,14 +50,14 @@ void mouse_init(void){
 
   set_intr_gate(MOUSE_IRQ + SLAVE_IDT_OFFSET - MASTER_SIZE, mouse_interrupt_handler);
   mouse_wait(1);
-  outb(0xA8,MOUSE_STATUS_PORT);//enable aux mouse device
+  outb(AUX_FLAG,MOUSE_STATUS_PORT);//enable aux mouse device
   mouse_wait(1);
   //enable interrupt
-  outb(0x20,MOUSE_STATUS_PORT);
+  outb(ENABLE_FLAG_FIRST,MOUSE_STATUS_PORT);
   mouse_wait(0);
   status = inb(MOUSE_SCANCODE_PORT) |2;
   mouse_wait(1);
-  outb(0x60,MOUSE_STATUS_PORT);
+  outb(ENABLE_FLAG_SECOND,MOUSE_STATUS_PORT);
   mouse_wait(1);
   outb(status,MOUSE_SCANCODE_PORT);
 
@@ -96,6 +96,7 @@ void mouse_interrupt(void){
     cycle = 2;
     case 2:
     mouse_packet[2] = inb(MOUSE_SCANCODE_PORT);
+    // discard package if overflow
     if (mouse_packet[0] & YO_BIT || mouse_packet[0] & XO_BIT) {
 						break;
 		}
@@ -109,7 +110,7 @@ void mouse_interrupt(void){
       last_y = mouse_y[curr_display_term];
       mouse_x[curr_display_term] += (int32_t)(delta_x/X_SCALE * NUM_COLS /MOUSE_SCALE);
       mouse_y[curr_display_term] -= (int32_t)(delta_y/Y_SCALE * NUM_ROWS /MOUSE_SCALE);
-    //
+    // correct position overflow
       if(mouse_x[curr_display_term] < 0) mouse_x[curr_display_term] = 0;
       else if (mouse_x[curr_display_term] > NUM_COLS-1) mouse_x[curr_display_term] = NUM_COLS-1;
       if(mouse_y[curr_display_term] <0 )mouse_y[curr_display_term] = 0;

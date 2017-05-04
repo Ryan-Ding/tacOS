@@ -18,6 +18,11 @@
 #define XO_BIT 0x40
 #define DEFAULT 0xF6
 #define ENABLE_DATA 0xF4
+#define TIME_OUT 100000
+#define BEFORE_FLAG 0xD4
+#define ENABLE_FLAG_FIRST 0x20
+#define ENABLE_FLAG_SECOND 0x60
+#define AUX_FLAG 0xA8
 // initialize keyboard interrupt handler
 extern void mouse_init(void);
 
