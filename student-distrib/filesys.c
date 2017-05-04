@@ -198,6 +198,111 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     return count;
 }
 
+int32_t find_available_data_block(){
+    int i,j;
+
+    uint8_t data_block_flag[50];
+    for(i=0; i<50; i++)
+    {
+        data_block_flag[i]=0;
+    }
+
+    for(i=1; i<63; i++)
+    {
+        inode_block_t * inode_ptr = (inode_block_t *) LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, i);
+        uint32_t inode_length = (uint32_t) inode_ptr->length;
+        for(j=1; j<inode_length+1; j++)
+        {
+            int32_t inode_data_block_num = inode_ptr->data_blocks[i];
+            data_block_flag[inode_data_block_num]=1;
+        }
+    }
+
+    for(i=1; i<50; i++)
+    {
+        if(data_block_flag[i]==0)
+            return i;
+    }
+    return -1;
+}
+
+int32_t find_available_inode(){
+    int i;
+
+    uint8_t inode_flag[62];
+
+    for(i=0; i<62; i++)
+    {
+        inode_flag[i]=0;
+    }
+
+    for(i=1; i<62; i++)
+    {
+        if(&(boot_block_ptr->dir_entries[i])==NULL) return -1;
+        uint8_t * file_name = boot_block_ptr->dir_entries[i].filename;
+
+        inode_block_t * temp_inode_block =(inode_block_t *)LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, boot_block_ptr->dir_entries[i].inode_num);
+         uint32_t inode_length = temp_inode_block->length;
+        if(strlen(file_name)!=0 && inode_length!=0)
+        {
+            inode_flag[boot_block_ptr->dir_entries[i].inode_num]=1;
+        }
+    }
+
+    for(i=1; i<62; i++)
+    {
+
+        if(inode_flag[i]==0)
+            return i;
+    }
+
+    return -1;
+}
+
+int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes){
+    if(fd<0 || fd>8) return -1;
+
+    uint32_t copied_bytes;
+    uint32_t total_inodes=boot_block_ptr->num_inodes;
+
+    //if(curr_process->file_desc_table[fd].flag ==0) return 0;
+
+    //dir_write(3, (void*)"qihao", 5);
+    uint32_t inode_num = curr_process->file_desc_table[fd].inode;
+    //if(!inode_num) return -1;
+
+    inode_block_t * temp_inode_block = (inode_block_t *)LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode_num);
+    temp_inode_block->length = nbytes;
+    while(nbytes>0){
+        int32_t data_block_num = find_available_data_block();
+        if(data_block_num==-1) return -1;
+
+        copied_bytes = nbytes < 4096 ? nbytes: 4096;
+        memcpy((uint8_t *)LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr,total_inodes,data_block_num), (uint8_t *)buf, copied_bytes);
+
+        nbytes-=4096;        
+    }
+    return 0;
+}
+
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
+     if(fd<0 || fd>8) return -1;
+
+     if(buf==0) return -1;
+
+     int32_t dentry_num=boot_block_ptr->num_dir_entries;
+
+     dentry_t search_for_dir_entry;
+     //read_dentry_by_name((uint8_t*)buf, &search_for_dir_entry);
+     int32_t inode_num = find_available_inode();
+     memcpy((uint8_t*)(boot_block_ptr->dir_entries[dentry_num].filename), (int8_t*)buf, 32);
+     boot_block_ptr->dir_entries[dentry_num].filetype=2;
+     boot_block_ptr->dir_entries[dentry_num].inode_num=inode_num;
+     *((int32_t *)boot_block_ptr)=dentry_num++;
+     //curr_process->file_desc_table[fd].inode=inode_num;
+     return 0;
+}
+
 /*
 fs_open
 Description:find the diretory entry corresponding to the named le, allo
@@ -299,10 +404,10 @@ Side Effect: none
 
 */
 
-int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes)
-{
-    return -1;
-}
+// int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes)
+// {
+//     return -1;
+// }
 
 
 /*
@@ -377,10 +482,10 @@ Output: none
 Return value: 0
 Side Effect: none
 */
-int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes)
-{
-    return -1;
-}
+// int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes)
+// {
+//     return -1;
+// }
 
 /*
 dir_close
@@ -575,23 +680,23 @@ Side Effect: The file is read
 void test_reg_read()
 {
   // NOT USED ANYMORE
-    // int i;
-    // // dentry_t search_for_dir_entry;
-    // uint8_t file_name[FILENAME_SIZE] = "frame0.txt";
-    // // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
-    // int32_t fd = reg_open(file_name);
-    //
-    // uint32_t inode = curr_process->file_desc_table[fd].inode;
-    // inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
-    // uint32_t length = inode_ptr->length;
-    // uint8_t buf[length];
-    //
-    // int n = reg_read(fd,buf,length);
-    // for (i = 0; i< n; i++)
-    // {
-    //     printf("%c",buf[i]);
-    // }
-    //
-    // printf("filename: %s", file_name);
+    int i;
+    // dentry_t search_for_dir_entry;
+    uint8_t file_name[FILENAME_SIZE] = "frame0.txt";
+    // if(read_dentry_by_name(file_name, &search_for_dir_entry) == -1) {return;}
+    int32_t fd = reg_open(file_name);
+    
+    uint32_t inode = curr_process->file_desc_table[fd].inode;
+    inode_block_t* inode_ptr= (inode_block_t*)(LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, inode));
+    uint32_t length = inode_ptr->length;
+    uint8_t buf[length];
+    
+    int n = reg_read(fd,buf,length);
+    for (i = 0; i< n; i++)
+    {
+        printf("%c",buf[i]);
+    }
+    
+    printf("filename: %s", file_name);
 
 }

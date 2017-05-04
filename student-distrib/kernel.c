@@ -166,7 +166,7 @@ entry (unsigned long magic, unsigned long addr)
 	rtc_init();
 
 	/* init the pit */
-	pit_init();
+	//pit_init();
 
 
 
@@ -178,7 +178,7 @@ entry (unsigned long magic, unsigned long addr)
 
 
 	// init the terminal
-	init_terminal();
+	//init_terminal();
 
 
 	// init file system
@@ -191,10 +191,14 @@ entry (unsigned long magic, unsigned long addr)
 	clear();
 
 
-	system_execute(filename);
+	//system_execute(filename);
 
 
-	// system_execute(filename);
+	//system_execute(filename);
+	//printf("%d\n",find_available_data_block());
+
+	//dir_write(1, (void*)"qihao", 32);
+	//reg_write(1, (void*)"hello world", 10);
 
 	//system_execute(filename);
 
@@ -221,7 +225,7 @@ entry (unsigned long magic, unsigned long addr)
 	//test_dir_read();
 	//test_read_file_by_index();
 	 // test_read_file_by_name();
-	//test_reg_read();
+	test_reg_read();
 	//testing_open_func();
 	//test_read_file_by_index(10);
 	//test_read_file_by_name();
