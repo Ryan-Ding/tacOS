@@ -207,18 +207,19 @@ int32_t find_available_data_block(){
         data_block_flag[i]=0;
     }
 
-    for(i=1; i<63; i++)
+    for(i=0; i<63; i++)
     {
         inode_block_t * inode_ptr = (inode_block_t *) LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, i);
         uint32_t inode_length = (uint32_t) inode_ptr->length;
-        for(j=1; j<inode_length+1; j++)
+        if (inode_length==0) continue;
+        for(j=0; j<inode_length/4096 + 1; j++)
         {
-            int32_t inode_data_block_num = inode_ptr->data_blocks[i];
+            int32_t inode_data_block_num = inode_ptr->data_blocks[j];
             data_block_flag[inode_data_block_num]=1;
         }
     }
 
-    for(i=1; i<50; i++)
+    for(i=0; i<50; i++)
     {
         if(data_block_flag[i]==0)
             return i;
@@ -260,10 +261,12 @@ int32_t find_available_inode(){
 }
 
 int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes){
+    int i=0;
     if(fd<0 || fd>8) return -1;
 
     uint32_t copied_bytes;
     uint32_t total_inodes=boot_block_ptr->num_inodes;
+    int32_t * data_ptr;
 
     //if(curr_process->file_desc_table[fd].flag ==0) return 0;
 
@@ -278,9 +281,13 @@ int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes){
         if(data_block_num==-1) return -1;
 
         copied_bytes = nbytes < 4096 ? nbytes: 4096;
-        memcpy((uint8_t *)LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr,total_inodes,data_block_num), (uint8_t *)buf, copied_bytes);
 
-        nbytes-=4096;        
+        temp_inode_block->data_blocks[i]=data_block_num;
+        data_ptr = LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr,total_inodes,data_block_num);
+        memcpy((uint8_t*)data_ptr, (uint8_t *)buf, copied_bytes);
+
+        nbytes-=4096;
+        i++;        
     }
     return 0;
 }
@@ -291,15 +298,19 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
      if(buf==0) return -1;
 
      int32_t dentry_num=boot_block_ptr->num_dir_entries;
+     int8_t copied_bytes = nbytes<32 ? nbytes : 32;
 
      dentry_t search_for_dir_entry;
      //read_dentry_by_name((uint8_t*)buf, &search_for_dir_entry);
      int32_t inode_num = find_available_inode();
-     memcpy((uint8_t*)(boot_block_ptr->dir_entries[dentry_num].filename), (int8_t*)buf, 32);
+     memcpy((uint8_t*)(boot_block_ptr->dir_entries[dentry_num].filename), (int8_t*)buf, copied_bytes);
      boot_block_ptr->dir_entries[dentry_num].filetype=2;
      boot_block_ptr->dir_entries[dentry_num].inode_num=inode_num;
-     *((int32_t *)boot_block_ptr)=dentry_num++;
-     //curr_process->file_desc_table[fd].inode=inode_num;
+     dentry_num++;
+     *((int32_t *)boot_block_ptr)=dentry_num;
+
+     curr_process = (pcb_t*) (kernel_stack_top - KERNEL_STACK_ENTRY_SIZE);
+     curr_process->file_desc_table[fd].inode=inode_num;
      return 0;
 }
 

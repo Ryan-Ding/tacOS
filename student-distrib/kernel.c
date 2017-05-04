@@ -178,7 +178,7 @@ entry (unsigned long magic, unsigned long addr)
 
 
 	// init the terminal
-	//init_terminal();
+	init_terminal();
 
 
 	// init file system
@@ -195,12 +195,14 @@ entry (unsigned long magic, unsigned long addr)
 
 
 	//system_execute(filename);
-	//printf("%d\n",find_available_data_block());
+	//printf("%d\n",find_available_inode());
 
-	//dir_write(1, (void*)"qihao", 32);
-	//reg_write(1, (void*)"hello world", 10);
+	dir_write(2, (void*)"qihao", 5);
 
-	//system_execute(filename);
+	if(reg_write(2, (void*)"I'm the best\n", 13)==-1)
+		printf("reg_write error");
+
+	system_execute(filename);
 
 	//testing_open_func();
 	//test_read_file_by_index(10);
@@ -225,7 +227,7 @@ entry (unsigned long magic, unsigned long addr)
 	//test_dir_read();
 	//test_read_file_by_index();
 	 // test_read_file_by_name();
-	test_reg_read();
+	//test_reg_read();
 	//testing_open_func();
 	//test_read_file_by_index(10);
 	//test_read_file_by_name();
