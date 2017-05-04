@@ -1,6 +1,10 @@
 #include "filesys.h"
 
 static boot_block_t* boot_block_ptr = NULL;
+
+static uint8_t data_block_flag[50];
+static uint8_t inode_flag[62];
+
 // file operations table
 file_ops_table_t rtc_ops_table;
 file_ops_table_t dir_ops_table;
@@ -38,6 +42,7 @@ init_file_system()
 */
 void init_file_system()
 {
+    int i;
   // fill operation tables
     rtc_ops_table.open = rtc_open_syscall;
     rtc_ops_table.read = rtc_read;
@@ -58,6 +63,16 @@ void init_file_system()
     terminal_ops_table.read = terminal_read;
     terminal_ops_table.write = terminal_write;
     terminal_ops_table.close = terminal_close;
+
+    for(i=0; i<50; i++)
+    {
+        data_block_flag[i]=0;
+    }
+
+        for(i=0; i<62; i++)
+    {
+        inode_flag[i]=0;
+    }
 
 
 }
@@ -201,12 +216,6 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 int32_t find_available_data_block(){
     int i,j;
 
-    uint8_t data_block_flag[50];
-    for(i=0; i<50; i++)
-    {
-        data_block_flag[i]=0;
-    }
-
     for(i=0; i<63; i++)
     {
         inode_block_t * inode_ptr = (inode_block_t *) LOCATE_INODE_BLOCK((uint32_t)boot_block_ptr, i);
@@ -222,20 +231,16 @@ int32_t find_available_data_block(){
     for(i=0; i<50; i++)
     {
         if(data_block_flag[i]==0)
+        {
+            data_block_flag[i]=1;
             return i;
+        }
     }
     return -1;
 }
 
 int32_t find_available_inode(){
     int i;
-
-    uint8_t inode_flag[62];
-
-    for(i=0; i<62; i++)
-    {
-        inode_flag[i]=0;
-    }
 
     for(i=1; i<62; i++)
     {
@@ -254,7 +259,10 @@ int32_t find_available_inode(){
     {
 
         if(inode_flag[i]==0)
+        {
+            inode_flag[i]=1;
             return i;
+        }
     }
 
     return -1;
@@ -280,7 +288,8 @@ int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes){
         int32_t data_block_num = find_available_data_block();
         if(data_block_num==-1) return -1;
 
-        copied_bytes = nbytes < 4096 ? nbytes: 4096;
+        copied_bytes = min(nbytes, 4096);
+        copied_bytes = min(copied_bytes, strlen(buf));
 
         temp_inode_block->data_blocks[i]=data_block_num;
         data_ptr = LOCATE_DATA_BLOCK((uint32_t)boot_block_ptr,total_inodes,data_block_num);
@@ -292,15 +301,17 @@ int32_t reg_write(int32_t fd, const void* buf, int32_t nbytes){
     return 0;
 }
 
+
 int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes){
      if(fd<0 || fd>8) return -1;
 
      if(buf==0) return -1;
 
      int32_t dentry_num=boot_block_ptr->num_dir_entries;
-     int8_t copied_bytes = nbytes<32 ? nbytes : 32;
+     int8_t copied_bytes = min(nbytes, 32);
+     copied_bytes = min(copied_bytes, strlen(buf));
 
-     dentry_t search_for_dir_entry;
+     //dentry_t search_for_dir_entry;
      //read_dentry_by_name((uint8_t*)buf, &search_for_dir_entry);
      int32_t inode_num = find_available_inode();
      memcpy((uint8_t*)(boot_block_ptr->dir_entries[dentry_num].filename), (int8_t*)buf, copied_bytes);

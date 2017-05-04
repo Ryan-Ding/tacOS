@@ -166,7 +166,7 @@ entry (unsigned long magic, unsigned long addr)
 	rtc_init();
 
 	/* init the pit */
-	//pit_init();
+	pit_init();
 
 
 
@@ -197,12 +197,16 @@ entry (unsigned long magic, unsigned long addr)
 	//system_execute(filename);
 	//printf("%d\n",find_available_inode());
 
-	dir_write(2, (void*)"qihao", 5);
+	dir_write(5, (void*)"qihao\0", 10000);
+	dir_write(2, (void*)"kaidong\0", 10000);
 
-	if(reg_write(2, (void*)"I'm the best\n", 13)==-1)
+	if(reg_write(5, (void*)"I'm the best\n", 13)==-1)
 		printf("reg_write error");
 
-	system_execute(filename);
+	if(reg_write(2, (void*)"I love 391\n", 11)==-1)
+		printf("reg_write error");
+
+	system_execute(filename); 
 
 	//testing_open_func();
 	//test_read_file_by_index(10);
