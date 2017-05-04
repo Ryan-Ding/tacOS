@@ -12,8 +12,8 @@ volatile int* cursor_x;
 volatile int* cursor_y;
 //flags
 // int curr_case = 0;
-// int ctrl_on = 0;
-// int alt_on = 0;
+int ctrl_on = 0;
+int alt_on = 0;
 
 
 // scancode lookup table used for screen ecoing
@@ -99,7 +99,7 @@ handle_press(unsigned char scancode){
   return;
   unsigned char key_pressed = scancode_set[terminal[curr_display_term].curr_case][scancode];
   int i ;
-  if (terminal[curr_display_term].ctrl_on && (key_pressed == 'l'|| key_pressed == 'L') ) {
+  if (ctrl_on && (key_pressed == 'l'|| key_pressed == 'L') ) {
     clear(); // clear video memory
     for (i = 0; i < BUFFER_SIZE; i++) {
       buffer_key[i]=KEY_EMPTY;
@@ -109,7 +109,7 @@ handle_press(unsigned char scancode){
     *cursor_y = 0;
     set_cursor(*cursor_x,*cursor_y);
   }
-  else if (terminal[curr_display_term].ctrl_on && key_pressed == 'c') { // close curr process, for debugging
+  else if (ctrl_on && key_pressed == 'c') { // close curr process, for debugging
     send_eoi(KEYBOARD_IRQ);
     sti();
     // wait until it is within the display terminal's process execution
@@ -246,7 +246,7 @@ keyboard_interrupt(void){
     terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_CAPS) ? CASE_BOTH : CASE_SHIFT;
     break;
     case CTRL_PRESSED:
-    terminal[curr_display_term].ctrl_on = 1;
+    ctrl_on = 1;
     break;
     case LEFT_SHIFT_RELEASED:
     terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
@@ -255,28 +255,28 @@ keyboard_interrupt(void){
     terminal[curr_display_term].curr_case = (terminal[curr_display_term].curr_case==CASE_BOTH) ? CASE_CAPS : CASE_REG;
     break;
     case CTRL_RELEASED:
-    terminal[curr_display_term].ctrl_on = 0;
+    ctrl_on = 0;
     break;
     case ALT_PRESSED:
-    terminal[curr_display_term].alt_on = 1;
+    alt_on = 1;
     break;
     case ALT_RELEASED:
-    terminal[curr_display_term].alt_on = 0;
+    alt_on = 0;
     break;
     // switch terminal
     case F1:
-    if(terminal[curr_display_term].alt_on){
+    if(alt_on){
       return switch_terminal(FIRST_TERM);
     }
     break;
     case F2:
-    if(terminal[curr_display_term].alt_on){
+    if(alt_on){
       return switch_terminal(SECOND_TERM);
     }
     break;
 
     case F3:
-    if(terminal[curr_display_term].alt_on){
+    if(alt_on){
       return switch_terminal(THIRD_TERM);
     }
     break;

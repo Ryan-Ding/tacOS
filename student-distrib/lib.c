@@ -9,6 +9,8 @@
 //static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
+uint8_t last_one;
+uint8_t last_two;
 /*
 * void clear(void);
 *   Inputs: void
@@ -34,6 +36,31 @@ clear(void)
   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
 }
 
+/*
+* void init_color(void);
+*   Inputs: void
+*   Return Value: none
+*	Function: init color for terminal
+*/
+
+void
+init_color(void)
+{
+  int32_t i;
+  //clear the screen
+  for(i=0; i<NUM_ROWS*NUM_COLS; i++) {
+    //*(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = ' ';
+    if (curr_display_term ==0) {
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
+    } else if (curr_display_term ==1){
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_1;
+    }else {
+      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
+    }
+  }
+  //load_page_directory(terminal[curr_term].curr_process->pid + 1);
+}
+
 /* void delete_content
 * input: void
 * return value: none
@@ -43,7 +70,7 @@ void delete_content(void){
   int32_t i;
   if(!((*cursor_y)==0 && (*cursor_x) ==0)) { i = NUM_COLS * (*cursor_y) + (*cursor_x) - 1; }
 
-// mark last char printed as empty
+  // mark last char printed as empty
   *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = ' ';
   if (curr_display_term == 0) {
     *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
@@ -113,28 +140,18 @@ void keyboard_scroll_line(void){
   //load_page_directory(terminal[curr_term].curr_process->pid + 1);
 }
 
-
-
-
-
-
-
-
-
-
-
-
 /*
- * terminal_putc
- * input:  character to be printed
- * description: the print function for terminal_write
- * return value: none
- * side effect : print c to terminal, correct position if needed
- */
+* terminal_putc
+* input:  character to be printed
+* description: the print function for terminal_write
+* return value: none
+* side effect : print c to terminal, correct position if needed
+*/
 void
 terminal_putc(uint8_t c)
 {
   //terminal_t back_struct = terminal[curr_term];
+ //init_terminal();
   int i = (NUM_COLS*terminal[curr_term].pos_y + terminal[curr_term].pos_x);
   if(c == '\n' || c == '\r') {
     terminal[curr_term].pos_y++;
@@ -143,15 +160,15 @@ terminal_putc(uint8_t c)
     // use different mapping address for scheduling_term and display term
     if(curr_term==curr_display_term)
     {
-    // display the input  with specific color
-    *(uint8_t *)(video_mem + (i << 1)) = c;
-    if (curr_term == 0) {
-      *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
-    } else if (curr_term ==1){
-      *(uint8_t *)(video_mem/* +  (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_1;
-    }else {
-      *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
-    }
+      // display the input  with specific color
+      *(uint8_t *)(video_mem + (i << 1)) = c;
+      if (curr_term == 0) {
+        *(uint8_t *)(video_mem /*+ (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_0;
+      } else if (curr_term ==1){
+        *(uint8_t *)(video_mem/* +  (1 + curr_term) * FOUR_KB*/ + (i << 1) + 1) = ATTRIB_1;
+      }else {
+        *(uint8_t *)(video_mem /* + (1 + curr_term) * FOUR_KB */+ (i << 1) + 1) = ATTRIB_2;
+      }
     }
     else{
       *(uint8_t *)(video_mem + (1 + curr_term) * PAGE_SIZE + (i << 1)) = c;
@@ -166,7 +183,7 @@ terminal_putc(uint8_t c)
     }
 
 
-//increase the cursor
+    //increase the cursor
     terminal[curr_term].pos_x++;
     terminal[curr_term].pos_y = (terminal[curr_term].pos_y+ (terminal[curr_term].pos_x / NUM_COLS));
     terminal[curr_term].pos_x %= NUM_COLS;
@@ -183,27 +200,68 @@ terminal_putc(uint8_t c)
 }
 
 /*
- * keyboard_putc
- * input:  character to be printed
- * description: the print function for keyboard input
- * return value: none
- * side effect : print c to display terminal, correct position if needed
- */
+* keyboard_putc
+* input:  character to be printed
+* description: the print function for keyboard input
+* return value: none
+* side effect : print c to display terminal, correct position if needed
+*/
 void
 keyboard_putc(uint8_t c)
 {
+  //init_color();
   int i = (NUM_COLS*(*cursor_y) + (*cursor_x));
 
-// keyboard always print to physical location
-    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = c;
-    if (curr_display_term == 0) {
-      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
-    } else if (curr_display_term ==1){
-      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_1;
-    }else {
-      *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
-    }
+  // keyboard always print to physical location
+  *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = c;
+  if (curr_display_term == 0) {
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
+  } else if (curr_display_term ==1){
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_1;
+  }else {
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
+  }
 
+
+}
+
+void init_mouse_start_position(int x, int y){
+  int i = NUM_COLS * y + x;
+  uint8_t old_color = *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1);
+  if(old_color <<4 != 0)
+  *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = old_color <<4;
+  //printf("NEW COLOR %x,%x\n",old_color <<4 );
+
+}
+
+
+void draw_mouse_cursor(int x,int y,int last_x, int last_y){
+  //printf("x & y changed values: %d, %d\n",x,y );
+  int i;
+  uint8_t old_color;
+//  if()
+  if (x!=last_x || y!= last_y) {
+    i = NUM_COLS * last_y + last_x;
+    old_color = *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1);
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = old_color >>4;
+    i = NUM_COLS*y + x;
+    old_color = *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1);
+    *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = old_color <<4;
+  }
+
+
+
+
+  //*(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1)) = (uint8_t)219;
+
+  // *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_3;
+  // if (curr_display_term == 0) {
+  //   *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_0;
+  // } else if (curr_display_term ==1){
+  //   *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_1;
+  // }else {
+  //   *(uint8_t *)(PERMANENT_PHYS_ADDR + (i << 1) + 1) = ATTRIB_2;
+  // }
 
 }
 
@@ -216,7 +274,7 @@ keyboard_putc(uint8_t c)
 */
 
 void set_cursor(int32_t x, int32_t y){
-// set the cursor position
+  // set the cursor position
 
   unsigned short position = NUM_COLS* y + x; //offset
   // cursor LOW port to vga INDEX register
@@ -251,11 +309,11 @@ void correct_cursor(){
     else {(*cursor_y)++;}
     (*cursor_x) = 0;
   }
-while (*cursor_y >= NUM_ROWS) {
-  keyboard_scroll_line();
-  (*cursor_y)--;
-}
-set_cursor((*cursor_x),(*cursor_y));
+  while (*cursor_y >= NUM_ROWS) {
+    keyboard_scroll_line();
+    (*cursor_y)--;
+  }
+  set_cursor((*cursor_x),(*cursor_y));
 }
 /* Standard printf().
 * Only supports the following format strings:

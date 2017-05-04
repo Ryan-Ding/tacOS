@@ -10,9 +10,9 @@
 #define VIDEO 0xB8000
 #define NUM_COLS 80
 #define NUM_ROWS 25
-#define ATTRIB_0 0x7
-#define ATTRIB_1 0xF //white
-#define ATTRIB_2 0xE //yellow
+#define ATTRIB_0 0x0F // white
+#define ATTRIB_1 0x0B //teal
+#define ATTRIB_2 0x0E //yellow
 #define LOW_PORT 0x3D4
 #define HIGH_PORT 0x3D5
 #define FOUR_BIT_MASK 0x0F
@@ -29,7 +29,9 @@ void clear(void);
 void delete_content(void);
 void scroll_line(void);
 void keyboard_scroll_line(void);
-
+void draw_mouse_cursor(int x,int y,int32_t last_x, int32_t last_y);
+void init_mouse_start_position();
+void init_color(void);
 void set_cursor(int32_t x, int32_t y);
 void correct_cursor();
 void terminal_putc(uint8_t c);
@@ -56,7 +58,8 @@ uint32_t min(uint32_t a, uint32_t b);
 
 // int get_screenx();
 // int get_screeny();
-
+extern uint8_t last_one;
+extern uint8_t last_two;
 
 
 /* Port read functions */

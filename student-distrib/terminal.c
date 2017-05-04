@@ -4,7 +4,7 @@
 volatile terminal_t terminal[TERM_NUM];
 
 volatile int curr_term = 0;
-volatile uint32_t wait_to_read[TERM_NUM];
+//volatile uint32_t wait_to_read[TERM_NUM];
 
 uint8_t curr_display_term = 0;
 
@@ -19,15 +19,15 @@ void init_terminal(){
     int i,j;
 
     for(j = 0;j<TERM_NUM;j++){
-      wait_to_read[j] = 0;
+      //wait_to_read[j] = 0;
       terminal[j].pos_x = 0;
       terminal[j].pos_y = 0;
       terminal[j].read_flag = 0;
       terminal[j].curr_idx = 0;
       terminal[j].num_process = 0;
       terminal[j].curr_process = NULL;
-      terminal[j].alt_on = 0;
-      terminal[j].ctrl_on = 0;
+    //  terminal[j].alt_on = 0;
+      //terminal[j].ctrl_on = 0;
       terminal[j].curr_case =0;
       for (i=0; i< BUFFER_SIZE; i++){
         terminal[j].buffer_key[i] = KEY_EMPTY;
@@ -96,6 +96,8 @@ void switch_term(int term) {
     // printf("want to be spawn in terminal %d\n", term );
 
     curr_display_term = term;
+    //clear();
+    first_start_flag[curr_display_term] = 1;
 }
 /*
  * terminal_read
@@ -115,7 +117,8 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
     if(fd == FD_STDOUT)	//can't read from stdout
 		return -1;
     sti();
-    wait_to_read[calller_term] = 1;
+    //wait_to_read[calller_term] = 1;
+    // wait until ready to read
    while (!terminal[calller_term].read_flag);
    terminal[calller_term].read_flag = 0;
    for (j = 0;j < BUFFER_SIZE; j++ ){
@@ -126,7 +129,7 @@ terminal_read(int32_t fd, void* buf, int32_t nbytes){
        terminal[calller_term].buffer_key[i] = KEY_EMPTY;
    }
 
-   wait_to_read[calller_term] = 0;
+  // wait_to_read[calller_term] = 0;
    cli();
    return i;
 

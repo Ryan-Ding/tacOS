@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "keyboard.h"
+#include "mouse.h"
 #include "rtc.h"
 #include "paging.h"
 #include "filesys.h"
@@ -172,7 +173,9 @@ entry (unsigned long magic, unsigned long addr)
 
     /* init the keyboard */
 	keyboard_init();
+	
 
+	mouse_init();
     /* init paging */
 	paging_init(0);
 
