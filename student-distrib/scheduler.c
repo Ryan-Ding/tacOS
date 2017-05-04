@@ -28,6 +28,7 @@ void switch_task() {
         uint8_t shell_program[] = "shell";
         curr_process->is_blocked_by_new_terminal = 0;
         curr_term = curr_display_term;
+        init_color();
         curr_process = NULL;
         system_execute(shell_program);
         return; // TODO wether we need this or not

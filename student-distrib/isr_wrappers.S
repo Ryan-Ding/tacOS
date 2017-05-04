@@ -10,7 +10,7 @@
 
 .globl  keyboard_interrupt_handler
 .globl  rtc_interrupt_handler
-.globl  pit_interrupt_handler
+.globl  mouse_interrupt_handler
 .align   4
 
 // assembly wrapper to call c function to deal with the interrupt
@@ -39,14 +39,14 @@ rtc_interrupt_handler:
     popal
     iret
 
-/*  pit_interrupt_handler
+/*  mouse_interrupt_handler
 description: assembly wrapper to call c function to deal with the interrupt
-side effect: save all the registers before calling pit interrupt handler
+side effect: save all the registers before calling mouse interrupt handler
 */
 
-pit_interrupt_handler:
+mouse_interrupt_handler:
     pushal
     cld /* C code following the sysV ABI requires DF to be clear on function entry */
-    call pit_interrupt
+    call mouse_interrupt
     popal
     iret

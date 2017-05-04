@@ -36,13 +36,6 @@ void SIMD_Floating()
 {
 	printf("SIMD Floating Point Exception\n");
 
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 }
@@ -58,14 +51,6 @@ void SIMD_Floating()
 void Machine_Check_Exception()
 {
 	printf("Machine Check Exception\n");
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 }
@@ -80,13 +65,6 @@ void Machine_Check_Exception()
 void Alignment_Check()
 {
 	printf("Alignment Check Exception\n");
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -103,14 +81,6 @@ void Floating_Point()
 {
 	printf("Floating Point Error\n");
 
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 }
@@ -125,14 +95,7 @@ void Floating_Point()
 
 void Reserved_Int()
 {
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
+printf("Reserved Int\n");
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 
@@ -149,12 +112,6 @@ void System_Call_Interrupt()
 {
 	printf("System call\n");
 
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -172,12 +129,6 @@ void Divide_Error_Exception()
 {
 	printf("Divide Error\n");
 
-	 uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -194,12 +145,6 @@ void Debug_Exception ()
 {
 	printf("Debug\n");
 
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -216,14 +161,6 @@ void NMI_Interupt()
 {
 	printf("NMI interrupt\n");
 
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 }
@@ -238,13 +175,6 @@ void NMI_Interupt()
 void Breakpoint_Exception()
 {
 	printf("Breakpoint exception\n");
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -261,13 +191,6 @@ void Overflow_Exception()
 {
 	printf("Overflow Exception\n");
 
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 }
@@ -282,13 +205,6 @@ void Overflow_Exception()
 void BOUND()
 {
 	printf("BOUND\n");
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -305,13 +221,6 @@ void Invalid_Opcode()
 {
 	printf("Invalid Opcode\n");
 
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 }
@@ -326,13 +235,6 @@ void Invalid_Opcode()
 void Device_Not_Available()
 {
 	printf("Device Not Avaliable\n");
-
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -349,13 +251,6 @@ void Double_Fault()
 {
 	printf("Double Fault\n");
 
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
-
 	uint8_t filename[] = "shell";
 	system_execute(filename);
 }
@@ -370,12 +265,6 @@ void Double_Fault()
 void Coprocessor_Segment()
 {
 	printf("Coprocessor Segment\n");
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -391,12 +280,6 @@ void Coprocessor_Segment()
 void Invalid_TSS()
 {
 	printf("Invalid TSS\n");
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -412,12 +295,6 @@ void Invalid_TSS()
 void Segment_Not_Present()
 {
 	printf("Segment_Not_Present\n");
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -433,12 +310,6 @@ void Segment_Not_Present()
 void Stack_Fault()
 {
 	printf("Stack Fault\n");
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);
@@ -454,12 +325,6 @@ void Stack_Fault()
 void General_Protection()
 {
 	printf("General Protection\n");
-	uint32_t cr2_temp;
-	asm volatile(
-		"movl  %%cr2, %0;"
-		: "=r" (cr2_temp)
-		:
-	);
 
 	uint8_t filename[] = "shell";
 	system_execute(filename);

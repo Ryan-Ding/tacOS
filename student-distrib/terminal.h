@@ -5,6 +5,7 @@
 #include "types.h"
 #include "keyboard.h"
 #include "pcb.h"
+#include "mouse.h"
 /* the following struct is created for future
 *   cp when multiple terminals need to be supported */
 
@@ -26,8 +27,7 @@ typedef struct {
     int tid ;
     int pid_array[PID_SIZE];
     int curr_case ;
-    int ctrl_on ;
-    int alt_on ;
+  
     pcb_t* curr_process;
 } terminal_t;
 
